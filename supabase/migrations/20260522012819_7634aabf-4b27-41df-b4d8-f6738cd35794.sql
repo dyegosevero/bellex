@@ -1,0 +1,1 @@
+ALTER TABLE public.clinic_settings ADD COLUMN IF NOT EXISTS feedback_enabled boolean NOT NULL DEFAULT true;

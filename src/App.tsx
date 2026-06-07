@@ -1,0 +1,187 @@
+import { lazy, Suspense } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import AppLayout from "@/components/AppLayout";
+import { LogoDraw } from "@/components/ui/logo-draw";
+
+// Lazy-loaded pages — only fetched when the route is accessed
+const Login = lazy(() => import("@/pages/Login"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Clients = lazy(() => import("@/pages/Clients"));
+const ClientDetail = lazy(() => import("@/pages/ClientDetail"));
+const ClientNew = lazy(() => import("@/pages/ClientNew"));
+const ClientEdit = lazy(() => import("@/pages/ClientEdit"));
+
+const AppointmentNew = lazy(() => import("@/pages/AppointmentNew"));
+const AppointmentDetail = lazy(() => import("@/pages/AppointmentDetail"));
+const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
+const Products = lazy(() => import("@/pages/Products"));
+const ProductNew = lazy(() => import("@/pages/ProductNew"));
+const ProductEdit = lazy(() => import("@/pages/ProductEdit"));
+const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
+const Charges = lazy(() => import("@/pages/Charges"));
+const Faturamento = lazy(() => import("@/pages/Faturamento"));
+const ChargeNew = lazy(() => import("@/pages/ChargeNew"));
+const ChargeDetail = lazy(() => import("@/pages/ChargeDetail"));
+const ChargeEdit = lazy(() => import("@/pages/ChargeEdit"));
+const InactiveClients = lazy(() => import("@/pages/InactiveClients"));
+const Reports = lazy(() => import("@/pages/Reports"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const Services = lazy(() => import("@/pages/Services"));
+const UserNew = lazy(() => import("@/pages/UserNew"));
+const UserDetail = lazy(() => import("@/pages/UserDetail"));
+const UserEdit = lazy(() => import("@/pages/UserEdit"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const ImportData = lazy(() => import("@/pages/ImportData"));
+const ReminderLogs = lazy(() => import("@/pages/ReminderLogs"));
+const BusinessHours = lazy(() => import("@/pages/BusinessHours"));
+const SpecialistHours = lazy(() => import("@/pages/SpecialistHours"));
+
+const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
+const CancelBooking = lazy(() => import("@/pages/CancelBooking"));
+const Marketing = lazy(() => import("@/pages/Marketing"));
+const CampaignEditor = lazy(() => import("@/pages/CampaignEditor"));
+const CampaignHistory = lazy(() => import("@/pages/CampaignHistory"));
+const ReviewHistory = lazy(() => import("@/pages/ReviewHistory"));
+const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
+const ConfirmReview = lazy(() => import("@/pages/ConfirmReview"));
+const Index = lazy(() => import("@/pages/Index"));
+const Docs = lazy(() => import("@/pages/Docs"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const Landing = lazy(() => import("@/pages/Landing"));
+const RecursoAgenda = lazy(() => import("@/pages/recursos/Agenda"));
+const RecursoClientes = lazy(() => import("@/pages/recursos/Clientes"));
+const RecursoFinanceiro = lazy(() => import("@/pages/recursos/Financeiro"));
+const RecursoMarketing = lazy(() => import("@/pages/recursos/Marketing"));
+const RecursoRelatorios = lazy(() => import("@/pages/recursos/Relatorios"));
+const RecursoAgendamentoOnline = lazy(() => import("@/pages/recursos/AgendamentoOnline"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
+
+const PageLoader = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+    <LogoDraw size={48} loopCount={2} drawDuration={1200} fillDuration={400} fillDelay={150} />
+  </div>
+);
+
+const isBookingDomain = window.location.hostname.startsWith("agendamento.");
+
+function AnimatedRoutes() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+            {isBookingDomain ? (
+              <>
+                <Route path="/" element={<PublicBooking />} />
+                <Route path="*" element={<PublicBooking />} />
+              </>
+            ) : (
+              <>
+                <Route path="/login" element={<Login />} />
+                <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                <Route path="/redefinir-senha" element={<ResetPassword />} />
+                <Route path="/design-system" element={<Index />} />
+                <Route path="/agendamento" element={<PublicBooking />} />
+                <Route path="/cancelar/:token" element={<CancelBooking />} />
+                <Route path="//cancelar/:token" element={<CancelBooking />} />
+                <Route path="/notificacao/cancelar" element={<Unsubscribe />} />
+                <Route path="/avaliacao/confirmar/:token" element={<ConfirmReview />} />
+
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/clientes" element={<Clients />} />
+                  <Route path="/clientes/novo" element={<ClientNew />} />
+                  <Route path="/clientes/:id" element={<ClientDetail />} />
+                  <Route path="/clientes/:id/editar" element={<ClientEdit />} />
+                  
+                  <Route path="/atendimentos/novo" element={<AppointmentNew />} />
+                  <Route path="/atendimentos/:id" element={<AppointmentDetail />} />
+                  <Route path="/atendimentos/:id/sessao" element={<AppointmentSession />} />
+                  <Route path="/produtos" element={<Products />} />
+                  <Route path="/produtos/novo" element={<ProductNew />} />
+                  <Route path="/produtos/:id" element={<ProductDetail />} />
+                  <Route path="/produtos/:id/editar" element={<ProductEdit />} />
+                  <Route path="/cobrancas" element={<Charges />} />
+                  <Route path="/cobrancas/nova" element={<ChargeNew />} />
+                  
+                  <Route path="/cobrancas/:id" element={<ChargeDetail />} />
+                  <Route path="/cobrancas/:id/editar" element={<ChargeEdit />} />
+                  <Route path="/clientes-inativos" element={<InactiveClients />} />
+                  <Route path="/faturamento" element={<Faturamento />} />
+                  <Route path="/relatorios" element={<Reports />} />
+                  <Route path="/servicos" element={<Services />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/usuarios/novo" element={<UserNew />} />
+                  <Route path="/admin/usuarios/:id" element={<UserDetail />} />
+                  <Route path="/admin/usuarios/:id/editar" element={<UserEdit />} />
+                  <Route path="/admin/horarios" element={<BusinessHours />} />
+                  <Route path="/admin/horarios-especialistas" element={<SpecialistHours />} />
+                  <Route path="/admin/importar" element={<ImportData />} />
+                  <Route path="/admin/lembretes" element={<ReminderLogs />} />
+                  
+                  <Route path="/marketing" element={<Marketing />} />
+                  <Route path="/marketing/historico" element={<CampaignHistory />} />
+                  <Route path="/marketing/avaliacoes/historico" element={<ReviewHistory />} />
+                  <Route path="/marketing/nova" element={<CampaignEditor />} />
+                  <Route path="/marketing/:id" element={<CampaignEditor />} />
+                  <Route path="/perfil" element={<Profile />} />
+                </Route>
+
+                <Route path="/docs" element={<ProtectedRoute><Docs /></ProtectedRoute>} />
+                <Route path="/docs/:group/:slug" element={<ProtectedRoute><Docs /></ProtectedRoute>} />
+
+
+                <Route path="/" element={<Landing />} />
+                <Route path="/recursos/agenda" element={<RecursoAgenda />} />
+                <Route path="/recursos/clientes" element={<RecursoClientes />} />
+                <Route path="/recursos/financeiro" element={<RecursoFinanceiro />} />
+                <Route path="/recursos/marketing" element={<RecursoMarketing />} />
+                <Route path="/recursos/relatorios" element={<RecursoRelatorios />} />
+                <Route path="/recursos/agendamento-online" element={<RecursoAgendamentoOnline />} />
+                <Route path="*" element={<NotFound />} />
+              </>
+            )}
+          </Routes>
+        </Suspense>
+  );
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <AnimatedRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

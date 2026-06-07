@@ -1,0 +1,1 @@
+ALTER TABLE public.review_requests ADD COLUMN IF NOT EXISTS last_error text;
