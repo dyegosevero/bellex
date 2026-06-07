@@ -1,0 +1,97 @@
+project_id = "bcnpjaynvakntoscqyso"
+
+[functions.admin-reset-password]
+verify_jwt = false
+
+[functions.availability]
+verify_jwt = false
+
+[functions.bulk-reminders]
+verify_jwt = false
+
+[functions.calendar-feed]
+verify_jwt = false
+
+[functions.calendar-ics]
+verify_jwt = false
+
+[functions.check-stuck-appointments]
+verify_jwt = false
+
+[functions.clear-data]
+verify_jwt = false
+
+[functions.confirm-review]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.daily-notifications]
+verify_jwt = false
+
+[functions.delete-appointment]
+verify_jwt = false
+
+[functions.delete-client]
+verify_jwt = false
+
+[functions.delete-user]
+verify_jwt = false
+
+[functions.dump-data]
+verify_jwt = false
+
+[functions.fire-booking-webhook]
+verify_jwt = false
+
+[functions.handle-unsubscribe]
+verify_jwt = false
+
+[functions.import-data]
+verify_jwt = false
+
+[functions.notification-callback]
+verify_jwt = false
+
+[functions.notify-staff]
+verify_jwt = false
+
+[functions.pending-reminders]
+verify_jwt = false
+
+[functions.reminder-callback]
+verify_jwt = false
+
+[functions.request-password-reset]
+verify_jwt = false
+
+[functions.reset-password]
+verify_jwt = false
+
+[functions.send-campaign]
+verify_jwt = false
+
+[functions.send-charge]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.send-review-requests]
+verify_jwt = false
+
+[functions.test-review-message]
+verify_jwt = false
+
+[functions.review-callback]
+verify_jwt = false
+
+[functions.sms-callback]
+verify_jwt = false
+
+[functions.campaign-callback]
+verify_jwt = false
+
+[functions.weekly-inactive-report]
+verify_jwt = false
