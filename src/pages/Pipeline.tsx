@@ -417,7 +417,7 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
   const messages = MOCK_MESSAGES[card.id] ?? [];
 
   return (
-    <div className="h-full flex flex-col -m-6 lg:-m-8">
+    <div className="flex-1 flex flex-col h-full">
       {/* Header */}
       <div className="h-14 border-b flex items-center px-4 gap-3 shrink-0 bg-background">
         <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -640,7 +640,7 @@ export default function Pipeline() {
   }
 
   return (
-    <div className="h-full flex flex-col -m-6 lg:-m-8">
+    <div className="flex-1 flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-border/40 bg-background flex-shrink-0">
         <div>
