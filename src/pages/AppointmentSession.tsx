@@ -1,4 +1,23 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef, Component, ErrorInfo, ReactNode } from "react";
+
+class SessionErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error("SessionErrorBoundary caught:", error, info); }
+  render() {
+    if (this.state.error) {
+      const err = this.state.error as Error;
+      return (
+        <div className="p-8 space-y-3 max-w-xl mx-auto">
+          <p className="text-destructive font-medium">Erro ao carregar a sessão</p>
+          <pre className="text-xs bg-muted p-4 rounded-xl overflow-auto whitespace-pre-wrap">{err.message}\n{err.stack}</pre>
+          <button className="text-sm text-primary underline" onClick={() => window.location.reload()}>Recarregar</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,10 +81,13 @@ const AppointmentSession = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, clients!appointments_client_id_fkey(*)")
+        .select("*, clients(*)")
         .eq("id", id!)
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error("appointment-session load error:", error);
+        throw error;
+      }
 
       let specialist_name = "—";
       let specialist_avatar: string | null = null;
@@ -211,7 +233,11 @@ const AppointmentSession = () => {
       .from("appointments")
       .update({ status: "em_atendimento" })
       .eq("id", id!);
-    if (error) { toast.error("Erro ao iniciar atendimento."); return; }
+    if (error) {
+      console.error("handleStartSession error:", error);
+      toast.error(`Erro ao iniciar atendimento: ${error.message}`);
+      return;
+    }
     toast.success("Atendimento iniciado.");
     invalidateAll();
   };
@@ -566,4 +592,10 @@ function InfoCard({
   );
 }
 
-export default AppointmentSession;
+export default function AppointmentSessionPage() {
+  return (
+    <SessionErrorBoundary>
+      <AppointmentSession />
+    </SessionErrorBoundary>
+  );
+}

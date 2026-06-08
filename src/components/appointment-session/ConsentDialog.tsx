@@ -130,7 +130,7 @@ export default function ConsentDialog({
     return template
       .replace(/\{nome\}/gi, clientName)
       .replace(/\{nome_completo\}/gi, clientName)
-      .replace(/\{cartao_cidadao\}/gi, clientData?.citizen_card_number || "")
+      .replace(/\{cpf_rg\}/gi, clientData?.citizen_card_number || "")
       .replace(/\{data\}/gi, today)
       .replace(/\{servico\}/gi, appointmentInfo?.serviceName || "")
       .replace(/\{especialista\}/gi, appointmentInfo?.specialistName || "");
@@ -138,7 +138,7 @@ export default function ConsentDialog({
 
   const handleSaveCitizenCard = async () => {
     if (!citizenCardInput.trim()) {
-      toast.error("Por favor, introduza o número do Cartão de Cidadão.");
+      toast.error("Por favor, informe o número do RG / CPF.");
       return;
     }
     setSavingCard(true);
@@ -152,7 +152,7 @@ export default function ConsentDialog({
       queryClient.invalidateQueries({ queryKey: ["client-detail"] });
       setShowCitizenCardDialog(false);
       setCitizenCardReady(true);
-      toast.success("Cartão de Cidadão atualizado.");
+      toast.success("RG / CPF atualizado.");
     } catch (err: any) {
       toast.error(`Erro: ${err.message}`);
     } finally {
@@ -209,7 +209,7 @@ export default function ConsentDialog({
       });
       if (insertErr) throw insertErr;
 
-      toast.success("Consentimento registado com sucesso.");
+      toast.success("Consentimento cadastrado com sucesso.");
       onConsentSaved();
       onOpenChange(false);
     } catch (err: any) {
@@ -238,15 +238,15 @@ export default function ConsentDialog({
       }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Cartão de Cidadão Necessário</DialogTitle>
+            <DialogTitle>RG / CPF Necessário</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            O cliente <strong>{clientName}</strong> não possui o número do Cartão de Cidadão registado.
+            O cliente <strong>{clientName}</strong> não possui o número do RG / CPF cadastrado.
             Este dado é necessário para o termo de consentimento.
           </p>
           <div className="space-y-1.5">
             <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Nº Cartão de Cidadão *
+              Nº RG / CPF *
             </Label>
             <Input
               value={citizenCardInput}

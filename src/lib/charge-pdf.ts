@@ -21,6 +21,8 @@ interface ChargeData {
   discountType?: string | null;
   discountValue?: number;
   discountAmount?: number;
+  clinicName?: string | null;
+  clinicLogoUrl?: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -75,8 +77,27 @@ async function waitForReceiptLayout() {
   });
 }
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  mbway: "Pix",
+  dinheiro: "Dinheiro",
+  cartao_credito: "Cartão de Crédito",
+  cartao_debito: "Cartão de Débito",
+  transferencia: "Transferência Bancária",
+  boleto: "Boleto",
+  cheque: "Cheque",
+};
+
+function normalizeNotes(notes: string | null | undefined): string | null | undefined {
+  if (!notes) return notes;
+  return notes.replace(/Forma de pagamento:\s*(\S+)/g, (_, method) => {
+    const label = PAYMENT_METHOD_LABELS[method] ?? method;
+    return `Forma de pagamento: ${label}`;
+  });
+}
+
 export function generateChargeHtml(charge: ChargeData): string {
   const stLabel = STATUS_LABELS[charge.status] ?? charge.status;
+  const notes = normalizeNotes(charge.notes);
 
   const hasDiscount = (charge.discountAmount ?? 0) > 0;
   const subtotal = hasDiscount ? charge.amount + (charge.discountAmount ?? 0) : charge.amount;
@@ -217,7 +238,10 @@ export function generateChargeHtml(charge: ChargeData): string {
   }
 </style></head><body>
 <div class="receipt">
-  <div class="logo">${logoSvg}</div>
+  <div class="logo">${charge.clinicLogoUrl
+    ? `<img src="${charge.clinicLogoUrl}" alt="${charge.clinicName ?? 'Logo'}" style="height:40px;max-width:220px;object-fit:contain;display:block;margin:0 auto"/>`
+    : logoSvg
+  }</div>
 
   <div class="header">
     <span class="title">Recibo</span>
@@ -267,7 +291,7 @@ export function generateChargeHtml(charge: ChargeData): string {
       <tr>
         <td class="item-name">
           ${charge.serviceName ?? "Serviço"}
-          ${charge.notes ? `<div class="desc-sub">${charge.notes.replace(/\s*\|\s*/g, "<br/>")}</div>` : ""}
+          ${notes ? `<div class="desc-sub">${notes.replace(/\s*\|\s*/g, "<br/>")}</div>` : ""}
         </td>
         <td class="item-val">${fmtCurrency(serviceAmount)}</td>
       </tr>

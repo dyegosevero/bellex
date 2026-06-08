@@ -41,7 +41,7 @@ const AppointmentDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, clients!appointments_client_id_fkey(full_name, phone)")
+        .select("*, clients(full_name, phone)")
         .eq("id", id!)
         .maybeSingle();
 

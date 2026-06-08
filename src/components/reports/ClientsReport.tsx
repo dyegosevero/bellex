@@ -150,7 +150,7 @@ export default function ClientsReport({ dateRange }: Props) {
   const activeCount = (clients?.length || 0) - (inactive?.length || 0);
   const retentionRate = clients?.length ? ((activeCount / clients.length) * 100).toFixed(1) : "0";
 
-  const fmt = (v: number) => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+  const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const formatMetric = (value: number) => {
     if (viewMode === "top-ltv") return fmt(value);

@@ -289,7 +289,7 @@ export function BookingEditSidebar({ open, onOpenChange, settings, onSaved }: Pr
             </div>
 
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Pedir NIF</Label>
+              <Label className="text-sm">Pedir CPF</Label>
               <Switch
                 checked={form.require_nif ?? false}
                 onCheckedChange={(v) => update("require_nif", v)}

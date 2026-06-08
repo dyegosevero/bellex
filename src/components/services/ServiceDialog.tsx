@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Camera, FileText, ClipboardList, Plus, Archive, ArchiveRestore, Trash2, PenLine, CalendarDays } from "lucide-react";
+import { Loader2, Camera, FileText, ClipboardList, Plus, Archive, ArchiveRestore, Trash2, PenLine, CalendarDays, FileSignature, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CategoryDialog from "@/components/services/CategoryDialog";
 import type { ServiceRow, ServiceCategory } from "@/pages/Services";
@@ -57,6 +58,7 @@ const ServiceDialog = ({
   const [multiSession, setMultiSession] = useState(false);
   const [sessionCount, setSessionCount] = useState<number | "">(2);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [catDialogOpen, setCatDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
@@ -65,6 +67,35 @@ const ServiceDialog = ({
   const [deletingService, setDeletingService] = useState(false);
 
   const isArchived = !!(editing as any)?.archived;
+  const navigate = useNavigate();
+
+  // Load all active documents
+  const { data: allDocs = [] } = useQuery({
+    queryKey: ["consent-texts-active"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("consent_texts")
+        .select("id, label, description")
+        .order("label");
+      return (data ?? []) as { id: string; label: string; description: string | null }[];
+    },
+  });
+
+  // Load assigned documents for this service
+  useQuery({
+    queryKey: ["service-docs", editing?.id],
+    queryFn: async () => {
+      if (!editing?.id) return [];
+      const { data } = await supabase
+        .from("service_consent_texts")
+        .select("consent_text_id")
+        .eq("service_id", editing.id);
+      const ids = (data ?? []).map((r: any) => r.consent_text_id);
+      setSelectedDocIds(ids);
+      return ids;
+    },
+    enabled: !!editing?.id,
+  });
 
   useEffect(() => {
     if (open) {
@@ -73,7 +104,7 @@ const ServiceDialog = ({
         setDescription(editing.description ?? "");
         setDurationMinutes(editing.duration_minutes ?? "");
         setPrice(editing.price != null ? Number(editing.price).toFixed(2) : "");
-        setCurrency(editing.currency ?? "EUR");
+        setCurrency(editing.currency ?? "BRL");
         setVatRate(editing.vat_rate ?? 0);
         setColor(editing.color ?? "#3B82F6");
         setActive(editing.active);
@@ -90,7 +121,7 @@ const ServiceDialog = ({
         setReqFichaCorpo(editing.requires_assessment_form && (formType === "corpo" || formType === "ambos"));
       } else {
         setName(""); setDescription(""); setDurationMinutes(30);
-        setPrice(""); setCurrency("EUR"); setVatRate(defaultVatRate ?? 23);
+        setPrice(""); setCurrency("BRL"); setVatRate(defaultVatRate ?? 23);
         setColor("#3B82F6"); setActive(true); setShowOnBooking(true);
         setShowPriceOnBooking(true); setReqPhotos(false);
         setConsentPolicy("none"); setReqCompletionSig(false); setReqFichaRosto(false); setReqFichaCorpo(false);
@@ -122,13 +153,23 @@ const ServiceDialog = ({
         multi_session: multiSession,
         session_count: multiSession && sessionCount ? Number(sessionCount) : null,
       } as any;
+      let serviceId: string;
       if (editing) {
         const { error, data } = await supabase.from("services").update(payload).eq("id", editing.id).select();
         if (error) throw error;
         if (!data || data.length === 0) throw new Error("Não foi possível atualizar o serviço. Verifique as suas permissões.");
+        serviceId = editing.id;
       } else {
-        const { error } = await supabase.from("services").insert({ ...payload, display_order: maxOrder });
+        const { error, data } = await supabase.from("services").insert({ ...payload, display_order: maxOrder }).select();
         if (error) throw error;
+        serviceId = (data as any)[0].id;
+      }
+      // Sync documents
+      await supabase.from("service_consent_texts" as any).delete().eq("service_id", serviceId);
+      if (selectedDocIds.length > 0) {
+        await supabase.from("service_consent_texts" as any).insert(
+          selectedDocIds.map(docId => ({ service_id: serviceId, consent_text_id: docId }))
+        );
       }
     },
     onSuccess: () => {
@@ -268,7 +309,7 @@ const ServiceDialog = ({
                   <Input type="number" min={5} step={5} value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value ? Number(e.target.value) : "")} placeholder="30" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Preço (€) *</Label>
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Preço (R$) *</Label>
                   <Input type="number" min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} onBlur={() => { if (price !== "") setPrice(Number(price).toFixed(2)); }} placeholder="0.00" required />
                 </div>
                 <div className="space-y-1.5">
@@ -331,6 +372,57 @@ const ServiceDialog = ({
                     {consentPolicy === "none" && "Nunca solicitado automaticamente ao iniciar a sessão."}
                   </p>
                 </div>
+                {/* Documents selection */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileSignature className="w-4 h-4 text-muted-foreground" />
+                      <Label className="text-sm">Documentos para assinar</Label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/documentos/novo")}
+                      className="text-[10px] text-primary flex items-center gap-0.5 hover:underline"
+                    >
+                      <Plus size={10} /> Novo documento
+                    </button>
+                  </div>
+                  {allDocs.length === 0 ? (
+                    <p className="text-xs text-muted-foreground pl-6">
+                      Nenhum documento criado.{" "}
+                      <button type="button" onClick={() => navigate("/documentos")} className="text-primary hover:underline">
+                        Criar documento
+                      </button>
+                    </p>
+                  ) : (
+                    <div className="space-y-1 pl-1">
+                      {allDocs.map(doc => {
+                        const checked = selectedDocIds.includes(doc.id);
+                        return (
+                          <label key={doc.id} className="flex items-start gap-2.5 py-1.5 px-2 rounded-lg hover:bg-muted/40 cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                setSelectedDocIds(ids =>
+                                  checked ? ids.filter(x => x !== doc.id) : [...ids, doc.id]
+                                )
+                              }
+                              className="mt-0.5 w-3.5 h-3.5 accent-primary flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium text-foreground">{doc.label}</p>
+                              {doc.description && (
+                                <p className="text-[10px] text-muted-foreground">{doc.description}</p>
+                              )}
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ClipboardList className="w-4 h-4 text-muted-foreground" />

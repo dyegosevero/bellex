@@ -70,7 +70,6 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 export default function Marketing() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [mainTab, setMainTab] = useState("campaigns");
   const [channelFilter, setChannelFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -87,7 +86,7 @@ export default function Marketing() {
       if (error) throw error;
       return data;
     },
-    enabled: mainTab === "campaigns",
+    enabled: channelFilter !== "reviews",
   });
 
   const handleDelete = async () => {
@@ -137,29 +136,9 @@ export default function Marketing() {
         </p>
       </div>
 
-      {/* Main tabs */}
-      <Tabs value={mainTab} onValueChange={setMainTab}>
-        <TabsList>
-          <TabsTrigger value="campaigns" className="gap-1.5">
-            <Megaphone className="w-3.5 h-3.5" /> Campanhas
-          </TabsTrigger>
-          <TabsTrigger value="reviews" className="gap-1.5">
-            <Star className="w-3.5 h-3.5" /> Avaliações Google
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="campaigns" className="space-y-4 mt-4">
-          {/* Action buttons */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => navigate("/marketing/historico")} className="gap-2">
-              <History className="w-4 h-4" /> Histórico
-            </Button>
-            <Button onClick={() => navigate("/marketing/nova")} className="gap-2">
-              <Plus className="w-4 h-4" /> Nova Campanha
-            </Button>
-          </div>
-
-          {/* Channel filter */}
+      {/* Filter tabs */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <Tabs value={channelFilter} onValueChange={setChannelFilter}>
             <TabsList>
               <TabsTrigger value="all">Todas</TabsTrigger>
@@ -172,11 +151,27 @@ export default function Marketing() {
               <TabsTrigger value="whatsapp" className="gap-1.5">
                 <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
               </TabsTrigger>
+              <TabsTrigger value="reviews" className="gap-1.5">
+                <Star className="w-3.5 h-3.5" /> Avaliações Google
+              </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {/* Campaigns list */}
-          {isLoading ? (
+          {channelFilter !== "reviews" && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate("/marketing/historico")} className="gap-2">
+                <History className="w-4 h-4" /> Histórico
+              </Button>
+              <Button onClick={() => navigate("/marketing/nova")} className="gap-2">
+                <Plus className="w-4 h-4" /> Nova Campanha
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {channelFilter === "reviews" ? (
+          <GoogleReviewsTab />
+        ) : isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-20 w-full" />
@@ -278,12 +273,7 @@ export default function Marketing() {
               })}
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="reviews" className="mt-4">
-          <GoogleReviewsTab />
-        </TabsContent>
-      </Tabs>
+        </div>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>

@@ -220,7 +220,7 @@ serve(async (req) => {
     }
 
     // Read system_url from clinic_settings for unsubscribe links
-    const systemOrigin = (clinic as any)?.system_url || "https://system.dermalum.pt";
+    const systemOrigin = (clinic as any)?.system_url || "https://app.bellex.com.br";
 
     const baseVars: Record<string, string> = {
       negocio: clinicName,

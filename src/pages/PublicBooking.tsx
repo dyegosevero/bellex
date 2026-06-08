@@ -407,7 +407,7 @@ const PublicBooking = () => {
 
   const formatPrice = (price: number | null) => {
     if (!price || price <= 0) return null;
-    return `${Number(price).toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+    return `${Number(price).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} R$`;
   };
 
   const formatDuration = (mins: number | null) => {
@@ -465,7 +465,7 @@ const PublicBooking = () => {
     if (pageSettings?.require_email && !email) errors.email = true;
     if (pageSettings?.require_gender && !gender) errors.gender = true;
     if (pageSettings?.require_birth_date && (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate))) errors.birthDate = true;
-    if (pageSettings?.require_nif && !nif) errors.nif = true;
+    if (pageSettings?.require_nif — cpf = true;
     if (!acceptTerms) errors.acceptTerms = true;
 
     if (Object.keys(errors).length > 0) {
@@ -1167,7 +1167,7 @@ const PublicBooking = () => {
                       data-field="nif"
                       value={nif}
                       onChange={(e) => { setNif(e.target.value); setValidationErrors((p) => ({ ...p, nif: false })); }}
-                      placeholder="NIF *"
+                      placeholder="CPF *"
                       className={cn("h-11", validationErrors.nif && "border-destructive focus-visible:ring-destructive")}
                     />
                   )}

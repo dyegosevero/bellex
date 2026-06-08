@@ -1,7 +1,7 @@
 import { DollarSign, Clock, XCircle, TrendingUp } from "lucide-react";
 
 const fmtCurrency = (v: number) =>
-  v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 interface FaturamentoKPIsProps {
   totalPago: number;

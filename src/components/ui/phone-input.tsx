@@ -11,8 +11,8 @@ interface Country {
 }
 
 const COUNTRIES: Country[] = [
-  { code: "PT", name: "Portugal", dial: "+351", flag: "🇵🇹" },
   { code: "BR", name: "Brasil", dial: "+55", flag: "🇧🇷" },
+  { code: "PT", name: "Portugal", dial: "+351", flag: "🇵🇹" },
   { code: "US", name: "United States", dial: "+1", flag: "🇺🇸" },
   { code: "ES", name: "España", dial: "+34", flag: "🇪🇸" },
   { code: "FR", name: "France", dial: "+33", flag: "🇫🇷" },

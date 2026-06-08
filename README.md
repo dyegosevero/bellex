@@ -1,4 +1,4 @@
-# Dermalūm — Sistema de Gestão para Clínicas de Estética
+# Bellex — Sistema de Gestão para Clínicas de Estética
 
 > Plataforma completa de gestão clínica com agendamento online, workspace clínica, cobranças, relatórios e automações.
 
@@ -65,5 +65,5 @@ npm run dev
 
 ---
 
-*Dermalūm v1.1 — Abril 2026*
+*Bellex v1.1 — Abril 2026*
 # bellex

@@ -120,7 +120,7 @@ export default function AgendaTab() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs uppercase tracking-wider text-muted-foreground">Telefone</Label>
-            <PhoneInput value={form.phone || ""} onChange={(v) => update("phone", v)} defaultCountry={timezoneToCountry(form.timezone || "Europe/Lisbon")} />
+            <PhoneInput value={form.phone || ""} onChange={(v) => update("phone", v)} defaultCountry={timezoneToCountry(form.timezone || "America/Sao_Paulo")} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs uppercase tracking-wider text-muted-foreground">Endereço</Label>
@@ -129,31 +129,34 @@ export default function AgendaTab() {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Fuso horário</Label>
-              <Select value={form.timezone || "Europe/Lisbon"} onValueChange={(v) => update("timezone", v)}>
+              <Select value={form.timezone || "America/Sao_Paulo"} onValueChange={(v) => update("timezone", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="America/Sao_Paulo">America/São_Paulo</SelectItem>
+                  <SelectItem value="America/Fortaleza">America/Fortaleza</SelectItem>
+                  <SelectItem value="America/Manaus">America/Manaus</SelectItem>
+                  <SelectItem value="America/Belem">America/Belém</SelectItem>
                   <SelectItem value="Europe/Lisbon">Europe/Lisbon</SelectItem>
                   <SelectItem value="Europe/London">Europe/London</SelectItem>
                   <SelectItem value="Europe/Madrid">Europe/Madrid</SelectItem>
                   <SelectItem value="Europe/Paris">Europe/Paris</SelectItem>
-                  <SelectItem value="America/Sao_Paulo">America/Sao_Paulo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Moeda</Label>
-              <Select value={form.currency || "EUR"} onValueChange={(v) => update("currency", v)}>
+              <Select value={form.currency || "BRL"} onValueChange={(v) => update("currency", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EUR">Euro</SelectItem>
-                  <SelectItem value="BRL">Real</SelectItem>
-                  <SelectItem value="USD">Dólar</SelectItem>
-                  <SelectItem value="GBP">Libra</SelectItem>
+                  <SelectItem value="BRL">Real (R$)</SelectItem>
+                  <SelectItem value="USD">Dólar (US$)</SelectItem>
+                  <SelectItem value="EUR">Euro (€)</SelectItem>
+                  <SelectItem value="GBP">Libra (£)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {(() => {
-              const tz = form.timezone || "Europe/Lisbon";
+              const tz = form.timezone || "America/Sao_Paulo";
               const isBR = tz.startsWith("America/");
               const taxLabel = isBR ? "Imposto padrão (%)" : "Taxa IVA padrão (%)";
               const taxPlaceholder = isBR ? "0" : "23";

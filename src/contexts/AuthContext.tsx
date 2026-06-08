@@ -46,11 +46,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let active = true;
     let resolved = false;
+    const startedAt = Date.now();
+    const MIN_LOADING_MS = 800;
 
     const finish = () => {
       if (active && !resolved) {
         resolved = true;
-        setLoading(false);
+        const elapsed = Date.now() - startedAt;
+        const remaining = Math.max(0, MIN_LOADING_MS - elapsed);
+        setTimeout(() => { if (active) setLoading(false); }, remaining);
       }
     };
 

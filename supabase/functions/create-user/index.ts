@@ -153,7 +153,7 @@ serve(async (req) => {
           expires_at: expiresAt.toISOString(),
         }).select("id").single();
 
-        const appUrl = clinicData?.system_url || "https://efkzdermalum.lovable.app";
+        const appUrl = clinicData?.system_url || "https://app.bellex.com.br";
         const resetUrl = insertedToken
           ? `${appUrl}/redefinir-senha?id=${insertedToken.id}&token=${encodeURIComponent(resetToken)}`
           : appUrl;

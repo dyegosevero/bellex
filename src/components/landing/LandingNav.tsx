@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useDemoModal } from "./DemoModalContext";
 import logoColor from "@/assets/logo-color.png";
 import {
   Calendar, Users, CreditCard, Megaphone, BarChart3, Globe,
@@ -53,6 +54,7 @@ const highlights = [
 ];
 
 export function LandingNav() {
+  const { openDemo } = useDemoModal();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
@@ -163,12 +165,12 @@ export function LandingNav() {
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-border">
-                      <Link
-                        to="/login"
-                        className="block text-center text-sm font-medium text-white bg-primary hover:bg-primary/90 transition-colors px-4 py-2.5 rounded-xl"
+                      <button
+                        onClick={openDemo}
+                        className="block w-full text-center text-sm font-medium text-white bg-primary hover:bg-primary/90 transition-colors px-4 py-2.5 rounded-xl"
                       >
                         Agendar Demo
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -195,12 +197,12 @@ export function LandingNav() {
           <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">
             Entrar
           </Link>
-          <Link
-            to="/login"
+          <button
+            onClick={openDemo}
             className="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors"
           >
             Agendar Demo
-          </Link>
+          </button>
         </div>
 
         {/* Mobile toggle */}
@@ -232,9 +234,9 @@ export function LandingNav() {
           ))}
           <div className="border-t border-border pt-4 mt-4 flex flex-col gap-3">
             <Link to="/login" className="text-sm text-muted-foreground">Entrar</Link>
-            <Link to="/login" className="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl text-center">
+            <button onClick={openDemo} className="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl text-center">
               Agendar Demo
-            </Link>
+            </button>
           </div>
         </div>
       )}

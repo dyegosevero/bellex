@@ -59,7 +59,7 @@ export default function SpecialistsReport({ dateRange }: Props) {
       .sort((a, b) => b.revenue - a.revenue);
   }, [appointments, charges, profiles]);
 
-  const fmt = (v: number) => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+  const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const handleExport = () => {
     exportToXls("Especialistas", specialistData.map((s) => ({

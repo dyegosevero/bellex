@@ -1,0 +1,337 @@
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import {
+  Search, SlidersHorizontal, CheckCheck, Circle,
+  ArrowDownUp, Send, Paperclip, Smile, Phone, MoreVertical,
+} from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuTrigger, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+/* ─── Channel icons ─────────────────────────────────────── */
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+    </svg>
+  );
+}
+
+/* ─── Mock data ──────────────────────────────────────────── */
+type Channel = "whatsapp" | "instagram";
+
+interface Msg { id: string; text: string; fromMe: boolean; time: string; }
+interface Conversation {
+  id: string;
+  contactName: string;
+  contactAvatar?: string;
+  channel: Channel;
+  lastMessage: string;
+  lastTime: string;
+  unread: number;
+  messages: Msg[];
+}
+
+const MOCK: Conversation[] = [
+  {
+    id: "1", contactName: "Ana Paula", channel: "whatsapp",
+    lastMessage: "Oi! Quero agendar uma sessão para amanhã.", lastTime: "09:41", unread: 2,
+    messages: [
+      { id: "m1", text: "Oi, tudo bem?", fromMe: false, time: "09:38" },
+      { id: "m2", text: "Tudo! Como posso ajudar?", fromMe: true, time: "09:39" },
+      { id: "m3", text: "Quero agendar uma sessão para amanhã.", fromMe: false, time: "09:41" },
+    ],
+  },
+  {
+    id: "2", contactName: "Carlos Mendes", channel: "instagram",
+    lastMessage: "Vi o post sobre promoção, ainda está válido?", lastTime: "08:15", unread: 1,
+    messages: [
+      { id: "m1", text: "Vi o post sobre promoção, ainda está válido?", fromMe: false, time: "08:15" },
+    ],
+  },
+  {
+    id: "3", contactName: "Fernanda Lima", channel: "whatsapp",
+    lastMessage: "Confirmado! Até amanhã 😊", lastTime: "Ontem", unread: 0,
+    messages: [
+      { id: "m1", text: "Posso remarcar para quinta?", fromMe: false, time: "14:20" },
+      { id: "m2", text: "Claro! Às 15h está bom?", fromMe: true, time: "14:22" },
+      { id: "m3", text: "Confirmado! Até amanhã 😊", fromMe: false, time: "14:23" },
+    ],
+  },
+  {
+    id: "4", contactName: "Roberto Alves", channel: "instagram",
+    lastMessage: "Quanto custa a avaliação?", lastTime: "Ter", unread: 0,
+    messages: [
+      { id: "m1", text: "Quanto custa a avaliação?", fromMe: false, time: "10:00" },
+      { id: "m2", text: "A avaliação inicial é gratuita! Quando posso te atender?", fromMe: true, time: "10:05" },
+    ],
+  },
+  {
+    id: "5", contactName: "Mariana Costa", channel: "whatsapp",
+    lastMessage: "Obrigada pela atenção!", lastTime: "Seg", unread: 0,
+    messages: [
+      { id: "m1", text: "Obrigada pela atenção!", fromMe: false, time: "16:30" },
+    ],
+  },
+];
+
+/* ─── Component ─────────────────────────────────────────── */
+type FilterChannel = "all" | "whatsapp" | "instagram";
+type FilterRead = "all" | "unread" | "read";
+type FilterOrder = "recent" | "oldest";
+
+export default function Mensagens() {
+  const [search, setSearch] = useState("");
+  const [filterChannel, setFilterChannel] = useState<FilterChannel>("all");
+  const [filterRead, setFilterRead] = useState<FilterRead>("all");
+  const [filterOrder, setFilterOrder] = useState<FilterOrder>("recent");
+  const [selected, setSelected] = useState<string | null>(MOCK[0].id);
+  const [input, setInput] = useState("");
+
+  const filtered = MOCK
+    .filter((c) => {
+      if (filterChannel !== "all" && c.channel !== filterChannel) return false;
+      if (filterRead === "unread" && c.unread === 0) return false;
+      if (filterRead === "read" && c.unread > 0) return false;
+      if (search && !c.contactName.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    })
+    .sort((a, b) =>
+      filterOrder === "recent"
+        ? MOCK.indexOf(a) - MOCK.indexOf(b)
+        : MOCK.indexOf(b) - MOCK.indexOf(a)
+    );
+
+  const activeConv = MOCK.find((c) => c.id === selected) ?? null;
+
+  return (
+    <div className="-m-6 lg:-m-8 flex h-[calc(100vh-3.5rem)] overflow-hidden bg-background">
+      {/* ─── Sidebar ────────────────────────────────────── */}
+      <aside className="w-80 shrink-0 border-r flex flex-col">
+        {/* Search */}
+        <div className="p-3 border-b space-y-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              className="pl-8 h-8 text-sm"
+              placeholder="Buscar conversa..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Filter row */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Channel */}
+            <div className="flex rounded-md border overflow-hidden text-xs h-7">
+              {(["all", "whatsapp", "instagram"] as FilterChannel[]).map((ch) => (
+                <button
+                  key={ch}
+                  onClick={() => setFilterChannel(ch)}
+                  className={cn(
+                    "px-2.5 flex items-center gap-1 transition-colors",
+                    filterChannel === ch
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted text-muted-foreground"
+                  )}
+                >
+                  {ch === "all" && "Todos"}
+                  {ch === "whatsapp" && <><WhatsAppIcon className="w-3 h-3" /> WA</>}
+                  {ch === "instagram" && <><InstagramIcon className="w-3 h-3" /> IG</>}
+                </button>
+              ))}
+            </div>
+
+            {/* Read filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-7 gap-1 text-xs px-2">
+                  <Circle className="w-3 h-3" />
+                  {filterRead === "all" ? "Todas" : filterRead === "unread" ? "Não lidas" : "Lidas"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => setFilterRead("all")}>Todas</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterRead("unread")}>Não lidas</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterRead("read")}>Lidas</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Order */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 text-xs px-2 ml-auto"
+              onClick={() => setFilterOrder((o) => (o === "recent" ? "oldest" : "recent"))}
+            >
+              <ArrowDownUp className="w-3 h-3" />
+              {filterOrder === "recent" ? "Recentes" : "Antigas"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Conversation list */}
+        <div className="flex-1 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="text-center text-xs text-muted-foreground p-6">Nenhuma conversa.</p>
+          ) : (
+            filtered.map((conv) => (
+              <ConvItem
+                key={conv.id}
+                conv={conv}
+                active={conv.id === selected}
+                onClick={() => setSelected(conv.id)}
+              />
+            ))
+          )}
+        </div>
+      </aside>
+
+      {/* ─── Chat area ──────────────────────────────────── */}
+      {activeConv ? (
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Chat header */}
+          <div className="h-14 border-b flex items-center px-4 gap-3 shrink-0">
+            <div className="relative">
+              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center font-medium text-sm">
+                {activeConv.contactName[0]}
+              </div>
+              <span className={cn(
+                "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center",
+                activeConv.channel === "whatsapp" ? "text-green-500" : "text-pink-500"
+              )}>
+                {activeConv.channel === "whatsapp"
+                  ? <WhatsAppIcon className="w-3.5 h-3.5" />
+                  : <InstagramIcon className="w-3.5 h-3.5" />}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm leading-none">{activeConv.contactName}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 capitalize">{activeConv.channel}</p>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Phone className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {activeConv.messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn("flex", msg.fromMe ? "justify-end" : "justify-start")}
+              >
+                <div className={cn(
+                  "max-w-[72%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
+                  msg.fromMe
+                    ? "bg-primary text-primary-foreground rounded-br-sm"
+                    : "bg-muted rounded-bl-sm"
+                )}>
+                  <p>{msg.text}</p>
+                  <p className={cn(
+                    "text-[10px] mt-1 text-right",
+                    msg.fromMe ? "text-primary-foreground/60" : "text-muted-foreground"
+                  )}>{msg.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="border-t p-3 flex items-end gap-2">
+            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+              <Paperclip className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+              <Smile className="w-4 h-4" />
+            </Button>
+            <Input
+              className="flex-1 resize-none"
+              placeholder="Escreva uma mensagem..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); setInput(""); } }}
+            />
+            <Button size="icon" className="h-9 w-9 shrink-0" disabled={!input.trim()}>
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          Selecione uma conversa
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Conversation list item ─────────────────────────────── */
+function ConvItem({
+  conv, active, onClick,
+}: {
+  conv: Conversation;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full text-left px-3 py-3 border-b last:border-0 flex items-start gap-3 transition-colors",
+        active ? "bg-muted/60" : "hover:bg-muted/30"
+      )}
+    >
+      {/* Avatar + channel icon */}
+      <div className="relative shrink-0">
+        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-medium text-sm">
+          {conv.contactName[0]}
+        </div>
+        <span className={cn(
+          "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-background flex items-center justify-center",
+          conv.channel === "whatsapp" ? "text-green-500/70" : "text-pink-500/70"
+        )}>
+          {conv.channel === "whatsapp"
+            ? <WhatsAppIcon className="w-3.5 h-3.5" />
+            : <InstagramIcon className="w-3.5 h-3.5" />}
+        </span>
+      </div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className={cn("text-sm truncate", conv.unread > 0 ? "font-semibold" : "font-medium")}>
+            {conv.contactName}
+          </span>
+          <span className="text-[10px] text-muted-foreground shrink-0">{conv.lastTime}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2 mt-0.5">
+          <span className="text-xs text-muted-foreground truncate">{conv.lastMessage}</span>
+          {conv.unread > 0 && (
+            <Badge className="h-4 min-w-4 px-1 text-[10px] shrink-0 rounded-full">
+              {conv.unread}
+            </Badge>
+          )}
+          {conv.unread === 0 && <CheckCheck className="w-3.5 h-3.5 text-primary/50 shrink-0" />}
+        </div>
+      </div>
+    </button>
+  );
+}

@@ -1,5 +1,6 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { DemoModalProvider } from "@/components/landing/DemoModalContext";
 import { LandingHero } from "@/components/landing/sections/LandingHero";
 import { LandingHowItWorks } from "@/components/landing/sections/LandingHowItWorks";
 import { LandingProblem } from "@/components/landing/sections/LandingProblem";
@@ -15,6 +16,7 @@ import { LandingCta } from "@/components/landing/sections/LandingCta";
 
 export default function Landing() {
   return (
+    <DemoModalProvider>
     <div className="min-h-screen bg-background font-body text-foreground">
       <LandingNav />
       <LandingHero />
@@ -31,5 +33,6 @@ export default function Landing() {
       <LandingCta />
       <LandingFooter />
     </div>
+    </DemoModalProvider>
   );
 }

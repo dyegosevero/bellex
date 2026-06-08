@@ -1236,7 +1236,7 @@ const ClientDadosTab = ({
             <EditableField label="Email" value={currentData.email} onChange={(v) => updateField("email", v)} readOnly={!isEditing} />
             <EditableField label="Telefone" value={currentData.phone} onChange={(v) => updateField("phone", v)} readOnly={!isEditing} isPhone />
 
-            {/* Row 2: Nascimento + Idade + NIF + Cartão Cidadão */}
+            {/* Row 2: Nascimento + Idade + NIF + RG / CPF */}
             <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-12 gap-2">
               <div className="md:col-span-4">
                 <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Nascimento</label>
@@ -1284,10 +1284,10 @@ const ClientDadosTab = ({
                 </div>
               </div>
               <div className="md:col-span-3">
-                <EditableField label="NIF" value={currentData.cpf} onChange={(v) => updateField("cpf", v)} readOnly={!isEditing} />
+                <EditableField label="CPF" value={currentData.cpf} onChange={(v) => updateField("cpf", v)} readOnly={!isEditing} />
               </div>
               <div className="md:col-span-3">
-                <EditableField label="Cartão Cidadão" value={currentData.citizen_card_number} onChange={(v) => updateField("citizen_card_number", v)} readOnly={!isEditing} />
+                <EditableField label="RG / CPF" value={currentData.cpf_rg} onChange={(v) => updateField("citizen_card_number", v)} readOnly={!isEditing} />
               </div>
             </div>
 

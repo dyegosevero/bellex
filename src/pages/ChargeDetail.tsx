@@ -10,7 +10,7 @@ import { ArrowLeft, Download, Pencil, Share2, Loader2, CheckCircle2 } from "luci
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { fmtCurrency, fmtDate, fmtDateTime } from "@/lib/date";
 import { downloadChargePdf, generateChargeHtml, generateChargePdfBase64 } from "@/lib/charge-pdf";
-import logoSrc from "@/assets/logo-svg.svg";
+import logoSrc from "@/assets/logo-color.png";
 import { toast } from "sonner";
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
@@ -60,6 +60,19 @@ const ChargeDetail = () => {
   });
 
   // Fallback: fetch appointment products if no charge_items exist (legacy charges)
+  const { data: clinicSettings } = useQuery({
+    queryKey: ["clinic-settings-logo"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("clinic_settings")
+        .select("clinic_name, logo_url")
+        .limit(1)
+        .single();
+      return data as { clinic_name: string | null; logo_url: string | null } | null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: appointmentProducts } = useQuery({
     queryKey: ["charge-products", appointmentId],
     queryFn: async () => {
@@ -112,6 +125,11 @@ const ChargeDetail = () => {
     ? productItems.map((i: any) => ({ name: i.description, quantity: i.quantity, unitPrice: i.unit_price }))
     : appointmentProducts?.map((ap: any) => ({ name: ap.products?.name ?? "Produto", quantity: ap.quantity, unitPrice: ap.unit_price }));
 
+  const pdfClinicData = {
+    clinicName: clinicSettings?.clinic_name ?? null,
+    clinicLogoUrl: clinicSettings?.logo_url ?? null,
+  };
+
   const pdfServiceName = hasChargeItems
     ? serviceItems[0]?.description ?? serviceName
     : serviceName;
@@ -134,6 +152,7 @@ const ChargeDetail = () => {
         discountType: discountTypeVal,
         discountValue: discountValueVal,
         discountAmount: discountAmountVal,
+        ...pdfClinicData,
       };
 
       const pdfHtml = generateChargeHtml(chargeDataForPdf);
@@ -194,13 +213,14 @@ const ChargeDetail = () => {
                   discountType: discountTypeVal,
                   discountValue: discountValueVal,
                   discountAmount: discountAmountVal,
+        ...pdfClinicData,
                 });
               }}
             >
               <Download className="w-4 h-4 mr-1" /> PDF
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShareOpen(true)}>
-              <Share2 className="w-4 h-4 mr-1" /> Comcomcompartilhamentor
+              <Share2 className="w-4 h-4 mr-1" /> Compartilhar
             </Button>
             {charge.status !== "pago" && (
               <Button
@@ -229,7 +249,7 @@ const ChargeDetail = () => {
           {/* Header */}
           <div className="px-8 pt-8 pb-6 flex items-start justify-between">
             <div>
-              <img src={logoSrc} alt="Bellex" className="h-10 mb-4 opacity-80" />
+              <img src={clinicSettings?.logo_url ?? logoSrc} alt={clinicSettings?.clinic_name ?? "Bellex"} className="h-10 mb-4 object-contain" />
               <p className="text-xs uppercase tracking-[3px] text-muted-foreground font-semibold">Recibo</p>
               <p className="text-xs text-muted-foreground mt-1 font-mono">#{id?.slice(0, 8).toUpperCase()}</p>
             </div>
@@ -252,7 +272,7 @@ const ChargeDetail = () => {
               {client?.phone && <p className="text-sm text-muted-foreground mt-0.5">{client.phone}</p>}
               {client?.cpf && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  <span className="uppercase tracking-wider text-xs font-semibold">NIF:</span> {client.cpf}
+                  <span className="uppercase tracking-wider text-xs font-semibold">CPF:</span> {client.cpf}
                 </p>
               )}
             </div>
@@ -376,7 +396,7 @@ const ChargeDetail = () => {
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Comcomcompartilhamentor Cobrança</DialogTitle>
+            <DialogTitle>Compartilhar Cobrança</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">Envie esta cobrança ao cliente por e-mail ou WhatsApp.</p>
           <div className="flex flex-col gap-3 mt-2">

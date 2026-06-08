@@ -13,7 +13,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { fmtDateShort } from "@/lib/date";
 
 const fmtCurrency = (v: number) =>
-  v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 import FaturamentoKPIs from "@/components/faturamento/FaturamentoKPIs";
 import FaturamentoFilters from "@/components/faturamento/FaturamentoFilters";
 import MiniBarChart from "@/components/faturamento/MiniBarChart";

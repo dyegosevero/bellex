@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
  * with external Supabase deployments.
  */
 const EDGE_FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const ANON_KEY = import.meta.env.((import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)) as string;
 
 export async function invokeEdgeFunction<T = any>(
   functionName: string,

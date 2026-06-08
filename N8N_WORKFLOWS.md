@@ -1,4 +1,4 @@
-# Dermalūm — Guia de Workflows n8n
+# Bellex — Guia de Workflows n8n
 
 > Guia prático para configurar as 6 automações de notificações e marketing.  
 > Atualizado em 05/04/2026
@@ -1172,8 +1172,8 @@ Os registos têm `delivery_status`: `queued` → `reserved` → `delivered` → 
   "client_id": "uuid-do-cliente",
   "client_name": "Maria Silva",
   "to": "maria@email.com",
-  "subject": "Dermalūm — A sua opinião é importante! ⭐",
-  "sender_name": "Dermalūm",
+  "subject": "Bellex — A sua opinião é importante! ⭐",
+  "sender_name": "Bellex",
   "message": "Olá Maria! 😊\n\nObrigado por ter escolhido os nossos serviços..."
 }
 ```

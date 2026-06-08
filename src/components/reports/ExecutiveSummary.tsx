@@ -23,7 +23,7 @@ const CHART_TOOLTIP_STYLE = {
   boxShadow: "0 4px 12px hsl(30 12% 65% / 0.1)",
 };
 
-const fmt = (v: number) => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function MiniSparkline({ data, color }: { data: { i: number; v: number }[]; color: string }) {
   return (

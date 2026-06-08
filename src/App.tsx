@@ -14,6 +14,9 @@ const Login = lazy(() => import("@/pages/Login"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const DashboardHome = lazy(() => import("@/pages/DashboardHome"));
+const Documents = lazy(() => import("@/pages/Documents"));
+const DocumentEdit = lazy(() => import("@/pages/DocumentEdit"));
 const Clients = lazy(() => import("@/pages/Clients"));
 const ClientDetail = lazy(() => import("@/pages/ClientDetail"));
 const ClientNew = lazy(() => import("@/pages/ClientNew"));
@@ -56,6 +59,9 @@ const Index = lazy(() => import("@/pages/Index"));
 const Docs = lazy(() => import("@/pages/Docs"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Landing = lazy(() => import("@/pages/Landing"));
+const Pipeline = lazy(() => import("@/pages/Pipeline"));
+const Mensagens = lazy(() => import("@/pages/Mensagens"));
+const Equipe = lazy(() => import("@/pages/Equipe"));
 const RecursoAgenda = lazy(() => import("@/pages/recursos/Agenda"));
 const RecursoClientes = lazy(() => import("@/pages/recursos/Clientes"));
 const RecursoFinanceiro = lazy(() => import("@/pages/recursos/Financeiro"));
@@ -112,6 +118,7 @@ function AnimatedRoutes() {
                     </ProtectedRoute>
                   }
                 >
+                  <Route path="/resumo" element={<DashboardHome />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/clientes" element={<Clients />} />
                   <Route path="/clientes/novo" element={<ClientNew />} />
@@ -134,6 +141,9 @@ function AnimatedRoutes() {
                   <Route path="/faturamento" element={<Faturamento />} />
                   <Route path="/relatorios" element={<Reports />} />
                   <Route path="/servicos" element={<Services />} />
+                  <Route path="/equipe" element={<Equipe />} />
+                  <Route path="/documentos" element={<Documents />} />
+                  <Route path="/documentos/:id" element={<DocumentEdit />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/usuarios/novo" element={<UserNew />} />
                   <Route path="/admin/usuarios/:id" element={<UserDetail />} />
@@ -143,6 +153,8 @@ function AnimatedRoutes() {
                   <Route path="/admin/importar" element={<ImportData />} />
                   <Route path="/admin/lembretes" element={<ReminderLogs />} />
                   
+                  <Route path="/pipeline" element={<Pipeline />} />
+                  <Route path="/mensagens" element={<Mensagens />} />
                   <Route path="/marketing" element={<Marketing />} />
                   <Route path="/marketing/historico" element={<CampaignHistory />} />
                   <Route path="/marketing/avaliacoes/historico" element={<ReviewHistory />} />

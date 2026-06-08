@@ -8,8 +8,8 @@ const corsHeaders = {
 
 // Allowlist of valid app origins for reset links
 const ALLOWED_ORIGINS = [
-  "https://system.dermalum.pt",
-  "https://efkzdermalum.lovable.app",
+  "https://app.bellex.com.br",
+  "https://app.bellex.com.br",
   "https://id-preview--2f62c437-9d35-4f93-9e0d-de118afbab95.lovable.app",
 ];
 
@@ -98,7 +98,7 @@ serve(async (req) => {
 
     const resendApiKey = settingsMap.resend_api_key;
     const fromName = settingsMap.email_from_name || clinicNameVal;
-    const fromEmail = settingsMap.email_from_address || "noreply@dermalum.pt";
+    const fromEmail = settingsMap.email_from_address || "noreply@bellex.com.br";
 
     if (!resendApiKey) {
       console.error("Resend not configured");
