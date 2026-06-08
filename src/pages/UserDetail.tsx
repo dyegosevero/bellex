@@ -101,7 +101,7 @@ const UserDetail = () => {
   if (!profile) {
     return (
       <div className="max-w-2xl">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="mb-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/equipe")} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
         <p className="text-muted-foreground">Usuário não encontrado.</p>
@@ -115,7 +115,7 @@ const UserDetail = () => {
   return (
     <div className="max-w-2xl">
       <BlurFade delay={0.05}>
-        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/admin")}>
+        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/equipe")}>
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
       </BlurFade>
