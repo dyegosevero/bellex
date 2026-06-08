@@ -134,7 +134,7 @@ export default function Mensagens() {
   const activeConv = MOCK.find((c) => c.id === selected) ?? null;
 
   return (
-    <div className="-m-6 lg:-m-8 flex h-full overflow-hidden bg-background">
+    <div className="flex flex-1 h-full overflow-hidden bg-background">
 
       {/* ── Col 1: Lista de conversas ─────────────────────── */}
       <aside className="w-72 shrink-0 border-r flex flex-col">

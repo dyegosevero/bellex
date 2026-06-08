@@ -23,7 +23,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
       initial="initial"
       animate="animate"
       exit="exit"
-      style={{ willChange: "opacity, transform, filter" }}
+      style={{ willChange: "opacity, transform, filter", height: "100%", display: "flex", flexDirection: "column" }}
     >
       {children}
     </motion.div>
