@@ -465,7 +465,7 @@ const PublicBooking = () => {
     if (pageSettings?.require_email && !email) errors.email = true;
     if (pageSettings?.require_gender && !gender) errors.gender = true;
     if (pageSettings?.require_birth_date && (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate))) errors.birthDate = true;
-    if (pageSettings?.require_nif — cpf = true;
+    if (pageSettings?.require_nif && !cpf) errors.cpf = true;
     if (!acceptTerms) errors.acceptTerms = true;
 
     if (Object.keys(errors).length > 0) {

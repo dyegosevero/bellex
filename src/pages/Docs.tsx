@@ -106,7 +106,7 @@ const Docs = () => {
             <div className="text-xs font-medium text-primary uppercase tracking-wider mb-3">
               {section.group}
             </div>
-            <DocsMarkdown content={section.content} />
+            <DocsMarkdown content={section.content} groupSlug={section.groupSlug} />
           </div>
         </main>
       </div>
