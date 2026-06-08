@@ -13,6 +13,7 @@ import {
 import {
   Calendar, Users, DollarSign, TrendingUp,
   AlertCircle, BarChart3, ChevronRight, UserX,
+  MessageCircle, UserPlus, Funnel, CheckCheck,
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
