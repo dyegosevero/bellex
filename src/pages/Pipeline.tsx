@@ -17,7 +17,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown } from "lucide-react";
+import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -112,7 +112,7 @@ const DEFAULT_STAGES: Stage[] = [
 
 // ─── Card component (sortable) ──────────────────────────────────────────────
 
-function PipelineCard({ card, isDragging }: { card: CardData; isDragging?: boolean }) {
+function PipelineCard({ card, isDragging, onOpen }: { card: CardData; isDragging?: boolean; onOpen?: (card: CardData) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging } = useSortable({ id: card.id });
 
   const style = {
@@ -126,26 +126,38 @@ function PipelineCard({ card, isDragging }: { card: CardData; isDragging?: boole
       ref={setNodeRef}
       style={style}
       className={cn(
-        "bg-background rounded-xl border border-border/50 p-3.5 cursor-grab active:cursor-grabbing select-none",
+        "bg-background rounded-xl border border-border/50 select-none group",
         "shadow-sm hover:shadow-md hover:border-border transition-all duration-150",
         isDragging && "shadow-xl rotate-1 scale-105 border-primary/30",
       )}
-      {...attributes}
-      {...listeners}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <span className="text-sm font-medium text-foreground leading-tight">{card.name}</span>
-        <span className={cn(
-          "text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0",
-          card.source === "whatsapp" ? "bg-green-100 text-green-700" : card.source === "instagram" ? "bg-pink-100 text-pink-700" : "bg-muted text-muted-foreground"
-        )}>
-          {card.source === "whatsapp" ? "WA" : card.source === "instagram" ? "IG" : "Manual"}
-        </span>
+      {/* Clickable body */}
+      <div
+        className="p-3.5 cursor-pointer"
+        onClick={() => onOpen?.(card)}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <span className="text-sm font-medium text-foreground leading-tight">{card.name}</span>
+          <span className={cn(
+            "text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0",
+            card.source === "whatsapp" ? "bg-green-100 text-green-700" : card.source === "instagram" ? "bg-pink-100 text-pink-700" : "bg-muted text-muted-foreground"
+          )}>
+            {card.source === "whatsapp" ? "WA" : card.source === "instagram" ? "IG" : "Manual"}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">{card.lastMessage}</p>
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground/70">
+          <span className="flex items-center gap-1"><Phone size={10} />{card.phone}</span>
+          <span className="flex items-center gap-1 ml-auto"><Clock size={10} />{card.createdAt}</span>
+        </div>
       </div>
-      <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">{card.lastMessage}</p>
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground/70">
-        <span className="flex items-center gap-1"><Phone size={10} />{card.phone}</span>
-        <span className="flex items-center gap-1 ml-auto"><Clock size={10} />{card.createdAt}</span>
+      {/* Drag handle */}
+      <div
+        className="flex items-center justify-center h-5 border-t border-border/30 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={12} className="text-muted-foreground/40" />
       </div>
     </div>
   );
@@ -157,10 +169,12 @@ function StageColumn({
   stage,
   onConfigure,
   isOver,
+  onOpenCard,
 }: {
   stage: Stage;
   onConfigure: (stage: Stage) => void;
   isOver?: boolean;
+  onOpenCard: (card: CardData) => void;
 }) {
   const cardIds = stage.cards.map(c => c.id);
 
@@ -203,7 +217,7 @@ function StageColumn({
       )}>
         <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
           {stage.cards.map(card => (
-            <PipelineCard key={card.id} card={card} />
+            <PipelineCard key={card.id} card={card} onOpen={onOpenCard} />
           ))}
         </SortableContext>
 
@@ -380,6 +394,155 @@ function StageConfigDialog({
   );
 }
 
+// ─── Lead Detail View ───────────────────────────────────────────────────────
+
+const MOCK_MESSAGES: Record<string, Array<{ id: string; text: string; fromMe: boolean; time: string }>> = {
+  c1: [
+    { id: "1", text: "Oi, quero saber sobre depilação a laser", fromMe: false, time: "09:10" },
+    { id: "2", text: "Olá Ana! Temos vários pacotes disponíveis. Qual região te interessa?", fromMe: true, time: "09:12" },
+    { id: "3", text: "Pernas completas e virilha", fromMe: false, time: "09:14" },
+  ],
+  c2: [
+    { id: "1", text: "Vocês têm horário na sexta?", fromMe: false, time: "08:02" },
+    { id: "2", text: "Oi Beatriz! Temos sim, à tarde. Qual serviço você procura?", fromMe: true, time: "08:05" },
+  ],
+  c3: [
+    { id: "1", text: "Tenho interesse em harmonização facial", fromMe: false, time: "14:30" },
+    { id: "2", text: "Oi Carla! Vou te passar os detalhes do procedimento.", fromMe: true, time: "14:32" },
+  ],
+};
+
+function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
+  const [input, setInput] = useState("");
+  const messages = MOCK_MESSAGES[card.id] ?? [];
+
+  return (
+    <div className="h-full flex flex-col -m-6 lg:-m-8">
+      {/* Header */}
+      <div className="h-14 border-b flex items-center px-4 gap-3 shrink-0 bg-background">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft size={16} /> Voltar ao Pipeline
+        </button>
+      </div>
+
+      {/* Split body */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* Left: Lead data (1/3) */}
+        <aside className="w-1/3 border-r flex flex-col overflow-y-auto bg-muted/10">
+          {/* Lead hero */}
+          <div className="p-6 border-b flex flex-col items-center gap-3 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-semibold text-primary">
+              {card.name[0]}
+            </div>
+            <div>
+              <p className="font-semibold text-base">{card.name}</p>
+              <span className={cn(
+                "inline-flex items-center text-[10px] px-2 py-0.5 rounded-full font-medium mt-1",
+                card.source === "whatsapp" ? "bg-green-100 text-green-700" : card.source === "instagram" ? "bg-pink-100 text-pink-700" : "bg-muted text-muted-foreground"
+              )}>
+                {card.source === "whatsapp" ? "WhatsApp" : card.source === "instagram" ? "Instagram" : "Manual"}
+              </span>
+            </div>
+          </div>
+
+          {/* Data rows */}
+          <div className="p-5 space-y-4">
+            <LeadDataRow icon={<Phone size={14} />} label="Telefone" value={card.phone} />
+            <LeadDataRow icon={<Clock size={14} />} label="Criado em" value={card.createdAt} />
+            <LeadDataRow icon={<Tag size={14} />} label="Canal" value={card.source} />
+            <LeadDataRow icon={<MapPin size={14} />} label="Cidade" value="—" />
+            <LeadDataRow icon={<Mail size={14} />} label="E-mail" value="—" />
+            <LeadDataRow icon={<Calendar size={14} />} label="Último agend." value="—" />
+          </div>
+
+          {/* Actions */}
+          <div className="p-5 border-t mt-auto space-y-2">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-3">Ações</p>
+            <button className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors">
+              <UserPlus size={14} /> Criar cliente
+            </button>
+            <button className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors">
+              <Calendar size={14} /> Agendar sessão
+            </button>
+            <button className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors">
+              <Tag size={14} /> Adicionar tag
+            </button>
+          </div>
+        </aside>
+
+        {/* Right: Messages (2/3) */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Chat header */}
+          <div className="h-12 border-b flex items-center px-4 shrink-0">
+            <p className="text-sm font-medium">Conversa com {card.name}</p>
+            <span className={cn(
+              "ml-2 text-[10px] px-2 py-0.5 rounded-full",
+              card.source === "whatsapp" ? "bg-green-100 text-green-700" : card.source === "instagram" ? "bg-pink-100 text-pink-700" : "bg-muted text-muted-foreground"
+            )}>
+              {card.source === "whatsapp" ? "WhatsApp" : card.source === "instagram" ? "Instagram" : "Manual"}
+            </span>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-3">
+            {messages.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground pt-10">Nenhuma mensagem ainda.</p>
+            ) : messages.map((msg) => (
+              <div key={msg.id} className={cn("flex", msg.fromMe ? "justify-end" : "justify-start")}>
+                <div className={cn(
+                  "max-w-[68%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
+                  msg.fromMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"
+                )}>
+                  <p>{msg.text}</p>
+                  <p className={cn("text-[10px] mt-1 text-right", msg.fromMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                    {msg.time}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="border-t p-3 flex items-end gap-2">
+            <button className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+              <Paperclip size={16} />
+            </button>
+            <button className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+              <Smile size={16} />
+            </button>
+            <input
+              className="flex-1 h-9 px-3 text-sm bg-muted/50 rounded-lg border border-border/50 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
+              placeholder="Escreva uma mensagem..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); setInput(""); } }}
+            />
+            <button
+              disabled={!input.trim()}
+              className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
+            >
+              <Send size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeadDataRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="text-muted-foreground mt-0.5 shrink-0">{icon}</span>
+      <div>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wide leading-none mb-0.5">{label}</p>
+        <p className="text-sm text-foreground">{value}</p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 export default function Pipeline() {
@@ -387,6 +550,7 @@ export default function Pipeline() {
   const [activeCard, setActiveCard] = useState<CardData | null>(null);
   const [overStageId, setOverStageId] = useState<string | null>(null);
   const [configStage, setConfigStage] = useState<Stage | null>(null);
+  const [selectedLead, setSelectedLead] = useState<CardData | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -471,6 +635,10 @@ export default function Pipeline() {
     setStages(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
   }
 
+  if (selectedLead) {
+    return <LeadDetail card={selectedLead} onBack={() => setSelectedLead(null)} />;
+  }
+
   return (
     <div className="h-full flex flex-col -m-6 lg:-m-8">
       {/* Header */}
@@ -506,10 +674,10 @@ export default function Pipeline() {
                 stage={stage}
                 onConfigure={setConfigStage}
                 isOver={overStageId === stage.id}
+                onOpenCard={setSelectedLead}
               />
             ))}
 
-            {/* Add column ghost */}
             <button
               onClick={addStage}
               className="min-w-[272px] max-w-[272px] h-24 rounded-2xl border-2 border-dashed border-border/40 flex items-center justify-center gap-2 text-sm text-muted-foreground/60 hover:text-muted-foreground hover:border-border/60 transition-colors flex-shrink-0"

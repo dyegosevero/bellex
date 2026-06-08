@@ -106,7 +106,7 @@ const AppLayout = () => {
   });
 
   return (
-    <div className="min-h-screen flex bg-background font-body">
+    <div className="h-screen overflow-hidden flex bg-background font-body">
 
       {/* ── SIDEBAR (desktop) ──────────────────────────────── */}
       <aside
@@ -318,8 +318,8 @@ const AppLayout = () => {
         <ActiveSessionBar />
         <PendingBillingsAlert />
         <main className={cn(
-          "flex-1 min-w-0",
-          !isDashboard && "p-6 lg:p-8 max-w-[1600px] mx-auto w-full"
+          "flex-1 min-w-0 overflow-auto",
+          isDashboard ? "overflow-hidden" : "p-6 lg:p-8 max-w-[1600px] mx-auto w-full"
         )}>
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition key={location.pathname}>
