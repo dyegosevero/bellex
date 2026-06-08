@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon, Download, FileSpreadsheet, Printer, Users, UserX, DollarSign, TrendingUp, Receipt, BarChart3, Calendar as CalendarIcon2, Clock, MessageCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { format, subDays, subMonths, startOfDay, endOfDay } from "date-fns";
 import { pt } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -466,8 +467,7 @@ const Reports = () => {
       <BlurFade delay={0.05}>
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-light tracking-wider">Relatórios</h1>
-            <p className="text-sm text-muted-foreground mt-1">Análises e métricas · <span className="font-medium">{periodLabel}</span></p>
+            <PageHeader icon={<BarChart3 className="w-5 h-5" />} title="Relatórios" subtitle={`Análises e métricas · ${periodLabel}`} className="mb-0" />
           </div>
           <div className="flex items-center gap-2 print:hidden">
             <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>

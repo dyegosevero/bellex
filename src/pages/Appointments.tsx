@@ -15,7 +15,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, ChevronLeft, ChevronRight, Plus, Calendar, List } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Plus, Calendar, List, ClipboardList } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useDebounce } from "@/hooks/useDebounce";
 import { fmtDateShort } from "@/lib/date";
 
@@ -74,9 +75,7 @@ const Appointments = () => {
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-light tracking-wider">Atendimentos</h1>
-            <p className="text-sm text-muted-foreground mt-1">Visualize e gerencie os atendimentos</p>
-          </div>
+          <PageHeader icon={<ClipboardList className="w-5 h-5" />} title="Atendimentos" subtitle="Visualize e gerencie os atendimentos" className="mb-0" />
           <Button onClick={() => navigate("/atendimentos/novo")}>
             <Plus className="w-4 h-4 mr-2" /> Novo Agendamento
           </Button>

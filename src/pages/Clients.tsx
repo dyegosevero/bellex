@@ -17,7 +17,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, ChevronLeft, ChevronRight, Plus, Eye, Trash2, AlertTriangle, ArrowUpDown, Filter, Loader2, FileSpreadsheet } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Plus, Eye, Trash2, AlertTriangle, ArrowUpDown, Filter, Loader2, FileSpreadsheet, Users } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { exportToXls } from "@/lib/export-utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuth } from "@/contexts/AuthContext";
@@ -182,12 +183,12 @@ const Clients = () => {
     <div>
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-light tracking-wider">Clientes</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {totalCount > 0 ? `${totalCount} clientes encontrados` : "Gerencie sua base de clientes"}
-            </p>
-          </div>
+          <PageHeader
+            icon={<Users className="w-5 h-5" />}
+            title="Clientes"
+            subtitle={totalCount > 0 ? `${totalCount} clientes` : "Gerencie sua base de clientes"}
+            className="mb-0"
+          />
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>

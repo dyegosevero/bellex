@@ -8,7 +8,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useDebounce } from "@/hooks/useDebounce";
 import { fmtDateShort } from "@/lib/date";
 
@@ -340,8 +341,7 @@ const Faturamento = () => {
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-light tracking-wider">Faturamento</h1>
-            <p className="text-sm text-muted-foreground mt-1">Visão financeira dos atendimentos realizados</p>
+            <PageHeader icon={<DollarSign className="w-5 h-5" />} title="Faturamento" subtitle="Visão financeira dos atendimentos realizados" className="mb-0" />
           </div>
         </div>
       </BlurFade>

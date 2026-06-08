@@ -40,6 +40,7 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import GoogleReviewsTab from "@/components/marketing/GoogleReviewsTab";
 import { toast } from "sonner";
@@ -128,12 +129,7 @@ export default function Marketing() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-light tracking-wider flex items-center gap-2">
-          <Megaphone className="w-6 h-6" /> MARKETING
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Campanhas, avaliações e comunicação com seus clientes.
-        </p>
+        <PageHeader icon={<Megaphone className="w-5 h-5" />} title="Marketing" subtitle="Campanhas, avaliações e comunicação com seus clientes." />
       </div>
 
       {/* Filter tabs */}

@@ -21,6 +21,7 @@ import {
 import {
   CreditCard, Plus, Search, ChevronLeft, ChevronRight, Eye, Pencil,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { fmtCurrency, fmtDate } from "@/lib/date";
 
 
@@ -70,13 +71,13 @@ const Charges = () => {
     <div>
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-light tracking-wider">Cobranças</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {data?.total ? `${data.total} cobranças` : "Gestão de cobranças e pagamentos"}
-            </p>
-          </div>
-          <Button onClick={() => navigate("/cobrancas/nova")}><Plus className="w-4 h-4 mr-2" /> Nova Cobrança</Button>
+          <PageHeader
+            icon={<CreditCard className="w-5 h-5" />}
+            title="Cobranças"
+            subtitle={data?.total ? `${data.total} cobranças` : "Gestão de cobranças e pagamentos"}
+            actions={<Button onClick={() => navigate("/cobrancas/nova")}><Plus className="w-4 h-4 mr-2" /> Nova Cobrança</Button>}
+            className="mb-0"
+          />
         </div>
       </BlurFade>
 

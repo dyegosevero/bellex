@@ -20,6 +20,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Settings, Users, Mail, Shield, CalendarDays, Plus, Edit, Bell, Plug, CalendarClock, Clock, Trash2, KeyRound, Eye, EyeOff, AlertTriangle, Ban, FileSignature } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -58,8 +59,7 @@ const Admin = () => {
     <div>
       <BlurFade delay={0.05}>
         <div className="mb-8">
-          <h1 className="text-2xl font-light tracking-wider">Configurações</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gestão de usuários e configurações do sistema</p>
+          <PageHeader icon={<Settings className="w-5 h-5" />} title="Configurações" subtitle="Gestão de usuários e configurações do sistema" />
         </div>
       </BlurFade>
 
