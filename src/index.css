@@ -523,6 +523,34 @@
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
 }
+
+/* Month view: garante que as cores dos eventos apareçam */
+.fc .fc-daygrid-event {
+  border-radius: 4px !important;
+  border-width: 1px !important;
+  padding: 1px 5px !important;
+  margin-bottom: 2px !important;
+  font-size: 0.72rem !important;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.fc .fc-daygrid-event .fc-event-main {
+  color: inherit !important;
+  overflow: hidden;
+}
+/* Força o background vindo do JS a não ser sobrescrito */
+.fc .fc-daygrid-event-harness .fc-daygrid-event {
+  background-color: var(--fc-event-bg-color) !important;
+  border-color: var(--fc-event-border-color) !important;
+  color: var(--fc-event-text-color, #fff) !important;
+}
+.fc-direction-ltr .fc-daygrid-event .fc-event-time {
+  font-weight: 700;
+  margin-right: 3px;
+}
+.fc-direction-ltr .fc-daygrid-event .fc-event-title {
+  font-weight: 500;
+}
 .fc .fc-timegrid-slot {
   height: 3em;
 }
