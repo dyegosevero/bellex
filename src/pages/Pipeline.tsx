@@ -643,11 +643,17 @@ export default function Pipeline() {
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-border/40 bg-background flex-shrink-0">
-        <div>
-          <h1 className="text-xl font-light text-foreground tracking-tight">Pipeline</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {stages.reduce((acc, s) => acc + s.cards.length, 0)} leads · {stages.length} etapas
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <Plus size={20} className="rotate-45 opacity-0 absolute" style={{display:"none"}} />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-light tracking-wider uppercase text-foreground leading-none">Pipeline</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {stages.reduce((acc, s) => acc + s.cards.length, 0)} leads · {stages.length} etapas
+            </p>
+          </div>
         </div>
         <button
           onClick={addStage}

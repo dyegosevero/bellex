@@ -6,7 +6,8 @@ import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Plus, Search, FolderOpen, Archive } from "lucide-react";
+import { Plus, Search, FolderOpen, Archive, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { BlurFade } from "@/components/ui/blur-fade";
 import ServiceDialog from "@/components/services/ServiceDialog";
 import CategoryDialog from "@/components/services/CategoryDialog";
@@ -267,10 +268,7 @@ const Services = () => {
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-light tracking-wider">Serviços</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {services?.length ?? 0} serviços · {categories?.length ?? 0} categorias
-            </p>
+            <PageHeader icon={<Sparkles className="w-5 h-5" />} title="Serviços" subtitle={`${services?.length ?? 0} serviços · ${categories?.length ?? 0} categorias`} className="mb-0" />
           </div>
           <div className="flex items-center gap-2">
              <Button

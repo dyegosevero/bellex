@@ -13,6 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Search, ChevronLeft, ChevronRight, Package, Plus, Eye, Pencil, Tags, Trash2, RotateCcw } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -107,12 +108,12 @@ const Products = () => {
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-light tracking-wider">{showTrash ? "Lixeira" : "Produtos"}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {showTrash
-                ? `${data?.count ?? 0} produto(s) na lixeira`
-                : data?.count ? `${data.count} produtos cadastrados` : "Catálogo de produtos físicos para venda"}
-            </p>
+            <PageHeader
+              icon={<Package className="w-5 h-5" />}
+              title={showTrash ? "Lixeira" : "Produtos"}
+              subtitle={showTrash ? `${data?.count ?? 0} produto(s) na lixeira` : data?.count ? `${data.count} produtos cadastrados` : "Catálogo de produtos físicos para venda"}
+              className="mb-0"
+            />
           </div>
           <div className="flex items-center gap-2">
             <Button
