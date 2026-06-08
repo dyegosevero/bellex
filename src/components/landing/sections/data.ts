@@ -37,9 +37,79 @@ export const testimonials = [
 ];
 
 export const plans = [
-  { name: "Starter", price: "R$ 129", period: "/mês", desc: "Para clínicas que estão começando.", features: ["Até 2 especialistas", "Agenda + Prontuário", "Agendamento online", "Suporte por e-mail"], cta: "Agendar Demo", highlighted: false },
-  { name: "Pro", price: "R$ 249", period: "/mês", desc: "Para clínicas em crescimento.", features: ["Especialistas ilimitados", "Tudo do Starter", "Cobranças & Faturamento", "Marketing automatizado", "Relatórios completos", "Suporte prioritário"], cta: "Agendar Demo", highlighted: true },
-  { name: "Enterprise", price: "Sob consulta", period: "", desc: "Para redes e franquias.", features: ["Multi-unidade", "Tudo do Pro", "Whitelabel completo", "Onboarding dedicado", "SLA garantido"], cta: "Falar com a equipe", highlighted: false },
+  {
+    name: "Starter",
+    price: { monthly: "R$ 129", annual: "R$ 90" },
+    period: "/mês",
+    annualNote: "R$ 1.080 cobrados anualmente",
+    desc: "Para clínicas que estão começando.",
+    features: [
+      "Até 2 especialistas",
+      "Agenda + Prontuário digital",
+      "Agendamento online 24h",
+      "Lembretes por WhatsApp",
+      "Controle financeiro básico",
+      "Suporte por e-mail",
+    ],
+    cta: "Começar grátis",
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: { monthly: "R$ 249", annual: "R$ 174" },
+    period: "/mês",
+    annualNote: "R$ 2.088 cobrados anualmente",
+    desc: "Para clínicas em crescimento.",
+    features: [
+      "Especialistas ilimitados",
+      "Tudo do Starter",
+      "Cobranças & faturamento completo",
+      "Marketing automatizado",
+      "Relatórios por especialista",
+      "App com seu logo",
+      "Suporte prioritário (chat + telefone)",
+    ],
+    cta: "Começar grátis",
+    highlighted: true,
+  },
+  {
+    name: "Enterprise",
+    price: { monthly: "Sob consulta", annual: "Sob consulta" },
+    period: "",
+    annualNote: "",
+    desc: "Para redes e franquias.",
+    features: [
+      "Multi-unidade",
+      "Tudo do Pro",
+      "Whitelabel completo",
+      "Onboarding dedicado",
+      "SLA garantido",
+      "Integrações customizadas",
+    ],
+    cta: "Falar com a equipe",
+    highlighted: false,
+  },
+];
+
+export type CompareRow = {
+  label: string;
+  starter: string | boolean;
+  pro: string | boolean;
+  enterprise: string | boolean;
+};
+
+export const compareRows: CompareRow[] = [
+  { label: "Especialistas", starter: "Até 2", pro: "Ilimitados", enterprise: "Ilimitados" },
+  { label: "Agendamento online 24h", starter: true, pro: true, enterprise: true },
+  { label: "Prontuário digital", starter: true, pro: true, enterprise: true },
+  { label: "Lembretes por WhatsApp", starter: "50/mês", pro: "Ilimitado", enterprise: "Ilimitado" },
+  { label: "Controle financeiro", starter: "Básico", pro: "Completo", enterprise: "Completo" },
+  { label: "Marketing automatizado", starter: false, pro: true, enterprise: true },
+  { label: "Relatórios gerenciais", starter: false, pro: true, enterprise: true },
+  { label: "App com seu logo", starter: false, pro: true, enterprise: true },
+  { label: "Multi-unidade", starter: false, pro: false, enterprise: true },
+  { label: "Onboarding dedicado", starter: false, pro: false, enterprise: true },
+  { label: "Suporte", starter: "E-mail", pro: "Chat + telefone", enterprise: "SLA garantido" },
 ];
 
 export const faqs = [
@@ -47,5 +117,5 @@ export const faqs = [
   { q: "Consigo migrar meus dados do sistema atual?", a: "Sim. Nossa equipe faz a migração gratuitamente e acompanha você na configuração inicial." },
   { q: "Quantos especialistas posso cadastrar?", a: "No plano Starter até 2. No Pro e Enterprise, ilimitado — sem custo adicional por especialista." },
   { q: "Como funciona a demo?", a: "Você agenda uma conversa com nossa equipe. Mostramos o sistema completo funcionando com dados reais do seu segmento — sem script genérico, sem enrolação." },
-  { q: "Os dados ficam seguros?", a: "Sim. Seguimos LGPD, criptografia AES-256, backups diários e uptime de 99,9%. Seus dados nunca são comcompartilhamentodos." },
+  { q: "Os dados ficam seguros?", a: "Sim. Seguimos LGPD, criptografia AES-256, backups diários e uptime de 99,9%. Seus dados nunca são compartilhados." },
 ];

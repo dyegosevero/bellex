@@ -251,7 +251,7 @@ export const ProductForm = ({ initialData, mode = "create" }: ProductFormProps) 
                 </Select>
               </div>
               <div>
-                <Label htmlFor="price">Preço (€) *</Label>
+                <Label htmlFor="price">Preço (R$) *</Label>
                 <Input
                   id="price"
                   inputMode="decimal"

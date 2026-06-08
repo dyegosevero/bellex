@@ -8,10 +8,11 @@ import ShareBookingDialog from "@/components/ShareBookingDialog";
 import { ActiveSessionBar } from "@/components/ActiveSessionBar";
 import { PendingBillingsAlert } from "@/components/PendingBillingsAlert";
 import {
-  LayoutDashboard, Users, Package, CreditCard,
+  Calendar, Users, Package, CreditCard,
   DollarSign, BarChart3, Settings, LogOut, Menu, X,
   Sparkles, ExternalLink, Share2, Link, Megaphone,
-  ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen,
+  ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen, UserCog,
+  LayoutDashboard, Kanban, MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "motion/react";
@@ -23,13 +24,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { to: "/dashboard",   icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/resumo",      icon: LayoutDashboard,  label: "Dashboard" },
+  { to: "/dashboard",   icon: Calendar,         label: "Agenda" },
   { to: "/clientes",    icon: Users,            label: "Clientes" },
+  { to: "/cobrancas",   icon: CreditCard,       label: "Cobranças" },
   { to: "/faturamento", icon: DollarSign,       label: "Faturamento" },
   { to: "/produtos",    icon: Package,          label: "Produtos" },
   { to: "/servicos",    icon: Sparkles,         label: "Serviços",     roles: ["admin", "atendimento"] },
-  { to: "/cobrancas",   icon: CreditCard,       label: "Cobranças" },
+  { to: "/equipe",      icon: UserCog,          label: "Equipe",       adminOnly: true },
   { to: "/marketing",   icon: Megaphone,        label: "Marketing",    adminOnly: true },
+  { to: "/pipeline",    icon: Kanban,           label: "Pipeline" },
+  { to: "/mensagens",   icon: MessageCircle,    label: "Mensagens" },
   { to: "/relatorios",  icon: BarChart3,        label: "Relatórios" },
   { to: "/admin",       icon: Settings,         label: "Configurações" },
 ];
@@ -56,7 +61,7 @@ const AppLayout = () => {
   const { signOut, user, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isDashboard = location.pathname === "/dashboard";
+  const isDashboard = location.pathname === "/dashboard" || location.pathname === "/resumo";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [expanded, setExpanded] = useState(() => {

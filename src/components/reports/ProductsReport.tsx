@@ -62,7 +62,7 @@ export default function ProductsReport({ dateRange }: Props) {
 
   const totalRevenue = topSold.reduce((s, p) => s + p.revenue, 0);
   const totalQty = topSold.reduce((s, p) => s + p.qty, 0);
-  const fmt = (v: number) => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+  const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const handleExport = () => {
     exportToXls("Produtos", topSold.map((p) => ({ Produto: p.name, Quantidade: p.qty, Receita: p.revenue })));

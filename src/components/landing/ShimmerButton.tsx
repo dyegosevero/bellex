@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { useRef } from "react";
 
 interface ShimmerButtonProps {
-  to: string;
+  to?: string;
+  onClick?: () => void;
   children: React.ReactNode;
   className?: string;
 }
 
-export function ShimmerButton({ to, children, className = "" }: ShimmerButtonProps) {
-  const ref = useRef<HTMLAnchorElement>(null);
+export function ShimmerButton({ to, onClick, children, className = "" }: ShimmerButtonProps) {
+  const ref = useRef<HTMLAnchorElement & HTMLButtonElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -51,8 +52,9 @@ export function ShimmerButton({ to, children, className = "" }: ShimmerButtonPro
       className="relative"
     >
       <motion.div variants={{ hover: { scale: 1.04 }, rest: { scale: 1 } }}>
+        {to ? (
         <Link
-          ref={ref}
+          ref={ref as React.Ref<HTMLAnchorElement>}
           to={to}
           className={`relative inline-flex items-center gap-2 bg-primary text-white font-medium rounded-xl overflow-hidden ${className}`}
         >
@@ -74,6 +76,17 @@ export function ShimmerButton({ to, children, className = "" }: ShimmerButtonPro
           />
           <span className="relative z-10 flex items-center gap-2">{children}</span>
         </Link>
+        ) : (
+        <button
+          ref={ref as React.Ref<HTMLButtonElement>}
+          onClick={onClick}
+          className={`relative inline-flex items-center gap-2 bg-primary text-white font-medium rounded-xl overflow-hidden ${className}`}
+        >
+          <motion.span className="pointer-events-none absolute inset-0" variants={shimmerVariants} style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.22) 50%, transparent 60%)" }} />
+          <motion.span className="pointer-events-none absolute inset-0 rounded-xl" variants={glowVariants} style={{ boxShadow: "0 0 28px 4px hsl(10 75% 67% / 0.45)" }} />
+          <span className="relative z-10 flex items-center gap-2">{children}</span>
+        </button>
+        )}
       </motion.div>
     </motion.div>
   );

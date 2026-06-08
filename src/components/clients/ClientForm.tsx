@@ -236,12 +236,12 @@ export const ClientForm = ({ initialData, mode = "create" }: ClientFormProps) =>
               <PhoneInput id="phone" value={form.phone || ""} onChange={(v) => set("phone", v)} defaultCountry={clinicCountry} />
             </div>
             <div>
-              <Label htmlFor="cpf">NIF</Label>
+              <Label htmlFor="cpf">CPF</Label>
               <Input id="cpf" value={form.cpf || ""} onChange={(e) => set("cpf", e.target.value)} placeholder="Nº Identificação Fiscal" />
             </div>
             <div>
-              <Label htmlFor="citizen_card_number">Cartão de Cidadão</Label>
-              <Input id="citizen_card_number" value={(form as any).citizen_card_number || ""} onChange={(e) => set("citizen_card_number" as any, e.target.value)} placeholder="Nº Cartão de Cidadão" />
+              <Label htmlFor="citizen_card_number">RG / CPF</Label>
+              <Input id="citizen_card_number" value={(form as any).citizen_card_number || ""} onChange={(e) => set("citizen_card_number" as any, e.target.value)} placeholder="Nº RG / CPF" />
             </div>
             <div>
               <Label htmlFor="profession">Profissão</Label>

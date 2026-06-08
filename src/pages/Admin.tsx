@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdgeFunction } from "@/lib/edge-functions";
@@ -50,6 +50,8 @@ const roleLabels: Record<string, string> = {
 const Admin = () => {
   const { role } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") ?? "agenda";
   if (role !== "admin") return <Navigate to="/dashboard" replace />;
 
   return (
@@ -61,11 +63,11 @@ const Admin = () => {
         </div>
       </BlurFade>
 
-      <Tabs defaultValue="agenda" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList className="flex-wrap">
           <TabsTrigger value="agenda" className="gap-2 normal-case"><CalendarClock className="w-4 h-4" /> Agenda</TabsTrigger>
           <TabsTrigger value="horarios" className="gap-2 normal-case"><Clock className="w-4 h-4" /> Horários</TabsTrigger>
-          <TabsTrigger value="users" className="gap-2 normal-case"><Users className="w-4 h-4" /> Equipa</TabsTrigger>
+          {/* Equipa movida para /equipe no sidebar */}
           {/* <TabsTrigger value="roles" className="gap-2 normal-case"><Shield className="w-4 h-4" /> Permissões</TabsTrigger> */}
           <TabsTrigger value="email" className="gap-2 normal-case"><Mail className="w-4 h-4" /> E-mail</TabsTrigger>
           
@@ -76,7 +78,7 @@ const Admin = () => {
 
         <TabsContent value="agenda" forceMount className="data-[state=inactive]:hidden"><AgendaTab /></TabsContent>
         <TabsContent value="horarios" forceMount className="data-[state=inactive]:hidden"><BusinessHoursTab /></TabsContent>
-        <TabsContent value="users" forceMount className="data-[state=inactive]:hidden"><UsersTab /></TabsContent>
+        {/* UsersTab movida para /equipe */}
         <TabsContent value="roles" forceMount className="data-[state=inactive]:hidden"><RolesInfoTab /></TabsContent>
         <TabsContent value="email" forceMount className="data-[state=inactive]:hidden"><EmailTab /></TabsContent>
         
@@ -90,7 +92,7 @@ const Admin = () => {
 
 /* ═══════════════════════════════ USERS TAB ═══════════════════════════════ */
 
-const UsersTab = () => {
+export const UsersTab = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -167,15 +169,9 @@ const UsersTab = () => {
 
   return (
     <div className="space-y-4">
-      {/* Tab header */}
-      <div className="mb-2">
-        <h3 className="text-lg font-light tracking-wider flex items-center gap-2">
-          <Users className="w-5 h-5" /> EQUIPA
-        </h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          {usersWithRoles?.length ?? 0} usuários cadastrados
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        {usersWithRoles?.length ?? 0} usuários cadastrados
+      </p>
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between">

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSpecialists } from "@/hooks/useAppointmentData";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import luxonPlugin from "@fullcalendar/luxon3";
 import type { EventClickArg, DatesSetArg } from "@fullcalendar/core";
@@ -29,7 +30,7 @@ import { usePendingBillings } from "@/hooks/usePendingBillings";
 import { toast } from "sonner";
 
 type AgendaView = "calendar" | "list";
-type ViewType = "timeGridWeek" | "timeGridDay";
+type ViewType = "timeGridWeek" | "timeGridDay" | "dayGridMonth";
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
   agendado: { bg: "#3B82F6", border: "#2563EB", text: "#fff" },
@@ -306,7 +307,7 @@ export function FullCalendarAgenda() {
     } else {
       // No calendar mounted (list view) — step based on current view
       const d = new Date(currentDateStr + "T12:00:00");
-      const step = currentView === "timeGridWeek" ? 7 : 1;
+      const step = currentView === "timeGridWeek" ? 7 : currentView === "dayGridMonth" ? 30 : 1;
       let next: Date;
       if (action === "today") next = new Date();
       else if (action === "prev") next = addDays(d, -step);
@@ -347,8 +348,10 @@ export function FullCalendarAgenda() {
   const dateLabel = useMemo(() => {
     if (!currentDateStr) return "";
     const s = new Date(`${currentDateStr}T12:00:00`);
+    if (currentView === "dayGridMonth") return format(s, "MMMM yyyy", { locale: pt }).replace(/^\w/, c => c.toUpperCase());
+    if (currentView === "timeGridWeek") return format(s, "MMM yyyy", { locale: pt }).toUpperCase();
     return format(s, "dd MMM.", { locale: pt }).toUpperCase();
-  }, [currentDateStr]);
+  }, [currentDateStr, currentView]);
 
   // Full week (Mon–Sun) containing the selected date
   const weekdayShortcuts = useMemo(() => {
@@ -377,7 +380,7 @@ export function FullCalendarAgenda() {
   }, [selectedSpecialist, specialists]);
 
   const calendarProps = {
-    plugins: [luxonPlugin, timeGridPlugin, interactionPlugin],
+    plugins: [luxonPlugin, timeGridPlugin, dayGridPlugin, interactionPlugin],
     initialView: currentView,
     selectable: false,
     eventClick: handleEventClick,
@@ -539,6 +542,16 @@ export function FullCalendarAgenda() {
               onClick={() => { setAgendaView("calendar"); changeView("timeGridWeek"); }}
             >
               Semana
+            </button>
+            <button
+              className={`px-3.5 py-1 text-xs font-semibold rounded-full transition-all ${
+                agendaView === "calendar" && currentView === "dayGridMonth"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => { setAgendaView("calendar"); changeView("dayGridMonth"); }}
+            >
+              Mês
             </button>
             {canSeeList && (
               <button

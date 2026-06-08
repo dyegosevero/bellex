@@ -132,7 +132,7 @@ export default function SessionDataTab({ client, clientId, onSaved }: Props) {
           {renderField("Email", form.email, (v) => setForm(p => ({ ...p, email: v })))}
           {renderField("Telefone", form.phone, (v) => setForm(p => ({ ...p, phone: v })))}
 
-          {/* Row 2: Nascimento + Idade + NIF + Cartão Cidadão */}
+          {/* Row 2: Nascimento + Idade + NIF + RG / CPF */}
           <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-12 gap-2">
             <div className="md:col-span-4">
               <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Nascimento</label>
@@ -180,10 +180,10 @@ export default function SessionDataTab({ client, clientId, onSaved }: Props) {
               </div>
             </div>
             <div className="md:col-span-3">
-              {renderField("NIF", form.cpf, (v) => setForm(p => ({ ...p, cpf: v })))}
+              {renderField("CPF", form.cpf, (v) => setForm(p => ({ ...p, cpf: v })))}
             </div>
             <div className="md:col-span-3">
-              {renderField("Cartão Cidadão", form.citizen_card_number, (v) => setForm(p => ({ ...p, citizen_card_number: v })))}
+              {renderField("RG / CPF", form.citizen_card_number, (v) => setForm(p => ({ ...p, citizen_card_number: v })))}
             </div>
           </div>
 

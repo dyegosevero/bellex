@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Zap, ArrowRight } from "lucide-react";
+import { useDemoModal } from "@/components/landing/DemoModalContext";
 import BlurText from "@/components/reactbits/BlurText";
 import { ContainerScroll } from "@/components/ui/container-scroll";
 import DashboardMock from "@/components/landing/DashboardMock";
@@ -8,6 +9,7 @@ import { ShimmerButton } from "@/components/landing/ShimmerButton";
 import Grainient from "@/components/Grainient";
 
 export function LandingHero() {
+  const { openDemo } = useDemoModal();
   return (
     <section
       className="relative"
@@ -35,7 +37,7 @@ export function LandingHero() {
             </FadeUp>
 
             <FadeUp delay={450} className="flex flex-wrap items-center justify-center gap-3">
-              <ShimmerButton to="/login" className="px-7 py-3.5 text-sm">
+              <ShimmerButton onClick={openDemo} className="px-7 py-3.5 text-sm">
                 Agendar Demo
               </ShimmerButton>
               <button

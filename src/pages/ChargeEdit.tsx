@@ -166,9 +166,9 @@ const ChargeEdit = () => {
 
       <BlurFade delay={0.15}>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }} className="space-y-5">
-          {/* NIF do Cliente */}
+          {/* CPF do Cliente */}
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">NIF do Cliente</Label>
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">CPF do Cliente</Label>
             <Input
               value={clientNif}
               onChange={(e) => {
@@ -181,10 +181,10 @@ const ChargeEdit = () => {
               disabled={clientHasNif}
             />
             {clientHasNif && (
-              <p className="text-xs text-muted-foreground">NIF já registado no cadastro do cliente.</p>
+              <p className="text-xs text-muted-foreground">CPF já cadastrado no cadastro do cliente.</p>
             )}
             {!clientHasNif && clientNif && (
-              <p className="text-xs text-muted-foreground">O NIF será salvo no cadastro do cliente ao salvar.</p>
+              <p className="text-xs text-muted-foreground">O CPF será salvo no cadastro do cliente ao salvar.</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -237,7 +237,7 @@ const ChargeEdit = () => {
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                  <SelectItem value="mbway">MB Way</SelectItem>
+                  <SelectItem value="mbway">Pix</SelectItem>
                   <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
                   <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
                   <SelectItem value="transferencia">Transferência</SelectItem>
@@ -281,7 +281,7 @@ const ChargeEdit = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percentage">%</SelectItem>
-                  <SelectItem value="fixed">€</SelectItem>
+                  <SelectItem value="fixed">R$</SelectItem>
                 </SelectContent>
               </Select>
               <Input

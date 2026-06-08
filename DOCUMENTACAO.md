@@ -1,6 +1,6 @@
-# Dermalūm — Manual do Utilizador
+# Bellex — Manual do Utilizador
 
-> Guia completo de utilização do sistema Dermalūm.
+> Guia completo de utilização do sistema Bellex.
 > Versão 1.1 — Março 2026
 
 ---
@@ -30,7 +30,7 @@
 
 ## 1. Introdução
 
-O **Dermalūm** é um sistema de gestão completo para clínicas de estética. Permite gerir clientes, agendamentos, serviços, produtos, cobranças, campanhas de marketing e relatórios — tudo num único lugar.
+O **Bellex** é um sistema de gestão completo para clínicas de estética. Permite gerir clientes, agendamentos, serviços, produtos, cobranças, campanhas de marketing e relatórios — tudo num único lugar.
 
 ### Papéis de Utilizador
 
@@ -764,4 +764,4 @@ Sim. O sistema implementa múltiplas camadas de segurança:
 
 ---
 
-*Documento atualizado em Março 2026 — Dermalūm v1.1*
+*Documento atualizado em Março 2026 — Bellex v1.1*

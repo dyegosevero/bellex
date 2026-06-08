@@ -155,7 +155,7 @@ export default function FinancialReport({ dateRange }: Props) {
   };
 
   if (isLoading) return <div className="space-y-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 w-full" />)}</div>;
-  const fmt = (v: number) => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+  const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const getPaymentBadge = (status: string) => {
     if (status === "pago") return <span className="inline-flex items-center gap-1 rounded-full border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] px-2 py-0.5 text-[10px] font-semibold"><CheckCircle className="w-3 h-3" />Pago</span>;

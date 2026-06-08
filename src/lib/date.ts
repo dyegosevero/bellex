@@ -1,7 +1,7 @@
-export const DATE_LOCALE = "pt-PT";
+export const DATE_LOCALE = "pt-BR";
 
 /** Mutable timezone — initialised from clinic_settings at app startup */
-let _tz = "Europe/Lisbon";
+let _tz = "America/Sao_Paulo";
 
 export function setTimezone(tz: string) {
   _tz = tz;
@@ -25,7 +25,7 @@ export const fmtDateTime = (date: string | Date) =>
   });
 
 export const fmtCurrency = (v: number) =>
-  v.toLocaleString(DATE_LOCALE, { style: "currency", currency: "EUR" });
+  v.toLocaleString(DATE_LOCALE, { style: "currency", currency: "BRL" });
 
 export const fmtDateShort = (date: string | Date) =>
   new Date(date).toLocaleDateString(DATE_LOCALE, {

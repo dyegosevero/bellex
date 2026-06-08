@@ -96,7 +96,7 @@ export default function ConsentViewDialog({ open, onOpenChange, consent }: Props
     return template
       .replace(/\{nome\}/gi, clientData?.full_name || consent.signed_by_name || "")
       .replace(/\{nome_completo\}/gi, clientData?.full_name || consent.signed_by_name || "")
-      .replace(/\{cartao_cidadao\}/gi, clientData?.citizen_card_number || "")
+      .replace(/\{cpf_rg\}/gi, clientData?.citizen_card_number || "")
       .replace(/\{data\}/gi, dateStr)
       .replace(/\{servico\}/gi, appointmentInfo?.serviceName || "")
       .replace(/\{especialista\}/gi, appointmentInfo?.specialistName || "");

@@ -1,4 +1,4 @@
-# Dermalūm — Checklist de Funcionalidades
+# Bellex — Checklist de Funcionalidades
 
 > Documento atualizado em 20/03/2026 para referência técnica.
 
