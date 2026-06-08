@@ -96,7 +96,7 @@ const UserEdit = () => {
   if (!profile) {
     return (
       <div className="max-w-2xl">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="mb-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/equipe")} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
         <p className="text-muted-foreground">Usuário não encontrado.</p>
@@ -110,7 +110,7 @@ const UserEdit = () => {
   return (
     <div className="max-w-2xl">
       <BlurFade delay={0.05}>
-        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/admin")}>
+        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/equipe")}>
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
         <h1 className="text-2xl font-light tracking-wider mb-1">Editar Colaborador</h1>
@@ -166,7 +166,7 @@ const UserEdit = () => {
             {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Gravar
           </Button>
-          <Button variant="outline" onClick={() => navigate("/admin")}>Cancelar</Button>
+          <Button variant="outline" onClick={() => navigate("/equipe")}>Cancelar</Button>
         </div>
       </BlurFade>
     </div>

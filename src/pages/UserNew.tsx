@@ -58,7 +58,7 @@ const UserNew = () => {
     },
     onSuccess: () => {
       toast.success("Usuário criado com sucesso! E-mail de boas-vindas enviado.");
-      navigate("/admin");
+      navigate("/equipe");
     },
     onError: (err: Error) => {
       toast.error(err.message);
@@ -68,7 +68,7 @@ const UserNew = () => {
   return (
     <div className="max-w-lg">
       <BlurFade delay={0.05}>
-        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/admin")}>
+        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/equipe")}>
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
         <h1 className="text-2xl font-light tracking-wider mb-1">Novo Usuário</h1>
@@ -145,7 +145,7 @@ const UserNew = () => {
               {mutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Criar Usuário
             </Button>
-            <Button type="button" variant="outline" onClick={() => navigate("/admin")}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={() => navigate("/equipe")}>Cancelar</Button>
           </div>
         </form>
       </BlurFade>
