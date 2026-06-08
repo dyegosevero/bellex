@@ -609,6 +609,20 @@
 .fc .fc-scrollgrid > tbody > tr > td:last-child {
   border-right: none !important;
 }
+/* Remove linha dupla à esquerda do timegrid (eixo de horas + primeira coluna) */
+.fc .fc-timegrid-axis {
+  border-right: none !important;
+}
+.fc .fc-timegrid-col.fc-day:first-child {
+  border-left: none !important;
+}
+.fc-direction-ltr .fc-timegrid-slot-label {
+  border-right: 1px solid hsl(var(--border)) !important;
+}
+.fc .fc-scrollgrid-section-header .fc-timegrid-axis {
+  border-right: none !important;
+  border-bottom: none !important;
+}
 
 /* react-vertical-timeline-component overrides */
 .client-timeline .vertical-timeline {
