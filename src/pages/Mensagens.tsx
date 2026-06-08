@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  Search, CheckCheck, Circle, ArrowDownUp, Send, Paperclip,
+  Search, CheckCheck, SlidersHorizontal, ArrowDownUp, Send, Paperclip,
   Smile, Phone, MoreVertical, ChevronRight, ChevronLeft,
-  Calendar, Tag, MapPin, Mail, Hash,
+  Calendar, Tag, MapPin, Mail, Hash, UserPlus, ExternalLink,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
 /* ─── Channel icons ─────────────────────────────────────── */
@@ -150,48 +150,42 @@ export default function Mensagens() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Channel toggle */}
-            <div className="flex rounded-md border overflow-hidden text-xs h-7">
-              {(["all", "whatsapp", "instagram"] as FilterChannel[]).map((ch) => (
-                <button
-                  key={ch}
-                  onClick={() => setFilterChannel(ch)}
-                  className={cn(
-                    "px-2 flex items-center gap-1 transition-colors",
-                    filterChannel === ch
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  )}
-                >
-                  {ch === "all" && "Todos"}
-                  {ch === "whatsapp" && <><WhatsAppIcon className="w-3 h-3" /> WA</>}
-                  {ch === "instagram" && <><InstagramIcon className="w-3 h-3" /> IG</>}
-                </button>
-              ))}
-            </div>
-
-            {/* Read filter */}
+            {/* Filters dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 gap-1 text-xs px-2">
-                  <Circle className="w-3 h-3" />
-                  {filterRead === "all" ? "Todas" : filterRead === "unread" ? "Não lidas" : "Lidas"}
+                <Button
+                  variant={filterChannel !== "all" || filterRead !== "all" ? "default" : "outline"}
+                  size="icon" className="h-7 w-7"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => setFilterRead("all")}>Todas</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterRead("unread")}>Não lidas</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterRead("read")}>Lidas</DropdownMenuItem>
+              <DropdownMenuContent align="start" className="w-44">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Canal</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setFilterChannel("all")} className={cn(filterChannel === "all" && "font-semibold")}>
+                  Todos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterChannel("whatsapp")} className={cn("gap-2", filterChannel === "whatsapp" && "font-semibold")}>
+                  <WhatsAppIcon className="w-3.5 h-3.5 text-green-500" /> WhatsApp
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterChannel("instagram")} className={cn("gap-2", filterChannel === "instagram" && "font-semibold")}>
+                  <InstagramIcon className="w-3.5 h-3.5 text-pink-500" /> Instagram
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Leitura</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setFilterRead("all")} className={cn(filterRead === "all" && "font-semibold")}>Todas</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterRead("unread")} className={cn(filterRead === "unread" && "font-semibold")}>Não lidas</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterRead("read")} className={cn(filterRead === "read" && "font-semibold")}>Lidas</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Sort */}
             <Button
-              variant="ghost" size="sm"
-              className="h-7 gap-1 text-xs px-2 ml-auto"
+              variant="outline" size="icon" className="h-7 w-7"
               onClick={() => setFilterOrder((o) => o === "recent" ? "oldest" : "recent")}
+              title={filterOrder === "recent" ? "Mais recentes primeiro" : "Mais antigas primeiro"}
             >
-              <ArrowDownUp className="w-3 h-3" />
-              {filterOrder === "recent" ? "Recentes" : "Antigas"}
+              <ArrowDownUp className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
@@ -329,10 +323,24 @@ export default function Mensagens() {
               <LeadRow icon={<Hash className="w-3.5 h-3.5" />} label="Canal origem" value={activeConv.source} />
             </div>
 
-            {/* Actions */}
-            <div className="p-4 border-t mt-auto space-y-2">
-              <Button variant="outline" size="sm" className="w-full text-xs">Ver perfil completo</Button>
-              <Button variant="outline" size="sm" className="w-full text-xs">Agendar sessão</Button>
+            {/* Quick actions */}
+            <div className="p-3 border-t mt-auto space-y-1.5">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide px-1 mb-2">Ações rápidas</p>
+              {activeConv.email ? (
+                <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
+                  <ExternalLink className="w-3.5 h-3.5" /> Ver cliente
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
+                  <UserPlus className="w-3.5 h-3.5" /> Criar cliente
+                </Button>
+              )}
+              <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
+                <Calendar className="w-3.5 h-3.5" /> Agendar sessão
+              </Button>
+              <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
+                <Tag className="w-3.5 h-3.5" /> Adicionar tag
+              </Button>
             </div>
           </div>
         )}
