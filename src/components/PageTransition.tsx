@@ -1,4 +1,7 @@
 import { motion } from "motion/react";
+import { useLocation } from "react-router-dom";
+
+const FULL_SCREEN_ROUTES = ["/dashboard", "/resumo", "/pipeline", "/mensagens"];
 
 const variants = {
   initial: { opacity: 0, y: 18, filter: "blur(4px)" },
@@ -17,13 +20,21 @@ const variants = {
 };
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isFullScreen = FULL_SCREEN_ROUTES.includes(location.pathname);
+
   return (
     <motion.div
       variants={variants}
       initial="initial"
       animate="animate"
       exit="exit"
-      style={{ willChange: "opacity, transform, filter", height: "100%", display: "flex", flexDirection: "column" }}
+      style={{
+        willChange: "opacity, transform, filter",
+        ...(isFullScreen
+          ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }
+          : {}),
+      }}
     >
       {children}
     </motion.div>
