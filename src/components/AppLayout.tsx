@@ -61,7 +61,7 @@ const AppLayout = () => {
   const { signOut, user, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isDashboard = location.pathname === "/dashboard" || location.pathname === "/resumo" || location.pathname === "/pipeline";
+  const isDashboard = location.pathname === "/dashboard" || location.pathname === "/resumo" || location.pathname === "/pipeline" || location.pathname === "/mensagens";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [expanded, setExpanded] = useState(() => {

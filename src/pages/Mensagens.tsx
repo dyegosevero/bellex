@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  Search, SlidersHorizontal, CheckCheck, Circle,
-  ArrowDownUp, Send, Paperclip, Smile, Phone, MoreVertical,
+  Search, CheckCheck, Circle, ArrowDownUp, Send, Paperclip,
+  Smile, Phone, MoreVertical, ChevronRight, ChevronLeft,
+  Calendar, Tag, MapPin, Mail, Hash,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuTrigger, DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 /* ─── Channel icons ─────────────────────────────────────── */
@@ -36,18 +37,26 @@ interface Msg { id: string; text: string; fromMe: boolean; time: string; }
 interface Conversation {
   id: string;
   contactName: string;
-  contactAvatar?: string;
   channel: Channel;
   lastMessage: string;
   lastTime: string;
   unread: number;
   messages: Msg[];
+  // lead data
+  phone?: string;
+  email?: string;
+  city?: string;
+  tag?: string;
+  lastAppointment?: string;
+  source?: string;
 }
 
 const MOCK: Conversation[] = [
   {
     id: "1", contactName: "Ana Paula", channel: "whatsapp",
     lastMessage: "Oi! Quero agendar uma sessão para amanhã.", lastTime: "09:41", unread: 2,
+    phone: "+55 11 99999-0001", email: "ana@email.com", city: "São Paulo", tag: "VIP",
+    lastAppointment: "02/06/2026", source: "WhatsApp",
     messages: [
       { id: "m1", text: "Oi, tudo bem?", fromMe: false, time: "09:38" },
       { id: "m2", text: "Tudo! Como posso ajudar?", fromMe: true, time: "09:39" },
@@ -57,6 +66,8 @@ const MOCK: Conversation[] = [
   {
     id: "2", contactName: "Carlos Mendes", channel: "instagram",
     lastMessage: "Vi o post sobre promoção, ainda está válido?", lastTime: "08:15", unread: 1,
+    phone: "+55 21 98888-0002", email: "carlos@email.com", city: "Rio de Janeiro", tag: "Novo",
+    lastAppointment: "—", source: "Instagram",
     messages: [
       { id: "m1", text: "Vi o post sobre promoção, ainda está válido?", fromMe: false, time: "08:15" },
     ],
@@ -64,6 +75,8 @@ const MOCK: Conversation[] = [
   {
     id: "3", contactName: "Fernanda Lima", channel: "whatsapp",
     lastMessage: "Confirmado! Até amanhã 😊", lastTime: "Ontem", unread: 0,
+    phone: "+55 31 97777-0003", email: "fernanda@email.com", city: "Belo Horizonte", tag: "Regular",
+    lastAppointment: "05/06/2026", source: "WhatsApp",
     messages: [
       { id: "m1", text: "Posso remarcar para quinta?", fromMe: false, time: "14:20" },
       { id: "m2", text: "Claro! Às 15h está bom?", fromMe: true, time: "14:22" },
@@ -73,6 +86,8 @@ const MOCK: Conversation[] = [
   {
     id: "4", contactName: "Roberto Alves", channel: "instagram",
     lastMessage: "Quanto custa a avaliação?", lastTime: "Ter", unread: 0,
+    phone: "+55 41 96666-0004", email: "roberto@email.com", city: "Curitiba", tag: "Lead",
+    lastAppointment: "—", source: "Instagram",
     messages: [
       { id: "m1", text: "Quanto custa a avaliação?", fromMe: false, time: "10:00" },
       { id: "m2", text: "A avaliação inicial é gratuita! Quando posso te atender?", fromMe: true, time: "10:05" },
@@ -81,13 +96,14 @@ const MOCK: Conversation[] = [
   {
     id: "5", contactName: "Mariana Costa", channel: "whatsapp",
     lastMessage: "Obrigada pela atenção!", lastTime: "Seg", unread: 0,
+    phone: "+55 51 95555-0005", email: "mariana@email.com", city: "Porto Alegre", tag: "VIP",
+    lastAppointment: "01/06/2026", source: "WhatsApp",
     messages: [
       { id: "m1", text: "Obrigada pela atenção!", fromMe: false, time: "16:30" },
     ],
   },
 ];
 
-/* ─── Component ─────────────────────────────────────────── */
 type FilterChannel = "all" | "whatsapp" | "instagram";
 type FilterRead = "all" | "unread" | "read";
 type FilterOrder = "recent" | "oldest";
@@ -99,6 +115,7 @@ export default function Mensagens() {
   const [filterOrder, setFilterOrder] = useState<FilterOrder>("recent");
   const [selected, setSelected] = useState<string | null>(MOCK[0].id);
   const [input, setInput] = useState("");
+  const [leadPanelOpen, setLeadPanelOpen] = useState(true);
 
   const filtered = MOCK
     .filter((c) => {
@@ -118,9 +135,9 @@ export default function Mensagens() {
 
   return (
     <div className="-m-6 lg:-m-8 flex h-[calc(100vh-3.5rem)] overflow-hidden bg-background">
-      {/* ─── Sidebar ────────────────────────────────────── */}
-      <aside className="w-80 shrink-0 border-r flex flex-col">
-        {/* Search */}
+
+      {/* ── Col 1: Lista de conversas ─────────────────────── */}
+      <aside className="w-72 shrink-0 border-r flex flex-col">
         <div className="p-3 border-b space-y-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -132,16 +149,15 @@ export default function Mensagens() {
             />
           </div>
 
-          {/* Filter row */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Channel */}
+          <div className="flex items-center gap-1.5">
+            {/* Channel toggle */}
             <div className="flex rounded-md border overflow-hidden text-xs h-7">
               {(["all", "whatsapp", "instagram"] as FilterChannel[]).map((ch) => (
                 <button
                   key={ch}
                   onClick={() => setFilterChannel(ch)}
                   className={cn(
-                    "px-2.5 flex items-center gap-1 transition-colors",
+                    "px-2 flex items-center gap-1 transition-colors",
                     filterChannel === ch
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted text-muted-foreground"
@@ -169,12 +185,10 @@ export default function Mensagens() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Order */}
             <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               className="h-7 gap-1 text-xs px-2 ml-auto"
-              onClick={() => setFilterOrder((o) => (o === "recent" ? "oldest" : "recent"))}
+              onClick={() => setFilterOrder((o) => o === "recent" ? "oldest" : "recent")}
             >
               <ArrowDownUp className="w-3 h-3" />
               {filterOrder === "recent" ? "Recentes" : "Antigas"}
@@ -182,7 +196,6 @@ export default function Mensagens() {
           </div>
         </div>
 
-        {/* Conversation list */}
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
             <p className="text-center text-xs text-muted-foreground p-6">Nenhuma conversa.</p>
@@ -199,17 +212,17 @@ export default function Mensagens() {
         </div>
       </aside>
 
-      {/* ─── Chat area ──────────────────────────────────── */}
+      {/* ── Col 2: Chat ───────────────────────────────────── */}
       {activeConv ? (
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Chat header */}
+          {/* Header */}
           <div className="h-14 border-b flex items-center px-4 gap-3 shrink-0">
             <div className="relative">
               <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center font-medium text-sm">
                 {activeConv.contactName[0]}
               </div>
               <span className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center",
+                "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-background flex items-center justify-center",
                 activeConv.channel === "whatsapp" ? "text-green-500" : "text-pink-500"
               )}>
                 {activeConv.channel === "whatsapp"
@@ -228,16 +241,21 @@ export default function Mensagens() {
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <MoreVertical className="w-4 h-4" />
               </Button>
+              {/* Toggle lead panel */}
+              <Button
+                variant="ghost" size="icon" className="h-8 w-8"
+                onClick={() => setLeadPanelOpen((v) => !v)}
+                title={leadPanelOpen ? "Recolher painel" : "Expandir painel"}
+              >
+                {leadPanelOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+              </Button>
             </div>
           </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {activeConv.messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn("flex", msg.fromMe ? "justify-end" : "justify-start")}
-              >
+              <div key={msg.id} className={cn("flex", msg.fromMe ? "justify-end" : "justify-start")}>
                 <div className={cn(
                   "max-w-[72%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
                   msg.fromMe
@@ -263,7 +281,7 @@ export default function Mensagens() {
               <Smile className="w-4 h-4" />
             </Button>
             <Input
-              className="flex-1 resize-none"
+              className="flex-1"
               placeholder="Escreva uma mensagem..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -279,18 +297,54 @@ export default function Mensagens() {
           Selecione uma conversa
         </div>
       )}
+
+      {/* ── Col 3: Painel do lead (recolhível) ───────────── */}
+      <aside className={cn(
+        "border-l flex flex-col bg-muted/20 transition-all duration-200 overflow-hidden shrink-0",
+        leadPanelOpen ? "w-64" : "w-0"
+      )}>
+        {activeConv && leadPanelOpen && (
+          <div className="flex flex-col h-full overflow-y-auto">
+            {/* Lead header */}
+            <div className="p-4 border-b flex flex-col items-center gap-2 text-center">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-xl font-semibold text-primary">
+                {activeConv.contactName[0]}
+              </div>
+              <div>
+                <p className="font-medium text-sm">{activeConv.contactName}</p>
+                {activeConv.tag && (
+                  <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium mt-1">
+                    <Tag className="w-2.5 h-2.5" /> {activeConv.tag}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Lead info */}
+            <div className="p-4 space-y-3 text-sm">
+              <LeadRow icon={<Phone className="w-3.5 h-3.5" />} label="Telefone" value={activeConv.phone} />
+              <LeadRow icon={<Mail className="w-3.5 h-3.5" />} label="E-mail" value={activeConv.email} />
+              <LeadRow icon={<MapPin className="w-3.5 h-3.5" />} label="Cidade" value={activeConv.city} />
+              <LeadRow icon={<Calendar className="w-3.5 h-3.5" />} label="Último agend." value={activeConv.lastAppointment} />
+              <LeadRow icon={<Hash className="w-3.5 h-3.5" />} label="Canal origem" value={activeConv.source} />
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 border-t mt-auto space-y-2">
+              <Button variant="outline" size="sm" className="w-full text-xs">Ver perfil completo</Button>
+              <Button variant="outline" size="sm" className="w-full text-xs">Agendar sessão</Button>
+            </div>
+          </div>
+        )}
+      </aside>
+
     </div>
   );
 }
 
-/* ─── Conversation list item ─────────────────────────────── */
-function ConvItem({
-  conv, active, onClick,
-}: {
-  conv: Conversation;
-  active: boolean;
-  onClick: () => void;
-}) {
+/* ─── Sub-components ─────────────────────────────────────── */
+
+function ConvItem({ conv, active, onClick }: { conv: Conversation; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -299,7 +353,6 @@ function ConvItem({
         active ? "bg-muted/60" : "hover:bg-muted/30"
       )}
     >
-      {/* Avatar + channel icon */}
       <div className="relative shrink-0">
         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-medium text-sm">
           {conv.contactName[0]}
@@ -313,8 +366,6 @@ function ConvItem({
             : <InstagramIcon className="w-3.5 h-3.5" />}
         </span>
       </div>
-
-      {/* Text */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className={cn("text-sm truncate", conv.unread > 0 ? "font-semibold" : "font-medium")}>
@@ -324,14 +375,24 @@ function ConvItem({
         </div>
         <div className="flex items-center justify-between gap-2 mt-0.5">
           <span className="text-xs text-muted-foreground truncate">{conv.lastMessage}</span>
-          {conv.unread > 0 && (
-            <Badge className="h-4 min-w-4 px-1 text-[10px] shrink-0 rounded-full">
-              {conv.unread}
-            </Badge>
-          )}
-          {conv.unread === 0 && <CheckCheck className="w-3.5 h-3.5 text-primary/50 shrink-0" />}
+          {conv.unread > 0
+            ? <Badge className="h-4 min-w-4 px-1 text-[10px] shrink-0 rounded-full">{conv.unread}</Badge>
+            : <CheckCheck className="w-3.5 h-3.5 text-primary/50 shrink-0" />}
         </div>
       </div>
     </button>
+  );
+}
+
+function LeadRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start gap-2">
+      <span className="text-muted-foreground mt-0.5 shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wide leading-none mb-0.5">{label}</p>
+        <p className="text-xs text-foreground break-all">{value}</p>
+      </div>
+    </div>
   );
 }
