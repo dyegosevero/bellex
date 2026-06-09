@@ -9,6 +9,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
+import { DateRangeFilter, type DateRangeValue } from "@/components/ui/date-range-filter";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useDebounce } from "@/hooks/useDebounce";
 import { fmtDateShort } from "@/lib/date";
@@ -42,6 +43,7 @@ const Faturamento = () => {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [specialistFilter, setSpecialistFilter] = useState("all");
   const [serviceFilter, setServiceFilter] = useState("all");
+  const [dateRange, setDateRange] = useState<DateRangeValue | null>(null);
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 400);
 
@@ -66,7 +68,7 @@ const Faturamento = () => {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["faturamento", debouncedSearch, paymentFilter, specialistFilter, serviceFilter, page],
+    queryKey: ["faturamento", debouncedSearch, paymentFilter, specialistFilter, serviceFilter, dateRange, page],
     queryFn: async () => {
       // Step 1: Build the appointments query with server-side filters
       let query = supabase
@@ -77,6 +79,10 @@ const Faturamento = () => {
         )
         .in("status", BILLING_APPOINTMENT_STATUSES)
         .order("start_time", { ascending: false });
+
+      if (dateRange) {
+        query = query.gte("start_time", dateRange.from.toISOString()).lte("start_time", dateRange.to.toISOString());
+      }
 
       // Apply search filter on client name (server-side)
       if (debouncedSearch.trim()) {
@@ -352,6 +358,9 @@ const Faturamento = () => {
         </BlurFade>
       )}
 
+      <div className="mb-4">
+        <DateRangeFilter value={dateRange} onChange={(v) => { setDateRange(v); resetPage(); }} />
+      </div>
       <FaturamentoFilters
         search={search}
         onSearchChange={(v) => { setSearch(v); resetPage(); }}
@@ -398,7 +407,14 @@ const Faturamento = () => {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => navigate(`/atendimentos/${row.id}`)}
                   >
-                    <TableCell className="font-medium">{row.client_name}</TableCell>
+                    <TableCell className="font-medium">
+                      <button
+                        className="hover:underline text-left text-primary/80 hover:text-primary transition-colors"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/clientes/${row.client_id}`); }}
+                      >
+                        {row.client_name}
+                      </button>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{row.service_name}</TableCell>
                     <TableCell className="text-muted-foreground">{row.specialist_name}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{fmtDateShort(row.date)}</TableCell>

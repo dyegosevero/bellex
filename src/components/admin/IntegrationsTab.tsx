@@ -153,9 +153,10 @@ function WhatsAppCard({
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     ["evolution_instance_name", "evolution_instance_id"].forEach(ensureSetting);
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const baseUrl = getVal("whatsapp_request_url");
@@ -613,7 +614,14 @@ export default function IntegrationsTab() {
     queryFn: async () => {
       const { data, error } = await supabase.from("integration_settings").select("*").order("setting_key");
       if (error) throw error;
-      setLocal(data as IntSetting[]);
+      // Deduplicate by setting_key — keep only first occurrence per key
+      const seen = new Set<string>();
+      const deduped = (data as IntSetting[]).filter((s) => {
+        if (seen.has(s.setting_key)) return false;
+        seen.add(s.setting_key);
+        return true;
+      });
+      setLocal(deduped);
       const map: Record<string, boolean> = {};
       (data as IntSetting[]).forEach((s) => {
         if (s.setting_key === "n8n_webhook_enabled_birthday") {
@@ -1354,30 +1362,6 @@ export default function IntegrationsTab() {
             </p>
           </div>
 
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">🎂&nbsp; Aniversariantes</p>
-                <p className="text-xs text-muted-foreground">Enviar mensagem automática no dia do aniversário</p>
-              </div>
-              <Switch
-                checked={birthdayEnabled}
-                onCheckedChange={(v) => toggleWebhookSetting("n8n_webhook_enabled_birthday", v)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">💤&nbsp; Clientes Inativos</p>
-                <p className="text-xs text-muted-foreground">
-                  Enviar mensagem para clientes sem visita há mais de {inactivityDays ?? 90} dias
-                </p>
-              </div>
-              <Switch
-                checked={inactiveEnabled}
-                onCheckedChange={(v) => toggleWebhookSetting("n8n_webhook_enabled_inactive", v)}
-              />
-            </div>
-          </div>
         </div>
 
         {/* Chave de requisições cronológicas */}

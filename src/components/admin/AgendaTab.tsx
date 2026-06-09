@@ -227,23 +227,6 @@ export default function AgendaTab() {
 
           <div className="flex items-center justify-between bg-muted/30 rounded-lg p-4">
             <div>
-              <p className="text-sm font-medium">Antecedência de lembrete por E-mail e SMS</p>
-            </div>
-            <Select value={form.reminder_lead || "24h"} onValueChange={(v) => update("reminder_lead", v)}>
-              <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1h">1h</SelectItem>
-                <SelectItem value="2h">2h</SelectItem>
-                <SelectItem value="4h">4h</SelectItem>
-                <SelectItem value="12h">12h</SelectItem>
-                <SelectItem value="24h">24h</SelectItem>
-                <SelectItem value="48h">48h</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between bg-muted/30 rounded-lg p-4">
-            <div>
               <p className="text-sm font-medium">Dias para considerar inativo</p>
               <p className="text-xs text-muted-foreground mt-0.5">Clientes sem visita há mais de {form.inactivity_days || 90} dias serão considerados inativos.</p>
             </div>

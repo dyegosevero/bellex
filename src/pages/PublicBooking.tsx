@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import logoFull from "@/assets/logo-color.png";
 import { getTimezone } from "@/lib/date";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
@@ -737,7 +738,7 @@ const PublicBooking = () => {
             </div>
           </div>
         ) : (
-          <div className="relative bg-gradient-to-b from-muted-foreground/80 to-muted-foreground/60 h-[260px] flex items-center justify-center px-4 rounded-b-[18px]">
+          <div className="relative bg-gradient-to-b from-primary to-primary/85 h-[260px] flex items-center justify-center px-4 rounded-b-[18px]">
             {/* Social icons top-right */}
             <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
               {pageSettings?.social_instagram && (
@@ -771,7 +772,12 @@ const PublicBooking = () => {
                 </a>
               )}
             </div>
-            <img src={logoUrl || logoFull} alt={clinicName} className="h-10 sm:h-14 object-contain invert" />
+            <img
+              src={logoUrl || logoFull}
+              alt={clinicName}
+              className="h-10 sm:h-14 object-contain brightness-0 invert"
+              style={{ animation: "booking-logo-in 0.6s cubic-bezier(0.16,1,0.3,1) both" }}
+            />
           </div>
         )}
       </div>

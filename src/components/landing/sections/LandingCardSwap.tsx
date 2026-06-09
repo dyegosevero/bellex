@@ -6,7 +6,7 @@ import { FadeUp } from "./utils";
 const screens = [
   {
     icon: Calendar,
-    label: "Agenda",
+    label: "Agenda Inteligente",
     color: "hsl(10 75% 77%)",
     bg: "hsl(10 60% 96%)",
     preview: (
@@ -41,7 +41,7 @@ const screens = [
   },
   {
     icon: Users,
-    label: "Clientes",
+    label: "Gestão de Clientes",
     color: "hsl(210 80% 60%)",
     bg: "hsl(210 60% 97%)",
     preview: (
@@ -86,7 +86,7 @@ const screens = [
   },
   {
     icon: CreditCard,
-    label: "Financeiro",
+    label: "Cobranças & Faturamento",
     color: "hsl(142 70% 45%)",
     bg: "hsl(142 50% 96%)",
     preview: (
@@ -132,7 +132,7 @@ const screens = [
   },
   {
     icon: Megaphone,
-    label: "Marketing",
+    label: "Marketing Automatizado",
     color: "hsl(30 90% 55%)",
     bg: "hsl(30 80% 96%)",
     preview: (
@@ -163,7 +163,7 @@ const screens = [
   },
   {
     icon: BarChart3,
-    label: "Relatórios",
+    label: "Relatórios Gerenciais",
     color: "hsl(262 80% 60%)",
     bg: "hsl(262 60% 97%)",
     preview: (
@@ -256,7 +256,7 @@ export function LandingCardSwap() {
               <span className="text-primary">para a rotina da clínica.</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-8">
-              Agenda, prontuário, financeiro, marketing, relatórios e agendamento online — tudo integrado, sem exportar, sem copiar, sem colar.
+              Agenda, clientes, faturamento, marketing, relatórios e agendamento online — tudo integrado, sem exportar, sem copiar, sem colar.
             </p>
             <div className="space-y-0">
               {screens.map((s, i) => {

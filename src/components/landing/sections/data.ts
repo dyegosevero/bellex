@@ -2,8 +2,8 @@ import { Calendar, Users, CreditCard, Megaphone, BarChart3, Globe, AlertCircle, 
 
 export const features = [
   { icon: Calendar, title: "Agenda Inteligente", desc: "Calendário visual com bloqueios, lembretes automáticos por WhatsApp e e-mail, e visão por especialista. Zero confusão de horário.", href: "/recursos/agenda" },
-  { icon: Users, title: "Prontuário Digital", desc: "Ficha completa de cada cliente: anamnese, histórico de procedimentos, fotos antes/depois e evolução do tratamento.", href: "/recursos/clientes" },
-  { icon: CreditCard, title: "Controle Financeiro", desc: "Cobranças, inadimplência, faturamento por período e exportação para a contabilidade. Saiba exatamente onde está sua receita.", href: "/recursos/financeiro" },
+  { icon: Users, title: "Gestão de Clientes", desc: "Ficha completa de cada cliente: anamnese, histórico de procedimentos, fotos antes/depois e evolução do tratamento.", href: "/recursos/clientes" },
+  { icon: CreditCard, title: "Cobranças & Faturamento", desc: "Cobranças, inadimplência, faturamento por período e exportação para a contabilidade. Saiba exatamente onde está sua receita.", href: "/recursos/financeiro" },
   { icon: Megaphone, title: "Marketing Automatizado", desc: "Reative clientes inativos, envie campanhas segmentadas e colete avaliações no Google — tudo sem esforço manual.", href: "/recursos/marketing" },
   { icon: BarChart3, title: "Relatórios Reais", desc: "Produtividade por especialista, taxa de retorno, serviços mais rentáveis. Dados para decidir, não para enfeitar.", href: "/recursos/relatorios" },
   { icon: Globe, title: "Agendamento 24h", desc: "Link público com seus serviços, especialistas e horários disponíveis. O cliente agenda sozinho — a qualquer hora.", href: "/recursos/agendamento-online" },
@@ -45,7 +45,7 @@ export const plans = [
     desc: "Para clínicas que estão começando.",
     features: [
       "Até 2 especialistas",
-      "Agenda + Prontuário digital",
+      "Agenda + Gestão de Clientes",
       "Agendamento online 24h",
       "Lembretes por WhatsApp",
       "Controle financeiro básico",
@@ -101,9 +101,9 @@ export type CompareRow = {
 export const compareRows: CompareRow[] = [
   { label: "Especialistas", starter: "Até 2", pro: "Ilimitados", enterprise: "Ilimitados" },
   { label: "Agendamento online 24h", starter: true, pro: true, enterprise: true },
-  { label: "Prontuário digital", starter: true, pro: true, enterprise: true },
+  { label: "Gestão de Clientes", starter: true, pro: true, enterprise: true },
   { label: "Lembretes por WhatsApp", starter: "50/mês", pro: "Ilimitado", enterprise: "Ilimitado" },
-  { label: "Controle financeiro", starter: "Básico", pro: "Completo", enterprise: "Completo" },
+  { label: "Cobranças & Faturamento", starter: "Básico", pro: "Completo", enterprise: "Completo" },
   { label: "Marketing automatizado", starter: false, pro: true, enterprise: true },
   { label: "Relatórios gerenciais", starter: false, pro: true, enterprise: true },
   { label: "App com seu logo", starter: false, pro: true, enterprise: true },

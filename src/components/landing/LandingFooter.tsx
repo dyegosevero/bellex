@@ -21,7 +21,7 @@ export function LandingFooter() {
               {[
                 { label: "Agenda", href: "/recursos/agenda" },
                 { label: "Clientes", href: "/recursos/clientes" },
-                { label: "Financeiro", href: "/recursos/financeiro" },
+                { label: "Faturamento", href: "/recursos/financeiro" },
                 { label: "Marketing", href: "/recursos/marketing" },
                 { label: "Relatórios", href: "/recursos/relatorios" },
                 { label: "Agendamento Online", href: "/recursos/agendamento-online" },

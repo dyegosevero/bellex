@@ -57,7 +57,7 @@ const ShareBookingDialog = ({ open, onOpenChange }: ShareBookingDialogProps) => 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="sr-only">Comcomcompartilhamentor página de agendamento</DialogTitle>
+          <DialogTitle className="sr-only">Compartilhar página de agendamento</DialogTitle>
         </DialogHeader>
 
         {/* Preview card */}

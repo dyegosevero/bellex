@@ -21,6 +21,7 @@ import {
 import {
   CreditCard, Plus, Search, ChevronLeft, ChevronRight, Eye, Pencil,
 } from "lucide-react";
+import { DateRangeFilter, type DateRangeValue } from "@/components/ui/date-range-filter";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { fmtCurrency, fmtDate } from "@/lib/date";
 
@@ -34,14 +35,16 @@ const Charges = () => {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateRange, setDateRange] = useState<DateRangeValue | null>(null);
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 400);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["charges", debouncedSearch, statusFilter, page],
+    queryKey: ["charges", debouncedSearch, statusFilter, dateRange, page],
     queryFn: async () => {
       let query = supabase.from("charges").select("*, clients(full_name)", { count: "exact" }).order("created_at", { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
       if (statusFilter !== "all") query = query.eq("status", statusFilter);
+      if (dateRange) query = query.gte("created_at", dateRange.from.toISOString()).lte("created_at", dateRange.to.toISOString());
       const { data, error, count } = await query;
       if (error) throw error;
       return { rows: data ?? [], total: count ?? 0 };
@@ -75,12 +78,15 @@ const Charges = () => {
             icon={<CreditCard className="w-5 h-5" />}
             title="Cobranças"
             subtitle={data?.total ? `${data.total} cobranças` : "Gestão de cobranças e pagamentos"}
-            actions={<Button onClick={() => navigate("/cobrancas/nova")}><Plus className="w-4 h-4 mr-2" /> Nova Cobrança</Button>}
             className="mb-0"
           />
+          <Button onClick={() => navigate("/cobrancas/nova")}><Plus className="w-4 h-4 mr-2" /> Nova Cobrança</Button>
         </div>
       </BlurFade>
 
+      <div className="mb-4">
+        <DateRangeFilter value={dateRange} onChange={(v) => { setDateRange(v); setPage(1); }} />
+      </div>
       <div className="flex gap-3 mb-6">
         <div className="relative max-w-xs flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

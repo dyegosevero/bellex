@@ -271,17 +271,16 @@ const Services = () => {
             <PageHeader icon={<Sparkles className="w-5 h-5" />} title="Serviços" subtitle={`${services?.length ?? 0} serviços · ${categories?.length ?? 0} categorias`} className="mb-0" />
           </div>
           <div className="flex items-center gap-2">
-             <Button
-               variant={showArchived ? "default" : "outline"}
-               size="sm"
-               onClick={() => setShowArchived(!showArchived)}
-               className="gap-1.5"
-               disabled={archivedServices.length === 0}
-             >
-               <Archive className="w-4 h-4" />
-               Arquivados{archivedServices.length > 0 ? ` (${archivedServices.length})` : ""}
-             </Button>
-            <Button variant="outline" onClick={openNewCategory} size="sm">
+            <Button
+              variant={showArchived ? "default" : "outline"}
+              onClick={() => setShowArchived(!showArchived)}
+              className="gap-1.5"
+              disabled={archivedServices.length === 0}
+            >
+              <Archive className="w-4 h-4" />
+              Arquivados{archivedServices.length > 0 ? ` (${archivedServices.length})` : ""}
+            </Button>
+            <Button variant="outline" onClick={openNewCategory}>
               <FolderOpen className="w-4 h-4 mr-2" /> Nova Categoria
             </Button>
             <Button onClick={openNewService}>

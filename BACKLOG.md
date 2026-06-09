@@ -1,11 +1,42 @@
-# Backlog — Features do Concorrente (Gendo)
+# Backlog — Bellex
 
-Análise feita em 08/06/2026 comparando gendo.com.br/planos com o sistema Bellex.
-Features existentes no Gendo que ainda não temos.
+---
+
+## Infraestrutura de Negócio 🏗️
+> Não é feature para o usuário final — é o que permite escalar o produto como SaaS e Whitelabel.
+
+### Multi-tenant + Arquitetura Whitelabel
+Separar o conceito de `tenant` no banco com `installation_type` (saas | whitelabel).
+Cada tenant tem branding próprio (logo, cor, domínio). Um código, N instalações.
+- Tabelas: `tenants`, `licenses`, `seats`
+- RLS isolado por tenant
+- Branding dinâmico carregado por domínio/subdomínio
+
+### Super Admin — `admin.bellex.com.br`
+Painel exclusivo seu. Vê todos os tenants SaaS + todas as licenças Whitelabel.
+- Lista de instalações com status (ativo, trial, inadimplente, cancelado)
+- Ativar / desativar / expirar manualmente
+- Uso de seats por licença
+- Impersonar tenant
+
+### Tenant Admin — Painel do Parceiro Whitelabel
+Painel no domínio do parceiro (ex: `sistema.mentora.com.br`).
+- Lista das clínicas criadas por ele
+- Criar nova clínica (consome 1 seat da licença)
+- Ver quando a licença expira
+- Branding: logo, cor primária, domínio customizado
+
+### Cobrança Recorrente — Integração Asaas
+Checkout para iniciar assinatura SaaS diretamente no signup.
+- Fluxo: signup → seleciona plano → redirect Asaas Pay → webhook → ativa tenant
+- Webhook handler: cria tenant, define plano, redireciona para o app
+- Gestão de inadimplência: webhook de atraso desativa tenant, pagamento reativa
+- Para licenças WL: cobrança manual via Asaas (boleto/Pix), ativação via Super Admin
 
 ---
 
 ## Prioridade Alta 🔴
+> Features para o usuário final — baseadas em análise do concorrente Gendo.
 
 ### Pagamento no Agendamento Online
 Cobrança integrada no último passo do `/agendamento` público — Pix e cartão de crédito.

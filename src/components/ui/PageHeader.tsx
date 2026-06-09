@@ -12,11 +12,11 @@ export function PageHeader({ icon, title, subtitle, actions, className }: PageHe
   return (
     <div className={cn("flex items-start justify-between gap-4 mb-6", className)}>
       <div className="flex items-center gap-3">
-        {icon && (
+        {/* {icon && (
           <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center text-primary shrink-0">
             {icon}
           </div>
-        )}
+        )} */}
         <div>
           <h1 className="text-2xl font-light tracking-wider uppercase text-foreground leading-none">
             {title}
