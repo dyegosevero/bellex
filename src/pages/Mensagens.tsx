@@ -11,10 +11,10 @@ import {
   Search, CheckCheck, SlidersHorizontal, Send, Paperclip,
   Smile, ChevronRight, ChevronLeft, Phone, Archive, ArchiveRestore,
   Calendar, Tag, MapPin, Mail, Hash, UserPlus, ExternalLink,
-  Star, Trash2, Loader2,
+  Star, Trash2, Loader2, Plus, X,
 } from "lucide-react";
 import {
-  fetchConversations, fetchMessages, sendMessage, createConversation,
+  fetchConversations, fetchMessages, sendMessage, createConversation, createLead,
   type Conversation as DBConversation, type Message as DBMessage, type Lead,
 } from "@/lib/crm";
 import { supabase } from "@/integrations/supabase/client";
@@ -236,6 +236,9 @@ export default function Mensagens() {
   const [starred, setStarred] = useState<Set<string>>(new Set());
   const [archived, setArchived] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [newConvOpen, setNewConvOpen] = useState(false);
+  const [newConvForm, setNewConvForm] = useState({ name: "", phone: "", channel: "whatsapp" as Channel });
+  const [newConvSaving, setNewConvSaving] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Load conversations
@@ -302,6 +305,48 @@ export default function Mensagens() {
     }
   }
 
+  async function handleNewConv() {
+    if (!newConvForm.name.trim()) return;
+    setNewConvSaving(true);
+    try {
+      // Busca stage "Novo Lead" para criar o lead
+      const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
+      const { data: stages } = await sb.from("pipeline_stages").select("id").order("position").limit(1);
+      const stageId = stages?.[0]?.id ?? null;
+
+      const lead = await createLead({
+        name: newConvForm.name.trim(),
+        phone: newConvForm.phone || null,
+        email: null,
+        source: newConvForm.channel,
+        stage_id: stageId,
+        last_message: null,
+        notes: null,
+      });
+      const conv = await createConversation(lead.id, newConvForm.channel);
+
+      // Adiciona na lista local
+      const uiConv: UIConversation = {
+        id: conv.id,
+        contactName: lead.name,
+        channel: newConvForm.channel,
+        lastMessage: "",
+        lastTime: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        unread: 0,
+        leadId: lead.id,
+        phone: lead.phone ?? undefined,
+      };
+      setConvs(prev => [uiConv, ...prev]);
+      setSelected(conv.id);
+      setNewConvOpen(false);
+      setNewConvForm({ name: "", phone: "", channel: "whatsapp" });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setNewConvSaving(false);
+    }
+  }
+
   const filtered = convs
     .filter((c) => {
       if (archived.has(c.id)) return false;
@@ -325,7 +370,16 @@ export default function Mensagens() {
       {/* ── Col 1: Lista de conversas ─────────────────────── */}
       <aside className="w-72 shrink-0 border-x flex flex-col">
         <div className="px-3 pt-4 pb-3 border-b space-y-2.5">
-          <p className="text-sm font-semibold text-foreground">Conversas</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-foreground">Conversas</p>
+            <button
+              onClick={() => setNewConvOpen(true)}
+              className="w-6 h-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Nova conversa"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
           {/* Search + filter inline */}
           <div className="relative">
@@ -623,6 +677,73 @@ export default function Mensagens() {
           </div>
         )}
       </aside>
+
+      {/* ── Modal: Nova Conversa ─────────────────────────── */}
+      {newConvOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setNewConvOpen(false)}>
+          <div
+            className="bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold">Nova conversa</h3>
+              <button onClick={() => setNewConvOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Nome do contato</label>
+                <Input
+                  placeholder="Ex: Maria Silva"
+                  value={newConvForm.name}
+                  onChange={e => setNewConvForm(f => ({ ...f, name: e.target.value }))}
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Telefone</label>
+                <Input
+                  placeholder="+55 (11) 99999-0000"
+                  value={newConvForm.phone}
+                  onChange={e => setNewConvForm(f => ({ ...f, phone: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Canal</label>
+                <div className="flex gap-2">
+                  {(["whatsapp", "instagram"] as Channel[]).map(ch => (
+                    <button
+                      key={ch}
+                      onClick={() => setNewConvForm(f => ({ ...f, channel: ch }))}
+                      className={cn(
+                        "flex-1 h-9 rounded-xl border text-sm font-medium transition-colors",
+                        newConvForm.channel === ch
+                          ? ch === "whatsapp" ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400" : "border-pink-500 bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-400"
+                          : "border-border text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      {ch === "whatsapp" ? "WhatsApp" : "Instagram"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <Button variant="outline" className="flex-1" onClick={() => setNewConvOpen(false)}>Cancelar</Button>
+              <Button
+                className="flex-1"
+                disabled={!newConvForm.name.trim() || newConvSaving}
+                onClick={handleNewConv}
+              >
+                {newConvSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Iniciar conversa"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
