@@ -1,3 +1,6 @@
+import { BrandGrain } from "@/components/BrandGrain";
+import { BRAND_GRAIN_PROPS, BRAND_COLORS } from "@/lib/brand";
+
 export const DSBrandFoundation = () => {
   return (
     <section className="ds-section">
@@ -77,6 +80,45 @@ export const DSBrandFoundation = () => {
           </div>
           <span className="text-xs text-muted-foreground">Fundo salmon</span>
         </div>
+      </div>
+
+      {/* BrandGrain — padrão de fundo */}
+      <h3 className="font-heading text-xl font-light mb-4 mt-10">Fundo Grain — Padrão da Marca</h3>
+      <p className="text-sm text-muted-foreground mb-6">
+        O grain salmão é o fundo canônico da marca. Use <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">&lt;BrandGrain /&gt;</code> em qualquer seção que precise desse visual.
+        O preset vive em <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">src/lib/brand.ts → BRAND_GRAIN_PROPS</code>.
+      </p>
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        {/* Preview sem overlay */}
+        <div className="flex flex-col gap-3">
+          <div className="relative h-40 rounded-2xl overflow-hidden">
+            <BrandGrain />
+          </div>
+          <div className="text-xs text-muted-foreground text-center">
+            <code className="bg-muted px-1.5 py-0.5 rounded font-mono">&lt;BrandGrain /&gt;</code> — sem overlay
+          </div>
+        </div>
+        {/* Preview com overlay (para texto branco) */}
+        <div className="flex flex-col gap-3">
+          <div className="relative h-40 rounded-2xl overflow-hidden flex items-center justify-center">
+            <BrandGrain overlay />
+            <p className="relative z-10 font-heading text-2xl font-light text-white tracking-tight">Bellex®</p>
+          </div>
+          <div className="text-xs text-muted-foreground text-center">
+            <code className="bg-muted px-1.5 py-0.5 rounded font-mono">&lt;BrandGrain overlay /&gt;</code> — com texto branco
+          </div>
+        </div>
+      </div>
+      {/* Cores */}
+      <div className="bg-muted/40 rounded-xl p-4 space-y-2 mb-10 text-xs font-mono">
+        <p className="text-muted-foreground font-sans text-xs mb-3 font-medium uppercase tracking-wide">Paleta do grain</p>
+        {Object.entries(BRAND_COLORS).map(([key, val]) => (
+          <div key={key} className="flex items-center gap-3">
+            <span className="w-5 h-5 rounded-full border border-border shrink-0" style={{ background: val }} />
+            <span className="text-foreground">BRAND_COLORS.{key}</span>
+            <span className="text-muted-foreground ml-auto">{val}</span>
+          </div>
+        ))}
       </div>
 
       {/* Anti-guidelines */}
