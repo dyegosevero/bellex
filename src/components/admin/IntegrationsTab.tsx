@@ -27,7 +27,15 @@ import {
   Eye,
   EyeOff,
   KeyRound,
+  Plus,
+  Trash2,
+  Server,
+  ExternalLink,
 } from "lucide-react";
+import {
+  fetchInstances, upsertInstance, deleteInstance,
+  type WhatsAppInstance,
+} from "@/lib/crm";
 import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -553,6 +561,266 @@ function EmbedCard() {
   );
 }
 // SmsSenderField removed — now integrated into main save flow
+
+// ─── Evolution API Instances Card ───────────────────────────────────────────
+
+const LEADS_WEBHOOK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leads-webhook`;
+
+function InstancesCard() {
+  const [instances, setInstances] = useState<WhatsAppInstance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<Partial<WhatsAppInstance>>({});
+  const [saving, setSaving] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrData, setQrData] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [copiedWebhook, setCopiedWebhook] = useState(false);
+  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    fetchInstances().then(setInstances).catch(console.error).finally(() => setLoading(false));
+  }, []);
+
+  function startNew() {
+    const draft = { instance_name: "", api_url: "https://", api_key: "" };
+    setForm(draft);
+    setEditingId("NEW");
+  }
+
+  function startEdit(inst: WhatsAppInstance) {
+    setForm({ ...inst });
+    setEditingId(inst.id);
+  }
+
+  async function handleSave() {
+    if (!form.instance_name || !form.api_url) {
+      toast.error("Nome e URL são obrigatórios.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const saved = await upsertInstance(form as any);
+      if (editingId === "NEW") {
+        setInstances(prev => [...prev, saved]);
+      } else {
+        setInstances(prev => prev.map(i => i.id === saved.id ? saved : i));
+      }
+      setEditingId(null);
+      toast.success("Instância salva!");
+    } catch (e: any) {
+      toast.error(`Erro: ${e.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteInstance(id);
+      setInstances(prev => prev.filter(i => i.id !== id));
+      toast.success("Instância removida.");
+    } catch (e: any) {
+      toast.error(`Erro: ${e.message}`);
+    }
+  }
+
+  async function handleConnect(inst: WhatsAppInstance) {
+    setQrData(null);
+    setQrLoading(true);
+    setQrOpen(true);
+    try {
+      const url = `${inst.api_url.replace(/\/+$/, "")}/instance/connect/${inst.instance_name}`;
+      const res = await fetch(url, { headers: { apikey: inst.api_key ?? "" } });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      const qr = data?.base64 || data?.qrcode?.base64 || null;
+      if (qr) {
+        setQrData(qr);
+        await upsertInstance({ ...inst, qr_code: qr, status: "connecting" });
+        setInstances(prev => prev.map(i => i.id === inst.id ? { ...i, status: "connecting" } : i));
+      } else if (data?.instance?.status === "open") {
+        setQrOpen(false);
+        await upsertInstance({ ...inst, status: "connected" });
+        setInstances(prev => prev.map(i => i.id === inst.id ? { ...i, status: "connected" } : i));
+        toast.success("Já conectado!");
+      }
+    } catch (e: any) {
+      toast.error(`Erro ao conectar: ${e.message}`);
+    } finally {
+      setQrLoading(false);
+    }
+  }
+
+  async function handleCheckStatus(inst: WhatsAppInstance) {
+    try {
+      const url = `${inst.api_url.replace(/\/+$/, "")}/instance/connectionState/${inst.instance_name}`;
+      const res = await fetch(url, { headers: { apikey: inst.api_key ?? "" } });
+      const data = await res.json();
+      const state = data?.instance?.state || data?.state;
+      const status: WhatsAppInstance["status"] = state === "open" ? "connected" : "disconnected";
+      await upsertInstance({ ...inst, status, phone_number: data?.instance?.profilePictureUrl ? inst.phone_number : null });
+      setInstances(prev => prev.map(i => i.id === inst.id ? { ...i, status } : i));
+      toast(state === "open" ? "✅ Conectado!" : `Estado: ${state || "desconhecido"}`);
+    } catch (e: any) {
+      toast.error(`Erro: ${e.message}`);
+    }
+  }
+
+  const statusBadge = (status: string) => {
+    if (status === "connected") return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] font-semibold"><Wifi className="w-2.5 h-2.5" /> Conectado</span>;
+    if (status === "connecting") return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-yellow-400/30 bg-yellow-400/10 text-yellow-700 dark:text-yellow-400 font-semibold"><Loader2 className="w-2.5 h-2.5 animate-spin" /> Conectando</span>;
+    return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-destructive/30 bg-destructive/10 text-destructive font-semibold"><WifiOff className="w-2.5 h-2.5" /> Desconectado</span>;
+  };
+
+  return (
+    <>
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Server className="w-5 h-5 text-muted-foreground" />
+            <Label className="text-sm font-semibold">Instâncias Evolution API</Label>
+          </div>
+          <Button size="sm" variant="outline" onClick={startNew}>
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> Nova instância
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Gerencie instâncias do Evolution API. Cada instância pode ser um número WhatsApp diferente.
+        </p>
+
+        {/* Webhook URL para leads */}
+        <div className="space-y-1.5 pt-2 border-t border-border/60">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Webhook URL — Leads</Label>
+          <p className="text-xs text-muted-foreground">Use esta URL em landing pages para criar leads automaticamente no Pipeline.</p>
+          <div className="flex items-center gap-2">
+            <Input readOnly value={LEADS_WEBHOOK_URL} className="font-mono text-xs flex-1" />
+            <Button size="icon" variant="outline" className="shrink-0" onClick={() => {
+              navigator.clipboard.writeText(LEADS_WEBHOOK_URL);
+              setCopiedWebhook(true);
+              toast.success("URL copiada!");
+              setTimeout(() => setCopiedWebhook(false), 2000);
+            }}>
+              {copiedWebhook ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+            </Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground">Body: <code className="bg-muted px-1 py-0.5 rounded font-mono">{"{ name, phone?, email?, source?, message? }"}</code></p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+        ) : instances.length === 0 && editingId !== "NEW" ? (
+          <p className="text-xs text-muted-foreground text-center py-4 border border-dashed border-border rounded-lg">
+            Nenhuma instância configurada. Clique em "Nova instância" para adicionar.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {instances.map(inst => (
+              <div key={inst.id} className="border border-border rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">{inst.instance_name}</p>
+                    <p className="text-xs text-muted-foreground">{inst.api_url}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {statusBadge(inst.status)}
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleConnect(inst)}>
+                      <QrCode className="w-3 h-3 mr-1" /> Conectar
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleCheckStatus(inst)} title="Verificar status">
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => startEdit(inst)} title="Editar">
+                      <Save className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(inst.id)} title="Remover">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Edit/New form */}
+        {editingId && (
+          <div className="border border-primary/20 rounded-xl p-4 space-y-3 bg-primary/5">
+            <p className="text-xs font-medium text-foreground">{editingId === "NEW" ? "Nova instância" : "Editar instância"}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Nome da instância</Label>
+                <Input
+                  placeholder="minha-clinica"
+                  value={form.instance_name ?? ""}
+                  onChange={e => setForm(f => ({ ...f, instance_name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">URL da API Evolution</Label>
+                <Input
+                  placeholder="https://api.evolution.com"
+                  value={form.api_url ?? ""}
+                  onChange={e => setForm(f => ({ ...f, api_url: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Chave API (apikey)</Label>
+              <div className="flex gap-1">
+                <Input
+                  type={showKey[editingId] ? "text" : "password"}
+                  placeholder="Bearer token ou API key"
+                  value={form.api_key ?? ""}
+                  onChange={e => setForm(f => ({ ...f, api_key: e.target.value }))}
+                  className="flex-1"
+                />
+                <Button type="button" size="icon" variant="outline" onClick={() => setShowKey(s => ({ ...s, [editingId]: !s[editingId] }))}>
+                  {showKey[editingId] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>Cancelar</Button>
+              <Button size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                Salvar
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* QR Code modal */}
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5" /> Conectar WhatsApp
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 space-y-4">
+            {qrLoading ? (
+              <><Loader2 className="w-12 h-12 animate-spin text-muted-foreground" /><p className="text-sm text-muted-foreground">Gerando QR Code...</p></>
+            ) : qrData ? (
+              <>
+                <div className="bg-white p-4 rounded-lg">
+                  <img src={qrData.startsWith("data:") ? qrData : `data:image/png;base64,${qrData}`} alt="QR Code" className="w-64 h-64 object-contain" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center max-w-xs">
+                  Abra o WhatsApp → <strong>Dispositivos vinculados</strong> → <strong>Vincular dispositivo</strong> → Escaneie.
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhum QR Code disponível.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 export default function IntegrationsTab() {
   const queryClient = useQueryClient();
@@ -1455,6 +1723,9 @@ export default function IntegrationsTab() {
           </Button>
         </div>
       </Card>
+
+      {/* Evolution API Instances */}
+      <InstancesCard />
 
       {/* Embed iframe card */}
       <EmbedCard />

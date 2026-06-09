@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -17,8 +17,13 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList } from "lucide-react";
+import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import {
+  fetchStages, upsertStage, fetchLeads, createLead, moveLead,
+  createConversation, fetchMessages, sendMessage,
+  type PipelineStage, type Lead, type Message,
+} from "@/lib/crm";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -417,21 +422,7 @@ function StageConfigDialog({
 
 // ─── Lead Detail View ───────────────────────────────────────────────────────
 
-const MOCK_MESSAGES: Record<string, Array<{ id: string; text: string; fromMe: boolean; time: string }>> = {
-  c1: [
-    { id: "1", text: "Oi, quero saber sobre depilação a laser", fromMe: false, time: "09:10" },
-    { id: "2", text: "Olá Ana! Temos vários pacotes disponíveis. Qual região te interessa?", fromMe: true, time: "09:12" },
-    { id: "3", text: "Pernas completas e virilha", fromMe: false, time: "09:14" },
-  ],
-  c2: [
-    { id: "1", text: "Vocês têm horário na sexta?", fromMe: false, time: "08:02" },
-    { id: "2", text: "Oi Beatriz! Temos sim, à tarde. Qual serviço você procura?", fromMe: true, time: "08:05" },
-  ],
-  c3: [
-    { id: "1", text: "Tenho interesse em harmonização facial", fromMe: false, time: "14:30" },
-    { id: "2", text: "Oi Carla! Vou te passar os detalhes do procedimento.", fromMe: true, time: "14:32" },
-  ],
-};
+// Messages are now loaded from Supabase in LeadDetail
 
 type CustomField = { id: string; label: string; value: string };
 
@@ -441,7 +432,64 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [fieldsOpen, setFieldsOpen] = useState(false);
   const [newFieldLabel, setNewFieldLabel] = useState("");
-  const messages = MOCK_MESSAGES[card.id] ?? [];
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [convId, setConvId] = useState<string | null>(null);
+  const [loadingMsgs, setLoadingMsgs] = useState(true);
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function load() {
+      setLoadingMsgs(true);
+      try {
+        // Fetch conversation for this lead
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data: convs } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("lead_id", card.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        const cid = convs?.[0]?.id ?? null;
+        setConvId(cid);
+        if (cid) {
+          const msgs = await fetchMessages(cid);
+          setMessages(msgs);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingMsgs(false);
+      }
+    }
+    load();
+  }, [card.id]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function handleSend() {
+    if (!input.trim()) return;
+    const text = input.trim();
+    setInput("");
+    setSending(true);
+    try {
+      let cid = convId;
+      if (!cid) {
+        // Create conversation on first message
+        const conv = await createConversation(card.id, card.source === "instagram" ? "instagram" : "whatsapp");
+        cid = conv.id;
+        setConvId(cid);
+      }
+      const msg = await sendMessage(cid, text, true);
+      setMessages(prev => [...prev, msg]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -565,21 +613,24 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-5 space-y-3">
-            {messages.length === 0 ? (
+            {loadingMsgs ? (
+              <div className="flex justify-center pt-10"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
+            ) : messages.length === 0 ? (
               <p className="text-center text-sm text-muted-foreground pt-10">Nenhuma mensagem ainda.</p>
             ) : messages.map((msg) => (
-              <div key={msg.id} className={cn("flex", msg.fromMe ? "justify-end" : "justify-start")}>
+              <div key={msg.id} className={cn("flex", msg.from_me ? "justify-end" : "justify-start")}>
                 <div className={cn(
                   "max-w-[68%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
-                  msg.fromMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"
+                  msg.from_me ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"
                 )}>
                   <p>{msg.text}</p>
-                  <p className={cn("text-[10px] mt-1 text-right", msg.fromMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
-                    {msg.time}
+                  <p className={cn("text-[10px] mt-1 text-right", msg.from_me ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                    {new Date(msg.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
               </div>
             ))}
+            <div ref={bottomRef} />
           </div>
 
           {/* Input */}
@@ -621,13 +672,14 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
               placeholder="Escreva uma mensagem..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); setInput(""); } }}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             />
             <button
-              disabled={!input.trim()}
+              disabled={!input.trim() || sending}
+              onClick={handleSend}
               className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
             >
-              <Send size={15} />
+              {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={15} />}
             </button>
           </div>
         </div>
@@ -650,14 +702,56 @@ function LeadDataRow({ icon, label, value }: { icon: React.ReactNode; label: str
 
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
+// Map DB types to UI types
+function dbStageToUI(s: PipelineStage, leads: Lead[]): Stage {
+  return {
+    id: s.id,
+    label: s.label,
+    color: s.color,
+    cards: leads
+      .filter(l => l.stage_id === s.id)
+      .map(l => ({
+        id: l.id,
+        name: l.name,
+        phone: l.phone ?? "",
+        source: (l.source === "instagram" ? "instagram" : l.source === "whatsapp" ? "whatsapp" : "manual") as CardData["source"],
+        createdAt: new Date(l.created_at).toLocaleDateString("pt-BR"),
+        lastMessage: l.last_message ?? "",
+      })),
+    agent: {
+      enabled: s.agent_enabled,
+      model: s.agent_model ?? "gpt-4o",
+      prompt: s.agent_prompt ?? "",
+      schedule: (s.agent_schedule as StageAgent["schedule"]) ?? "always",
+    },
+  };
+}
+
 export default function Pipeline() {
-  const [stages, setStages] = useState<Stage[]>(DEFAULT_STAGES);
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCard, setActiveCard] = useState<CardData | null>(null);
   const [overStageId, setOverStageId] = useState<string | null>(null);
   const [configStage, setConfigStage] = useState<Stage | null>(null);
   const [selectedLead, setSelectedLead] = useState<CardData | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [newLeadForm, setNewLeadForm] = useState({ name: "", phone: "", stageId: "", source: "manual" as CardData["source"] });
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [dbStages, dbLeads] = await Promise.all([fetchStages(), fetchLeads()]);
+        setStages(dbStages.map(s => dbStageToUI(s, dbLeads)));
+      } catch (e) {
+        console.error("Pipeline load error", e);
+        // Fallback to empty
+        setStages([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -723,23 +817,42 @@ export default function Pipeline() {
         }
         return s;
       }));
+      // Persist to Supabase
+      moveLead(activeId, toStage.id).catch(console.error);
     }
   }
 
-  function addStage() {
-    const newStage: Stage = {
-      id: `stage-${Date.now()}`,
-      label: "Nova etapa",
-      color: PALETTE[Math.floor(Math.random() * PALETTE.length)].hex,
-      cards: [],
-      agent: { enabled: false, model: "gpt-4o", prompt: "", schedule: "always" },
-    };
-    setStages(prev => [...prev, newStage]);
-    setConfigStage(newStage);
+  async function addStage() {
+    const color = PALETTE[Math.floor(Math.random() * PALETTE.length)].hex;
+    const position = stages.length;
+    try {
+      const saved = await upsertStage({ label: "Nova etapa", color, position, agent_enabled: false });
+      const newStage: Stage = {
+        id: saved.id,
+        label: saved.label,
+        color: saved.color,
+        cards: [],
+        agent: { enabled: false, model: "gpt-4o", prompt: "", schedule: "always" },
+      };
+      setStages(prev => [...prev, newStage]);
+      setConfigStage(newStage);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
-  function saveStage(updated: Stage) {
+  async function saveStage(updated: Stage) {
     setStages(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+    // Persist
+    upsertStage({
+      id: updated.id,
+      label: updated.label,
+      color: updated.color,
+      agent_enabled: updated.agent.enabled,
+      agent_model: updated.agent.model,
+      agent_prompt: updated.agent.prompt,
+      agent_schedule: updated.agent.schedule,
+    }).catch(console.error);
   }
 
   if (selectedLead) {
@@ -753,7 +866,7 @@ export default function Pipeline() {
         <PageHeader
           icon={<LayoutList className="w-5 h-5" />}
           title="Pipeline"
-          subtitle={`${stages.reduce((acc, s) => acc + s.cards.length, 0)} leads · ${stages.length} etapas`}
+          subtitle={loading ? "Carregando..." : `${stages.reduce((acc, s) => acc + s.cards.length, 0)} leads · ${stages.length} etapas`}
           className="mb-0"
         />
         <div className="flex items-center gap-2">
@@ -876,19 +989,34 @@ export default function Pipeline() {
               <Button
                 className="flex-1"
                 disabled={!newLeadForm.name.trim() || !newLeadForm.stageId}
-                onClick={() => {
-                  const card: CardData = {
-                    id: `card-${Date.now()}`,
-                    name: newLeadForm.name.trim(),
-                    phone: newLeadForm.phone,
-                    source: newLeadForm.source,
-                    createdAt: new Date().toLocaleDateString("pt-BR"),
-                    lastMessage: "",
-                  };
-                  setStages(prev => prev.map(s =>
-                    s.id === newLeadForm.stageId ? { ...s, cards: [card, ...s.cards] } : s
-                  ));
-                  setNewLeadOpen(false);
+                onClick={async () => {
+                  try {
+                    const lead = await createLead({
+                      name: newLeadForm.name.trim(),
+                      phone: newLeadForm.phone || null,
+                      email: null,
+                      source: newLeadForm.source,
+                      stage_id: newLeadForm.stageId,
+                      last_message: null,
+                      notes: null,
+                    });
+                    // Also create a conversation so it shows in Mensagens
+                    await createConversation(lead.id, newLeadForm.source === "instagram" ? "instagram" : "whatsapp");
+                    const card: CardData = {
+                      id: lead.id,
+                      name: lead.name,
+                      phone: lead.phone ?? "",
+                      source: newLeadForm.source,
+                      createdAt: new Date().toLocaleDateString("pt-BR"),
+                      lastMessage: "",
+                    };
+                    setStages(prev => prev.map(s =>
+                      s.id === newLeadForm.stageId ? { ...s, cards: [card, ...s.cards] } : s
+                    ));
+                    setNewLeadOpen(false);
+                  } catch (e) {
+                    console.error(e);
+                  }
                 }}
               >
                 Adicionar Lead
