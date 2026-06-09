@@ -51,7 +51,7 @@ import { pt } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { BookingEditSidebar, type BookingPageSettings } from "@/components/booking/BookingEditSidebar";
 import { useNavigate } from "react-router-dom";
-import Grainient from "@/components/Grainient";
+import { BrandGrain } from "@/components/BrandGrain";
 
 type Step = "services" | "specialist" | "datetime" | "confirm" | "done";
 
@@ -740,30 +740,7 @@ const PublicBooking = () => {
           </div>
         ) : (
           <div className="relative h-[260px] flex items-center justify-center px-4 rounded-b-[18px] overflow-hidden">
-            {/* Grain + gradient background */}
-            <div className="absolute inset-0">
-              <Grainient
-                color1="#f5c5b8"
-                color2="#d4735a"
-                color3="#f0d0c4"
-                timeSpeed={0.15}
-                colorBalance={0}
-                warpStrength={0.6}
-                warpFrequency={3}
-                warpSpeed={1.2}
-                warpAmplitude={35}
-                blendAngle={160}
-                blendSoftness={0.4}
-                grainAmount={0.07}
-                grainScale={1.5}
-                grainAnimated={false}
-                contrast={1.05}
-                saturation={1.1}
-                className="w-full h-full"
-              />
-            </div>
-            {/* Dark gradient overlay bottom → transparent para dar profundidade */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/30 rounded-b-[18px]" />
+            <BrandGrain overlay />
             {/* Social icons top-right */}
             <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
               {pageSettings?.social_instagram && (
