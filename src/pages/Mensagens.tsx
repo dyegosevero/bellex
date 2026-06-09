@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,13 @@ import {
   Search, CheckCheck, SlidersHorizontal, Send, Paperclip,
   Smile, ChevronRight, ChevronLeft, Phone, Archive, ArchiveRestore,
   Calendar, Tag, MapPin, Mail, Hash, UserPlus, ExternalLink,
-  Star, Trash2,
+  Star, Trash2, Loader2,
 } from "lucide-react";
+import {
+  fetchConversations, fetchMessages, sendMessage, createConversation,
+  type Conversation as DBConversation, type Message as DBMessage, type Lead,
+} from "@/lib/crm";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
@@ -40,19 +45,18 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-/* ─── Mock data ──────────────────────────────────────────── */
+/* ─── UI Types ───────────────────────────────────────────── */
 type Channel = "whatsapp" | "instagram";
 
-interface Msg { id: string; text: string; fromMe: boolean; time: string; }
-interface Conversation {
+interface UIConversation {
   id: string;
   contactName: string;
   channel: Channel;
   lastMessage: string;
   lastTime: string;
   unread: number;
-  messages: Msg[];
   // lead data
+  leadId?: string;
   phone?: string;
   email?: string;
   city?: string;
@@ -61,7 +65,30 @@ interface Conversation {
   source?: string;
 }
 
-const MOCK: Conversation[] = [
+// Map DB → UI
+function dbToUI(conv: DBConversation): UIConversation {
+  const lead = conv.lead as Lead | undefined;
+  const msgs = (conv.messages ?? []) as DBMessage[];
+  const lastMsg = msgs[msgs.length - 1];
+  return {
+    id: conv.id,
+    contactName: lead?.name ?? "Desconhecido",
+    channel: conv.channel as Channel,
+    lastMessage: lastMsg?.text ?? lead?.last_message ?? "",
+    lastTime: new Date(conv.last_message_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    unread: 0,
+    leadId: lead?.id,
+    phone: lead?.phone ?? undefined,
+    email: lead?.email ?? undefined,
+    source: lead?.source,
+  };
+}
+
+// Placeholder used only while loading
+const EMPTY: UIConversation[] = [];
+
+// ─── REMOVED MOCK DATA ─── (was large mock array, now using Supabase)
+const _UNUSED = [
   {
     id: "1", contactName: "Ana Paula", channel: "whatsapp",
     lastMessage: "Oi! Quero agendar uma sessão para amanhã.", lastTime: "09:41", unread: 2,
@@ -185,28 +212,99 @@ const MOCK: Conversation[] = [
       { id: "m5", text: "Ok! Até lá 👋", fromMe: false, time: "11:08" },
     ],
   },
-];
+]; // _UNUSED
 
 type FilterChannel = "all" | "whatsapp" | "instagram";
 type FilterRead = "all" | "unread" | "read";
 type FilterOrder = "recent" | "oldest";
 
 export default function Mensagens() {
+  const [convs, setConvs] = useState<UIConversation[]>(EMPTY);
+  const [loadingConvs, setLoadingConvs] = useState(true);
+  const [messages, setMessages] = useState<DBMessage[]>([]);
+  const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [search, setSearch] = useState("");
   const [filterChannel, setFilterChannel] = useState<FilterChannel>("all");
   const [filterRead, setFilterRead] = useState<FilterRead>("all");
   const [filterOrder, setFilterOrder] = useState<FilterOrder>("recent");
-  const [selected, setSelected] = useState<string | null>(MOCK[0].id);
+  const [selected, setSelected] = useState<string | null>(null);
   const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
   const [leadPanelOpen, setLeadPanelOpen] = useState(true);
   const [tagInput, setTagInput] = useState("");
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
   const [archived, setArchived] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const filtered = MOCK
+  // Load conversations
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await fetchConversations("open");
+        const ui = data.map(dbToUI);
+        setConvs(ui);
+        if (ui.length > 0) setSelected(ui[0].id);
+      } catch (e) {
+        console.error("Mensagens load error", e);
+      } finally {
+        setLoadingConvs(false);
+      }
+    }
+    load();
+  }, []);
+
+  // Load messages when selected changes
+  useEffect(() => {
+    if (!selected) return;
+    setLoadingMsgs(true);
+    fetchMessages(selected).then(msgs => {
+      setMessages(msgs);
+      setLoadingMsgs(false);
+    }).catch(() => setLoadingMsgs(false));
+  }, [selected]);
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (!selected) return;
+    const sub = supabase
+      .channel(`messages:conv:${selected}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${selected}`,
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new as DBMessage]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(sub); };
+  }, [selected]);
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function handleSend() {
+    if (!input.trim() || !selected) return;
+    const text = input.trim();
+    setInput("");
+    setSending(true);
+    try {
+      await sendMessage(selected, text, true);
+      // Message appears via realtime subscription
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const filtered = convs
     .filter((c) => {
+      if (archived.has(c.id)) return false;
       if (filterChannel !== "all" && c.channel !== filterChannel) return false;
       if (filterRead === "unread" && c.unread === 0) return false;
       if (filterRead === "read" && c.unread > 0) return false;
@@ -215,11 +313,11 @@ export default function Mensagens() {
     })
     .sort((a, b) =>
       filterOrder === "recent"
-        ? MOCK.indexOf(a) - MOCK.indexOf(b)
-        : MOCK.indexOf(b) - MOCK.indexOf(a)
+        ? new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()
+        : new Date(a.lastTime).getTime() - new Date(b.lastTime).getTime()
     );
 
-  const activeConv = MOCK.find((c) => c.id === selected) ?? null;
+  const activeConv = convs.find((c) => c.id === selected) ?? null;
 
   return (
     <div className="flex flex-1 h-full overflow-hidden bg-background">
@@ -275,7 +373,9 @@ export default function Mensagens() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {filtered.length === 0 ? (
+          {loadingConvs ? (
+            <div className="flex justify-center p-8"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
+          ) : filtered.length === 0 ? (
             <p className="text-center text-xs text-muted-foreground p-6">Nenhuma conversa.</p>
           ) : (
             filtered.map((conv) => (
@@ -423,22 +523,27 @@ export default function Mensagens() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {activeConv.messages.map((msg) => (
-              <div key={msg.id} className={cn("flex", msg.fromMe ? "justify-end" : "justify-start")}>
+            {loadingMsgs ? (
+              <div className="flex justify-center pt-10"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
+            ) : messages.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground pt-10">Nenhuma mensagem ainda.</p>
+            ) : messages.map((msg) => (
+              <div key={msg.id} className={cn("flex", msg.from_me ? "justify-end" : "justify-start")}>
                 <div className={cn(
                   "max-w-[72%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
-                  msg.fromMe
+                  msg.from_me
                     ? "bg-primary text-primary-foreground rounded-br-sm"
                     : "bg-muted rounded-bl-sm"
                 )}>
                   <p>{msg.text}</p>
                   <p className={cn(
                     "text-[10px] mt-1 text-right",
-                    msg.fromMe ? "text-primary-foreground/60" : "text-muted-foreground"
-                  )}>{msg.time}</p>
+                    msg.from_me ? "text-primary-foreground/60" : "text-muted-foreground"
+                  )}>{new Date(msg.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
                 </div>
               </div>
             ))}
+            <div ref={bottomRef} />
           </div>
 
           {/* Input */}
@@ -471,10 +576,10 @@ export default function Mensagens() {
               placeholder="Escreva uma mensagem..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); setInput(""); } }}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             />
-            <Button size="icon" className="h-9 w-9 shrink-0" disabled={!input.trim()}>
-              <Send className="w-4 h-4" />
+            <Button size="icon" className="h-9 w-9 shrink-0" disabled={!input.trim() || sending} onClick={handleSend}>
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
         </div>
@@ -525,7 +630,7 @@ export default function Mensagens() {
 
 /* ─── Sub-components ─────────────────────────────────────── */
 
-function ConvItem({ conv, active, onClick }: { conv: Conversation; active: boolean; onClick: () => void }) {
+function ConvItem({ conv, active, onClick }: { conv: UIConversation; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
