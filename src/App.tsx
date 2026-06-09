@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -82,9 +82,37 @@ const queryClient = new QueryClient({
   },
 });
 
+// Total da animação: drawDuration + fillDelay + fillDuration = 1200 + 150 + 400 = 1750ms
+const SPLASH_MS = 1750;
+const SPLASH_FADE_MS = 350;
+
+function SplashOverlay() {
+  const [phase, setPhase] = useState<"visible" | "fading" | "done">("visible");
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase("fading"), SPLASH_MS);
+    const t2 = setTimeout(() => setPhase("done"), SPLASH_MS + SPLASH_FADE_MS);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  if (phase === "done") return null;
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "hsl(var(--background))",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        opacity: phase === "fading" ? 0 : 1,
+        transition: `opacity ${SPLASH_FADE_MS}ms ease`,
+        pointerEvents: phase === "fading" ? "none" : "auto",
+      }}
+    >
+      <LogoDraw size={48} drawDuration={1200} fillDuration={400} fillDelay={150} />
+    </div>
+  );
+}
+
 const PageLoader = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-    <LogoDraw size={48} loopCount={2} drawDuration={1200} fillDuration={400} fillDelay={150} />
+    <LogoDraw size={48} drawDuration={1200} fillDuration={400} fillDelay={150} />
   </div>
 );
 
@@ -189,6 +217,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <SplashOverlay />
           <AnimatedRoutes />
         </AuthProvider>
       </BrowserRouter>

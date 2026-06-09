@@ -61,7 +61,6 @@ const AppLayout = () => {
   const { signOut, user, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isDashboard = location.pathname === "/dashboard" || location.pathname === "/resumo" || location.pathname === "/pipeline" || location.pathname === "/mensagens";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [expanded, setExpanded] = useState(() => {
@@ -192,7 +191,7 @@ const AppLayout = () => {
           />
           {expanded && bookingOpen && (
             <div style={{ paddingLeft: 28 }}>
-              <SidebarBtn icon={<Share2 size={13} />} label="Comcomcompartilhamentor link" expanded={true} onClick={() => setShareOpen(true)} />
+              <SidebarBtn icon={<Share2 size={13} />} label="Compartilhar" expanded={true} onClick={() => setShareOpen(true)} />
               <SidebarBtn icon={<ExternalLink size={13} />} label="Editar página" expanded={true} onClick={() => window.open("/agendamento", "_blank")} />
             </div>
           )}
@@ -319,7 +318,9 @@ const AppLayout = () => {
         <PendingBillingsAlert />
         <main className={cn(
           "flex-1 min-w-0 min-h-0",
-          isDashboard ? "overflow-hidden flex flex-col" : "overflow-auto p-6 lg:p-8 max-w-[1600px] mx-auto w-full"
+          ["/pipeline", "/mensagens"].includes(location.pathname)
+            ? "overflow-hidden flex flex-col"
+            : "overflow-auto p-6 lg:p-8 max-w-[1600px] mx-auto w-full"
         )}>
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition key={location.pathname}>

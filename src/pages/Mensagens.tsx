@@ -2,16 +2,26 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import {
-  Search, CheckCheck, SlidersHorizontal, ArrowDownUp, Send, Paperclip,
-  Smile, Phone, MoreVertical, ChevronRight, ChevronLeft,
+  Search, CheckCheck, SlidersHorizontal, Send, Paperclip,
+  Smile, ChevronRight, ChevronLeft, Phone, Archive, ArchiveRestore,
   Calendar, Tag, MapPin, Mail, Hash, UserPlus, ExternalLink,
+  Star, Trash2,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+
+const EMOJI_LIST = ["😀","😂","😍","🥰","😎","🤔","😊","🙏","👍","❤️","🔥","✅","🎉","😢","😅","🤩","💪","👏","😴","🫡"];
 
 /* ─── Channel icons ─────────────────────────────────────── */
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -59,8 +69,10 @@ const MOCK: Conversation[] = [
     lastAppointment: "02/06/2026", source: "WhatsApp",
     messages: [
       { id: "m1", text: "Oi, tudo bem?", fromMe: false, time: "09:38" },
-      { id: "m2", text: "Tudo! Como posso ajudar?", fromMe: true, time: "09:39" },
-      { id: "m3", text: "Quero agendar uma sessão para amanhã.", fromMe: false, time: "09:41" },
+      { id: "m2", text: "Tudo ótimo! Como posso ajudar?", fromMe: true, time: "09:39" },
+      { id: "m3", text: "Quero agendar uma sessão de limpeza de pele para amanhã.", fromMe: false, time: "09:40" },
+      { id: "m4", text: "Claro! Tenho horário às 14h ou às 16h, qual prefere?", fromMe: true, time: "09:41" },
+      { id: "m5", text: "Oi! Quero agendar uma sessão para amanhã.", fromMe: false, time: "09:41" },
     ],
   },
   {
@@ -69,7 +81,9 @@ const MOCK: Conversation[] = [
     phone: "+55 21 98888-0002", email: "carlos@email.com", city: "Rio de Janeiro", tag: "Novo",
     lastAppointment: "—", source: "Instagram",
     messages: [
-      { id: "m1", text: "Vi o post sobre promoção, ainda está válido?", fromMe: false, time: "08:15" },
+      { id: "m1", text: "Olá! Vi o post sobre a promoção de peeling, ainda está válido?", fromMe: false, time: "08:10" },
+      { id: "m2", text: "Sim! A promoção vai até o fim do mês 😊 Quer saber mais detalhes?", fromMe: true, time: "08:13" },
+      { id: "m3", text: "Vi o post sobre promoção, ainda está válido?", fromMe: false, time: "08:15" },
     ],
   },
   {
@@ -78,9 +92,9 @@ const MOCK: Conversation[] = [
     phone: "+55 31 97777-0003", email: "fernanda@email.com", city: "Belo Horizonte", tag: "Regular",
     lastAppointment: "05/06/2026", source: "WhatsApp",
     messages: [
-      { id: "m1", text: "Posso remarcar para quinta?", fromMe: false, time: "14:20" },
-      { id: "m2", text: "Claro! Às 15h está bom?", fromMe: true, time: "14:22" },
-      { id: "m3", text: "Confirmado! Até amanhã 😊", fromMe: false, time: "14:23" },
+      { id: "m1", text: "Boa tarde! Posso remarcar minha consulta de quinta para sexta?", fromMe: false, time: "14:20" },
+      { id: "m2", text: "Claro, sem problemas! Às 15h está bom?", fromMe: true, time: "14:22" },
+      { id: "m3", text: "Perfeito! Confirmado! Até amanhã 😊", fromMe: false, time: "14:23" },
     ],
   },
   {
@@ -89,8 +103,10 @@ const MOCK: Conversation[] = [
     phone: "+55 41 96666-0004", email: "roberto@email.com", city: "Curitiba", tag: "Lead",
     lastAppointment: "—", source: "Instagram",
     messages: [
-      { id: "m1", text: "Quanto custa a avaliação?", fromMe: false, time: "10:00" },
-      { id: "m2", text: "A avaliação inicial é gratuita! Quando posso te atender?", fromMe: true, time: "10:05" },
+      { id: "m1", text: "Oi! Quanto custa a avaliação facial?", fromMe: false, time: "10:00" },
+      { id: "m2", text: "A avaliação inicial é totalmente gratuita! Posso te atender essa semana.", fromMe: true, time: "10:05" },
+      { id: "m3", text: "Que ótimo! Tem horário na quinta de tarde?", fromMe: false, time: "10:07" },
+      { id: "m4", text: "Tenho às 15h ou 17h na quinta, qual prefere?", fromMe: true, time: "10:09" },
     ],
   },
   {
@@ -99,7 +115,74 @@ const MOCK: Conversation[] = [
     phone: "+55 51 95555-0005", email: "mariana@email.com", city: "Porto Alegre", tag: "VIP",
     lastAppointment: "01/06/2026", source: "WhatsApp",
     messages: [
-      { id: "m1", text: "Obrigada pela atenção!", fromMe: false, time: "16:30" },
+      { id: "m1", text: "Recebi o resultado do tratamento e fiquei muito feliz!", fromMe: false, time: "16:28" },
+      { id: "m2", text: "Que maravilha! Fico muito feliz em saber 😊", fromMe: true, time: "16:29" },
+      { id: "m3", text: "Obrigada pela atenção!", fromMe: false, time: "16:30" },
+    ],
+  },
+  {
+    id: "6", contactName: "Juliana Pires", channel: "whatsapp",
+    lastMessage: "Quanto fica o pacote completo?", lastTime: "10:02", unread: 3,
+    phone: "+55 11 94444-0006", email: "juliana@email.com", city: "São Paulo", tag: "Lead quente",
+    lastAppointment: "—", source: "WhatsApp",
+    messages: [
+      { id: "m1", text: "Olá! Vi no Instagram sobre os pacotes de tratamento facial.", fromMe: false, time: "09:50" },
+      { id: "m2", text: "Oi Juliana! Temos vários pacotes. O que te interessa mais?", fromMe: true, time: "09:52" },
+      { id: "m3", text: "Principalmente peeling e microagulhamento juntos.", fromMe: false, time: "09:55" },
+      { id: "m4", text: "Temos um pacote combo com 4 sessões de cada. Quer que eu te mande os detalhes?", fromMe: true, time: "09:58" },
+      { id: "m5", text: "Sim! Quanto fica o pacote completo?", fromMe: false, time: "10:02" },
+    ],
+  },
+  {
+    id: "7", contactName: "Patricia Souza", channel: "instagram",
+    lastMessage: "Pode mandar o endereço?", lastTime: "09:30", unread: 1,
+    phone: "+55 21 93333-0007", email: "patricia@email.com", city: "Rio de Janeiro",
+    lastAppointment: "28/05/2026", source: "Instagram",
+    messages: [
+      { id: "m1", text: "Oi! Quero agendar uma sessão de botox para semana que vem.", fromMe: false, time: "09:20" },
+      { id: "m2", text: "Olá Patricia! Temos horários na terça e quinta. Qual prefere?", fromMe: true, time: "09:22" },
+      { id: "m3", text: "Terça às 11h está ótimo!", fromMe: false, time: "09:25" },
+      { id: "m4", text: "Perfeito! Confirmado para terça às 11h 🎉", fromMe: true, time: "09:28" },
+      { id: "m5", text: "Pode mandar o endereço?", fromMe: false, time: "09:30" },
+    ],
+  },
+  {
+    id: "8", contactName: "Tatiane Rocha", channel: "whatsapp",
+    lastMessage: "Vou pensar e te aviso 😊", lastTime: "Ontem", unread: 0,
+    phone: "+55 41 92222-0008", email: "tatiane@email.com", city: "Curitiba", tag: "Morno",
+    lastAppointment: "—", source: "WhatsApp",
+    messages: [
+      { id: "m1", text: "Oi! Tenho interesse em harmonização facial mas é minha primeira vez.", fromMe: false, time: "15:00" },
+      { id: "m2", text: "Oi Tatiane! Oferecemos avaliação gratuita justamente para isso 😊 Sem compromisso!", fromMe: true, time: "15:03" },
+      { id: "m3", text: "Que bom! Qual o valor médio dos procedimentos?", fromMe: false, time: "15:10" },
+      { id: "m4", text: "Depende muito da avaliação, mas posso te dar uma ideia geral. Posso ligar?", fromMe: true, time: "15:12" },
+      { id: "m5", text: "Vou pensar e te aviso 😊", fromMe: false, time: "15:20" },
+    ],
+  },
+  {
+    id: "9", contactName: "Sandra Oliveira", channel: "whatsapp",
+    lastMessage: "Amei o resultado! ❤️", lastTime: "Ter", unread: 0,
+    phone: "+55 51 91111-0009", email: "sandra@email.com", city: "Porto Alegre", tag: "VIP",
+    lastAppointment: "03/06/2026", source: "WhatsApp",
+    messages: [
+      { id: "m1", text: "Boa noite! Acabei de chegar em casa depois da sessão.", fromMe: false, time: "19:00" },
+      { id: "m2", text: "Boa noite Sandra! Espero que tenha gostado 😊", fromMe: true, time: "19:02" },
+      { id: "m3", text: "Gostei demais! Já dá pra ver diferença.", fromMe: false, time: "19:05" },
+      { id: "m4", text: "Que bom! Nos próximos dias vai melhorar ainda mais. Qualquer dúvida, estou aqui!", fromMe: true, time: "19:07" },
+      { id: "m5", text: "Amei o resultado! ❤️", fromMe: false, time: "19:10" },
+    ],
+  },
+  {
+    id: "10", contactName: "Claudia Ribeiro", channel: "instagram",
+    lastMessage: "Ok! Até lá 👋", lastTime: "Seg", unread: 0,
+    phone: "+55 11 90000-0010", email: "claudia@email.com", city: "São Paulo",
+    lastAppointment: "30/05/2026", source: "Instagram",
+    messages: [
+      { id: "m1", text: "Olá! Preciso cancelar minha sessão de amanhã.", fromMe: false, time: "11:00" },
+      { id: "m2", text: "Tudo bem! Podemos remarcar para quando quiser.", fromMe: true, time: "11:02" },
+      { id: "m3", text: "Pode ser na próxima sexta no mesmo horário?", fromMe: false, time: "11:05" },
+      { id: "m4", text: "Pode sim! Ficou remarcado para sexta às 14h ✅", fromMe: true, time: "11:07" },
+      { id: "m5", text: "Ok! Até lá 👋", fromMe: false, time: "11:08" },
     ],
   },
 ];
@@ -116,6 +199,11 @@ export default function Mensagens() {
   const [selected, setSelected] = useState<string | null>(MOCK[0].id);
   const [input, setInput] = useState("");
   const [leadPanelOpen, setLeadPanelOpen] = useState(true);
+  const [tagInput, setTagInput] = useState("");
+  const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
+  const [starred, setStarred] = useState<Set<string>>(new Set());
+  const [archived, setArchived] = useState<Set<string>>(new Set());
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const filtered = MOCK
     .filter((c) => {
@@ -137,30 +225,35 @@ export default function Mensagens() {
     <div className="flex flex-1 h-full overflow-hidden bg-background">
 
       {/* ── Col 1: Lista de conversas ─────────────────────── */}
-      <aside className="w-72 shrink-0 border-r flex flex-col">
-        <div className="p-3 border-b space-y-2">
+      <aside className="w-72 shrink-0 border-x flex flex-col">
+        <div className="px-3 pt-4 pb-3 border-b space-y-2.5">
+          <p className="text-sm font-semibold text-foreground">Conversas</p>
+
+          {/* Search + filter inline */}
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             <Input
-              className="pl-8 h-8 text-sm"
+              className="pl-8 pr-8 h-8 text-sm"
               placeholder="Buscar conversa..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Filters dropdown */}
+            {/* Filter button inside input */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant={filterChannel !== "all" || filterRead !== "all" ? "default" : "outline"}
-                  size="icon" className="h-7 w-7"
+                <button
+                  className={cn(
+                    "absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded transition-colors",
+                    filterChannel !== "all" || filterRead !== "all"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="Filtros"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                </Button>
+                  <SlidersHorizontal className="w-3 h-3" />
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-44">
+              <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuLabel className="text-xs text-muted-foreground">Canal</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => setFilterChannel("all")} className={cn(filterChannel === "all" && "font-semibold")}>
                   Todos
@@ -178,15 +271,6 @@ export default function Mensagens() {
                 <DropdownMenuItem onClick={() => setFilterRead("read")} className={cn(filterRead === "read" && "font-semibold")}>Lidas</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Sort */}
-            <Button
-              variant="outline" size="icon" className="h-7 w-7"
-              onClick={() => setFilterOrder((o) => o === "recent" ? "oldest" : "recent")}
-              title={filterOrder === "recent" ? "Mais recentes primeiro" : "Mais antigas primeiro"}
-            >
-              <ArrowDownUp className="w-3.5 h-3.5" />
-            </Button>
           </div>
         </div>
 
@@ -204,6 +288,12 @@ export default function Mensagens() {
             ))
           )}
         </div>
+
+        {/* Arquivadas */}
+        <button className="flex items-center gap-2 px-4 py-3 border-t border-border/50 text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors text-xs w-full">
+          <Archive className="w-3.5 h-3.5" />
+          <span>Arquivadas</span>
+        </button>
       </aside>
 
       {/* ── Col 2: Chat ───────────────────────────────────── */}
@@ -228,13 +318,77 @@ export default function Mensagens() {
               <p className="font-medium text-sm leading-none">{activeConv.contactName}</p>
               <p className="text-xs text-muted-foreground mt-0.5 capitalize">{activeConv.channel}</p>
             </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Phone className="w-4 h-4" />
+            <div className="flex items-center gap-0.5">
+              {/* Favoritar */}
+              <Button
+                variant="ghost" size="icon" className="h-8 w-8"
+                title={starred.has(activeConv.id) ? "Remover dos favoritos" : "Favoritar"}
+                onClick={() => setStarred(prev => {
+                  const next = new Set(prev);
+                  next.has(activeConv.id) ? next.delete(activeConv.id) : next.add(activeConv.id);
+                  return next;
+                })}
+              >
+                <Star className={cn("w-4 h-4 transition-colors", starred.has(activeConv.id) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground")} />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="w-4 h-4" />
+
+              {/* Arquivar / Desarquivar */}
+              <Button
+                variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
+                title={archived.has(activeConv.id) ? "Desarquivar conversa" : "Arquivar conversa"}
+                onClick={() => setArchived(prev => {
+                  const next = new Set(prev);
+                  next.has(activeConv.id) ? next.delete(activeConv.id) : next.add(activeConv.id);
+                  return next;
+                })}
+              >
+                {archived.has(activeConv.id)
+                  ? <ArchiveRestore className="w-4 h-4" />
+                  : <Archive className="w-4 h-4" />}
               </Button>
+
+              {/* Ver cliente */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="Ver cliente">
+                <UserPlus className="w-4 h-4" />
+              </Button>
+
+              {/* Agendar */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="Agendar sessão">
+                <Calendar className="w-4 h-4" />
+              </Button>
+
+              {/* Tag */}
+              <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="Adicionar tag">
+                    <Tag className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="end" className="w-56 p-3 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Adicionar tag</p>
+                  <Input
+                    placeholder="Ex: VIP, Lead quente..."
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    className="h-8 text-sm"
+                    autoFocus
+                    onKeyDown={(e) => { if (e.key === "Enter" && tagInput.trim()) { setTagInput(""); setTagPopoverOpen(false); } }}
+                  />
+                  <Button size="sm" className="w-full h-8" disabled={!tagInput.trim()} onClick={() => { setTagInput(""); setTagPopoverOpen(false); }}>
+                    Salvar
+                  </Button>
+                </PopoverContent>
+              </Popover>
+
+              {/* Excluir */}
+              <Button
+                variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                title="Excluir conversa"
+                onClick={() => setDeleteConfirmOpen(true)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+
               {/* Toggle lead panel */}
               <Button
                 variant="ghost" size="icon" className="h-8 w-8"
@@ -244,6 +398,27 @@ export default function Mensagens() {
                 {leadPanelOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
               </Button>
             </div>
+
+            {/* Delete confirmation */}
+            <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir conversa</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir a conversa com <strong>{activeConv.contactName}</strong>? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => { setSelected(null); setDeleteConfirmOpen(false); }}
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {/* Messages */}
@@ -271,9 +446,26 @@ export default function Mensagens() {
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
               <Paperclip className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-              <Smile className="w-4 h-4" />
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                  <Smile className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="top" align="start" className="w-64 p-2">
+                <div className="grid grid-cols-10 gap-1">
+                  {EMOJI_LIST.map((e) => (
+                    <button
+                      key={e}
+                      className="text-lg hover:bg-muted rounded p-0.5 transition-colors"
+                      onClick={() => setInput((v) => v + e)}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
             <Input
               className="flex-1"
               placeholder="Escreva uma mensagem..."
@@ -323,25 +515,6 @@ export default function Mensagens() {
               <LeadRow icon={<Hash className="w-3.5 h-3.5" />} label="Canal origem" value={activeConv.source} />
             </div>
 
-            {/* Quick actions */}
-            <div className="p-3 border-t mt-auto space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide px-1 mb-2">Ações rápidas</p>
-              {activeConv.email ? (
-                <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
-                  <ExternalLink className="w-3.5 h-3.5" /> Ver cliente
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
-                  <UserPlus className="w-3.5 h-3.5" /> Criar cliente
-                </Button>
-              )}
-              <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
-                <Calendar className="w-3.5 h-3.5" /> Agendar sessão
-              </Button>
-              <Button variant="outline" size="sm" className="w-full text-xs justify-start gap-2 h-8">
-                <Tag className="w-3.5 h-3.5" /> Adicionar tag
-              </Button>
-            </div>
           </div>
         )}
       </aside>

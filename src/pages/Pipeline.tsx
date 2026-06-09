@@ -17,7 +17,8 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus } from "lucide-react";
+import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -32,6 +33,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+const EMOJI_LIST = ["😀","😂","😍","🥰","😊","😎","🤔","😅","😢","😭","😡","🤩","🥳","😴","🤗","😏","😬","🙄","😇","🥺","👍","👎","👏","🙌","🤝","❤️","🔥","✨","🎉","💯","🚀","💪","🙏","💔","😮","🤣","😁","🥶","🤯","😆"];
+
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -80,8 +93,11 @@ const DEFAULT_STAGES: Stage[] = [
     label: "Novo Lead",
     color: "#38bdf8",
     cards: [
-      { id: "c1", name: "Ana Paula", phone: "(11) 98888-1234", source: "whatsapp", createdAt: "Hoje, 09:14", lastMessage: "Oi, quero saber sobre depilação..." },
-      { id: "c2", name: "Beatriz Souza", phone: "(21) 97777-5678", source: "whatsapp", createdAt: "Hoje, 08:02", lastMessage: "Vocês têm horário na sexta?" },
+      { id: "c1", name: "Ana Paula",       phone: "(11) 98888-1234", source: "whatsapp",  createdAt: "Hoje, 09:14",    lastMessage: "Oi, quero saber sobre depilação a laser..." },
+      { id: "c2", name: "Beatriz Souza",   phone: "(21) 97777-5678", source: "whatsapp",  createdAt: "Hoje, 08:02",    lastMessage: "Vocês têm horário na sexta à tarde?" },
+      { id: "c7", name: "Fernanda Lima",   phone: "(11) 91234-5678", source: "instagram", createdAt: "Hoje, 07:45",    lastMessage: "Vi o post sobre promoção de limpeza de pele!" },
+      { id: "c8", name: "Juliana Pires",   phone: "(21) 99876-5432", source: "whatsapp",  createdAt: "Ontem, 22:10",   lastMessage: "Quanto custa o pacote de 6 sessões?" },
+      { id: "c9", name: "Renata Almeida",  phone: "(31) 98765-0001", source: "instagram", createdAt: "Ontem, 19:35",   lastMessage: "Adorei o antes e depois! Como funciona?" },
     ],
     agent: { enabled: true, model: "gpt-4o", prompt: "Você é recepcionista virtual. Qualifique o lead perguntando qual serviço tem interesse e o melhor horário.", schedule: "always" },
   },
@@ -90,7 +106,10 @@ const DEFAULT_STAGES: Stage[] = [
     label: "Qualificando",
     color: "#fbbf24",
     cards: [
-      { id: "c3", name: "Carla Mendes", phone: "(31) 96666-9012", source: "instagram", createdAt: "Ontem, 14:30", lastMessage: "Tenho interesse em harmonização..." },
+      { id: "c3",  name: "Carla Mendes",    phone: "(31) 96666-9012", source: "instagram", createdAt: "Ontem, 14:30",  lastMessage: "Tenho interesse em harmonização facial..." },
+      { id: "c10", name: "Patricia Lima",   phone: "(11) 97654-3210", source: "whatsapp",  createdAt: "Ontem, 11:20",  lastMessage: "Quero mais info sobre botox preventivo" },
+      { id: "c11", name: "Tatiane Rocha",   phone: "(41) 98888-7777", source: "whatsapp",  createdAt: "2 dias atrás",  lastMessage: "Pode me mandar a lista de preços?" },
+      { id: "c12", name: "Claudia Santos",  phone: "(21) 96543-2109", source: "instagram", createdAt: "2 dias atrás",  lastMessage: "Qual a diferença entre peeling e microagulhamento?" },
     ],
     agent: { enabled: true, model: "gpt-4o", prompt: "O lead tem interesse confirmado. Apresente os preços e agende uma demonstração.", schedule: "business" },
   },
@@ -98,14 +117,22 @@ const DEFAULT_STAGES: Stage[] = [
     id: "proposta",
     label: "Proposta",
     color: "#c084fc",
-    cards: [],
+    cards: [
+      { id: "c4",  name: "Daniela Costa",   phone: "(11) 95555-3344", source: "whatsapp",  createdAt: "3 dias atrás",  lastMessage: "Ok, me manda a proposta no WhatsApp" },
+      { id: "c13", name: "Mariana Vieira",  phone: "(31) 94444-8899", source: "instagram", createdAt: "3 dias atrás",  lastMessage: "Vou pensar e te aviso até amanhã" },
+      { id: "c14", name: "Camila Ferreira", phone: "(11) 93333-1122", source: "whatsapp",  createdAt: "4 dias atrás",  lastMessage: "Quero fechar o pacote completo" },
+    ],
     agent: { enabled: false, model: "gpt-4o", prompt: "", schedule: "outside" },
   },
   {
     id: "fechado",
     label: "Fechado",
     color: "#4ade80",
-    cards: [],
+    cards: [
+      { id: "c5",  name: "Eliane Moreira",  phone: "(21) 94444-5566", source: "whatsapp",  createdAt: "5 dias atrás",  lastMessage: "Fechado! Nos vemos na quinta 🎉" },
+      { id: "c6",  name: "Aline Rodrigues", phone: "(11) 93333-7788", source: "instagram", createdAt: "1 semana atrás", lastMessage: "Amei o resultado, já indiquei pra amiga!" },
+      { id: "c15", name: "Sandra Oliveira", phone: "(31) 92222-9900", source: "whatsapp",  createdAt: "1 semana atrás", lastMessage: "Confirmado para segunda às 10h ✅" },
+    ],
     agent: { enabled: false, model: "gpt-4o", prompt: "", schedule: "always" },
   },
 ];
@@ -262,7 +289,7 @@ function StageConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-light">Configurar etapa</DialogTitle>
         </DialogHeader>
@@ -307,60 +334,53 @@ function StageConfigDialog({
           </div>
 
           {/* Agent */}
-          <div className="space-y-3 pt-1 border-t border-border/40">
+          <div className="space-y-4 pt-1 border-t border-border/40">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Agente de IA</p>
                 <p className="text-xs text-muted-foreground">Responde automaticamente nesta etapa</p>
               </div>
-              <button
-                onClick={() => updateAgent({ enabled: !draft.agent.enabled })}
-                className={cn(
-                  "w-10 h-5.5 rounded-full transition-colors relative flex-shrink-0",
-                  draft.agent.enabled ? "bg-primary" : "bg-muted"
-                )}
-                style={{ height: 22, width: 40 }}
-              >
-                <span className={cn(
-                  "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
-                  draft.agent.enabled ? "translate-x-5" : "translate-x-0.5"
-                )} />
-              </button>
+              <Switch
+                checked={draft.agent.enabled}
+                onCheckedChange={v => updateAgent({ enabled: v })}
+              />
             </div>
 
             {draft.agent.enabled && (
-              <div className="space-y-3 pl-1">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Modelo</label>
-                  <Select value={draft.agent.model} onValueChange={v => updateAgent({ model: v })}>
-                    <SelectTrigger className="h-9 rounded-xl text-sm border-border/60">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                      <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                      <SelectItem value="claude-sonnet-4-6">Claude Sonnet 4.6</SelectItem>
-                      <SelectItem value="claude-haiku-4-5">Claude Haiku 4.5</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4 bg-muted/30 rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground">Modelo</Label>
+                    <Select value={draft.agent.model} onValueChange={v => updateAgent({ model: v })}>
+                      <SelectTrigger className="h-9 rounded-xl text-sm border-border/60">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                        <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
+                        <SelectItem value="claude-sonnet-4-6">Claude Sonnet 4.6</SelectItem>
+                        <SelectItem value="claude-haiku-4-5">Claude Haiku 4.5</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground">Horário de resposta</Label>
+                    <Select value={draft.agent.schedule} onValueChange={v => updateAgent({ schedule: v as StageAgent["schedule"] })}>
+                      <SelectTrigger className="h-9 rounded-xl text-sm border-border/60">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="always">Sempre (24h)</SelectItem>
+                        <SelectItem value="business">Horário comercial</SelectItem>
+                        <SelectItem value="outside">Fora do horário</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Horário de resposta</label>
-                  <Select value={draft.agent.schedule} onValueChange={v => updateAgent({ schedule: v as StageAgent["schedule"] })}>
-                    <SelectTrigger className="h-9 rounded-xl text-sm border-border/60">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="always">Sempre (24h)</SelectItem>
-                      <SelectItem value="business">Dentro do horário comercial</SelectItem>
-                      <SelectItem value="outside">Fora do horário comercial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Instrução do agente</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Instrução do agente</Label>
                   <textarea
                     value={draft.agent.prompt}
                     onChange={e => updateAgent({ prompt: e.target.value })}
@@ -369,24 +389,25 @@ function StageConfigDialog({
                     className="w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 transition-all resize-none leading-relaxed"
                   />
                 </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">Arquivos de contexto</Label>
+                  <p className="text-xs text-muted-foreground">PDFs, documentos ou bases de conhecimento para o agente</p>
+                  <label className="flex items-center gap-2 cursor-pointer w-fit">
+                    <Button type="button" variant="outline" size="sm" className="gap-1.5 pointer-events-none" asChild>
+                      <span><Paperclip className="w-3.5 h-3.5" /> Anexar arquivo</span>
+                    </Button>
+                    <input type="file" multiple accept=".pdf,.txt,.docx,.md" className="hidden" onChange={() => {}} />
+                  </label>
+                </div>
               </div>
             )}
           </div>
 
           {/* Actions */}
           <div className="flex gap-2 pt-1">
-            <button
-              onClick={onClose}
-              className="flex-1 h-9 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={() => { onSave(draft); onClose(); }}
-              className="flex-1 h-9 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              Salvar
-            </button>
+            <Button variant="outline" className="flex-1" onClick={onClose}>Cancelar</Button>
+            <Button className="flex-1" onClick={() => { onSave(draft); onClose(); }}>Salvar</Button>
           </div>
         </div>
       </DialogContent>
@@ -412,8 +433,14 @@ const MOCK_MESSAGES: Record<string, Array<{ id: string; text: string; fromMe: bo
   ],
 };
 
+type CustomField = { id: string; label: string; value: string };
+
 function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
   const [input, setInput] = useState("");
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [fieldsOpen, setFieldsOpen] = useState(false);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
   const messages = MOCK_MESSAGES[card.id] ?? [];
 
   return (
@@ -431,7 +458,14 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
         {/* Left: Lead data (1/3) */}
         <aside className="w-1/3 border-r flex flex-col overflow-y-auto bg-muted/10">
           {/* Lead hero */}
-          <div className="p-6 border-b flex flex-col items-center gap-3 text-center">
+          <div className="p-6 border-b flex flex-col items-center gap-3 text-center relative">
+            <button
+              onClick={() => setFieldsOpen(v => !v)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+              title="Campos customizados"
+            >
+              <Settings2 size={15} />
+            </button>
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-semibold text-primary">
               {card.name[0]}
             </div>
@@ -446,6 +480,48 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
             </div>
           </div>
 
+          {/* Campos customizados (editor) */}
+          {fieldsOpen && (
+            <div className="p-4 border-b bg-background space-y-3">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Campos customizados</p>
+              {customFields.map(f => (
+                <div key={f.id} className="flex items-center gap-2">
+                  <div className="flex-1 space-y-1">
+                    <p className="text-[10px] text-muted-foreground">{f.label}</p>
+                    <Input
+                      value={f.value}
+                      onChange={e => setCustomFields(prev => prev.map(x => x.id === f.id ? { ...x, value: e.target.value } : x))}
+                      className="h-7 text-xs"
+                    />
+                  </div>
+                  <button onClick={() => setCustomFields(prev => prev.filter(x => x.id !== f.id))} className="text-muted-foreground hover:text-destructive transition-colors mt-4">
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nome do campo..."
+                  value={newFieldLabel}
+                  onChange={e => setNewFieldLabel(e.target.value)}
+                  className="h-7 text-xs flex-1"
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && newFieldLabel.trim()) {
+                      setCustomFields(prev => [...prev, { id: `cf-${Date.now()}`, label: newFieldLabel.trim(), value: "" }]);
+                      setNewFieldLabel("");
+                    }
+                  }}
+                />
+                <Button size="sm" className="h-7 px-2 text-xs" disabled={!newFieldLabel.trim()} onClick={() => {
+                  setCustomFields(prev => [...prev, { id: `cf-${Date.now()}`, label: newFieldLabel.trim(), value: "" }]);
+                  setNewFieldLabel("");
+                }}>
+                  <Plus size={12} />
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Data rows */}
           <div className="p-5 space-y-4">
             <LeadDataRow icon={<Phone size={14} />} label="Telefone" value={card.phone} />
@@ -454,6 +530,9 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
             <LeadDataRow icon={<MapPin size={14} />} label="Cidade" value="—" />
             <LeadDataRow icon={<Mail size={14} />} label="E-mail" value="—" />
             <LeadDataRow icon={<Calendar size={14} />} label="Último agend." value="—" />
+            {customFields.filter(f => f.value).map(f => (
+              <LeadDataRow key={f.id} icon={<ChevronDown size={14} />} label={f.label} value={f.value} />
+            ))}
           </div>
 
           {/* Actions */}
@@ -505,12 +584,38 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
 
           {/* Input */}
           <div className="border-t p-3 flex items-end gap-2">
-            <button className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+            {/* File attachment */}
+            <button
+              className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+              onClick={() => document.getElementById("lead-file-input")?.click()}
+              title="Anexar arquivo"
+            >
               <Paperclip size={16} />
             </button>
-            <button className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground">
-              <Smile size={16} />
-            </button>
+            <input id="lead-file-input" type="file" multiple className="hidden" onChange={() => {}} />
+
+            {/* Emoji picker */}
+            <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+              <PopoverTrigger asChild>
+                <button className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground" title="Emoji">
+                  <Smile size={16} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent side="top" align="start" className="w-64 p-2">
+                <div className="grid grid-cols-8 gap-1">
+                  {EMOJI_LIST.map((em) => (
+                    <button
+                      key={em}
+                      className="text-lg p-1 rounded hover:bg-muted transition-colors"
+                      onClick={() => { setInput(v => v + em); setEmojiOpen(false); }}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <input
               className="flex-1 h-9 px-3 text-sm bg-muted/50 rounded-lg border border-border/50 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
               placeholder="Escreva uma mensagem..."
@@ -551,6 +656,8 @@ export default function Pipeline() {
   const [overStageId, setOverStageId] = useState<string | null>(null);
   const [configStage, setConfigStage] = useState<Stage | null>(null);
   const [selectedLead, setSelectedLead] = useState<CardData | null>(null);
+  const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [newLeadForm, setNewLeadForm] = useState({ name: "", phone: "", stageId: "", source: "manual" as CardData["source"] });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -642,26 +749,25 @@ export default function Pipeline() {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-border/40 bg-background flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <Plus size={20} className="rotate-45 opacity-0 absolute" style={{display:"none"}} />
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
-          </div>
-          <div>
-            <h1 className="text-2xl font-light tracking-wider uppercase text-foreground leading-none">Pipeline</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {stages.reduce((acc, s) => acc + s.cards.length, 0)} leads · {stages.length} etapas
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-background flex-shrink-0">
+        <PageHeader
+          icon={<LayoutList className="w-5 h-5" />}
+          title="Pipeline"
+          subtitle={`${stages.reduce((acc, s) => acc + s.cards.length, 0)} leads · ${stages.length} etapas`}
+          className="mb-0"
+        />
+        <div className="flex items-center gap-2">
+          <Button onClick={() => { setNewLeadForm({ name: "", phone: "", stageId: stages[0]?.id ?? "", source: "manual" }); setNewLeadOpen(true); }} className="gap-1.5">
+            <Plus size={14} /> Novo Lead
+          </Button>
         <button
           onClick={addStage}
-          className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground border border-border/60 hover:border-border rounded-xl px-3 py-1.5 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground border border-border/60 hover:border-border rounded-xl px-3 py-1.5 transition-colors"
         >
           <Plus size={14} />
           Nova etapa
         </button>
+        </div>
       </div>
 
       {/* Board */}
@@ -705,6 +811,92 @@ export default function Pipeline() {
         onClose={() => setConfigStage(null)}
         onSave={saveStage}
       />
+
+      {/* ── Painel lateral: Novo Lead ── */}
+      {newLeadOpen && (
+        <div className="fixed inset-0 z-40 flex justify-end" onClick={() => setNewLeadOpen(false)}>
+          <div
+            className="relative bg-background border-l border-border shadow-2xl w-full max-w-sm h-full flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
+              <h2 className="text-base font-medium">Novo Lead</h2>
+              <button onClick={() => setNewLeadOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Nome</Label>
+                <Input
+                  placeholder="Nome do lead"
+                  value={newLeadForm.name}
+                  onChange={e => setNewLeadForm(f => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Telefone</Label>
+                <Input
+                  placeholder="+55 (11) 99999-0000"
+                  value={newLeadForm.phone}
+                  onChange={e => setNewLeadForm(f => ({ ...f, phone: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Etapa</Label>
+                <Select value={newLeadForm.stageId} onValueChange={v => setNewLeadForm(f => ({ ...f, stageId: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Selecione a etapa" /></SelectTrigger>
+                  <SelectContent>
+                    {stages.map(s => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Origem</Label>
+                <Select value={newLeadForm.source} onValueChange={v => setNewLeadForm(f => ({ ...f, source: v as CardData["source"] }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-border/60 flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setNewLeadOpen(false)}>Cancelar</Button>
+              <Button
+                className="flex-1"
+                disabled={!newLeadForm.name.trim() || !newLeadForm.stageId}
+                onClick={() => {
+                  const card: CardData = {
+                    id: `card-${Date.now()}`,
+                    name: newLeadForm.name.trim(),
+                    phone: newLeadForm.phone,
+                    source: newLeadForm.source,
+                    createdAt: new Date().toLocaleDateString("pt-BR"),
+                    lastMessage: "",
+                  };
+                  setStages(prev => prev.map(s =>
+                    s.id === newLeadForm.stageId ? { ...s, cards: [card, ...s.cards] } : s
+                  ));
+                  setNewLeadOpen(false);
+                }}
+              >
+                Adicionar Lead
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

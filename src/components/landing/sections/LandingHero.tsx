@@ -13,7 +13,7 @@ export function LandingHero() {
   return (
     <section
       className="relative"
-      style={{ background: "linear-gradient(180deg, hsl(10 60% 93%) 0%, hsl(30 40% 96%) 45%, hsl(30 25% 98%) 100%)" }}
+      style={{ background: "linear-gradient(180deg, hsl(10 45% 94%) 0%, hsl(30 40% 96%) 45%, hsl(30 25% 98%) 100%)" }}
     >
       <ContainerScroll
         titleComponent={

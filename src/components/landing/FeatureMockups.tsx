@@ -1,22 +1,23 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Calendar, Users, CreditCard, Megaphone, BarChart3, Globe,
-  Bell, Search, ChevronLeft, ChevronRight, Clock,
-  TrendingUp, TrendingDown, Send, Check, Star,
+  Search, ChevronLeft, ChevronRight, Plus, Filter,
+  TrendingUp, Send, Check, Star,
   ArrowUpRight, ArrowDownRight, FileText, Phone,
+  DollarSign, LayoutDashboard, Clock, Eye,
+  Sparkles, UserCog, MessageCircle, Kanban,
 } from "lucide-react";
 import logoColor from "@/assets/logo-color.png";
 
-/* ─── shared chrome wrapper ─────────────────────────────────── */
+/* ─── shared chrome ────────────────────────────────────────────── */
 function MockWindow({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="w-full rounded-2xl overflow-hidden border border-border shadow-[0_32px_80px_hsl(20_15%_12%/0.12)]"
       style={{ background: "hsl(30 25% 99%)" }}
     >
-      {/* title bar */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border" style={{ background: "hsl(30 20% 97%)" }}>
         <div className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
         <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
@@ -32,199 +33,152 @@ function MockWindow({ children }: { children: React.ReactNode }) {
   );
 }
 
+const NAV_ITEMS = [
+  { icon: LayoutDashboard, label: "Dashboard" },
+  { icon: Calendar, label: "Agenda" },
+  { icon: Users, label: "Clientes" },
+  { icon: CreditCard, label: "Cobranças" },
+  { icon: DollarSign, label: "Faturamento" },
+  { icon: Sparkles, label: "Serviços" },
+  { icon: UserCog, label: "Equipe" },
+  { icon: Megaphone, label: "Marketing" },
+  { icon: Kanban, label: "Pipeline" },
+  { icon: MessageCircle, label: "Mensagens" },
+  { icon: BarChart3, label: "Relatórios" },
+];
+
 function Sidebar({ active }: { active: number }) {
-  const icons = [Calendar, Users, CreditCard, Megaphone, BarChart3, Globe];
   return (
-    <div className="w-12 border-r border-border flex flex-col items-center py-4 gap-4 flex-shrink-0" style={{ background: "hsl(30 20% 97%)" }}>
-      <img src={logoColor} alt="Bellex" className="w-7 h-auto opacity-90 mb-1" />
-      {icons.map((Icon, i) => (
-        <div key={i} className={`w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer transition-colors ${i === active ? "bg-primary/15" : "hover:bg-border/60"}`}>
-          <Icon size={14} className={i === active ? "text-primary" : "text-muted-foreground"} />
+    <div className="w-12 border-r border-border flex flex-col items-center py-3 gap-1 flex-shrink-0 overflow-hidden" style={{ background: "hsl(30 20% 97%)" }}>
+      <img src={logoColor} alt="Bellex" className="w-7 h-auto opacity-90 mb-2" />
+      {NAV_ITEMS.map(({ icon: Icon, label }, i) => (
+        <div
+          key={label}
+          title={label}
+          className={`w-8 h-7 rounded-lg flex items-center justify-center cursor-pointer transition-colors ${i === active ? "bg-primary/15" : "hover:bg-border/60"}`}
+        >
+          <Icon size={13} className={i === active ? "text-primary" : "text-muted-foreground"} />
         </div>
       ))}
     </div>
   );
 }
 
-/* ─── 0. AGENDA ──────────────────────────────────────────────── */
-const appts = [
-  { time: "09:00", client: "Camila F.", service: "Limpeza de Pele", color: "bg-primary/10 border-primary/25 text-primary" },
-  { time: "10:30", client: "Juliana M.", service: "Design de Sobrancelha", color: "bg-blue-50 border-blue-200 text-blue-600" },
-  { time: "11:30", client: "Fernanda R.", service: "Tratamento Facial Profundo", color: "bg-emerald-50 border-emerald-200 text-emerald-600" },
-  { time: "14:00", client: "Patricia L.", service: "Massagem Relaxante", color: "bg-violet-50 border-violet-200 text-violet-600" },
-  { time: "15:30", client: "Andrea C.", service: "Peeling Químico", color: "bg-amber-50 border-amber-200 text-amber-600" },
-  { time: "16:30", client: "Renata B.", service: "Botox Preventivo", color: "bg-rose-50 border-rose-200 text-rose-600" },
+function PageHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
+  return (
+    <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 flex-shrink-0">
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-foreground leading-none">{title}</h3>
+        <p className="text-[10px] text-muted-foreground mt-0.5">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── 0. AGENDA ── real layout: time-grid calendar ──────────────── */
+const HOURS = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+const DAYS_SHORT = ["Seg 02", "Ter 03", "Qua 04", "Qui 05", "Sex 06", "Sáb 07"];
+
+const EVENTS: Array<{ day: number; row: number; span: number; label: string; color: string; border: string; text: string }> = [
+  { day: 0, row: 1, span: 1, label: "Camila F. · Limpeza de Pele", color: "#fff1f2", border: "#fecdd3", text: "#e11d48" },
+  { day: 1, row: 2, span: 1, label: "Juliana M. · Design de Sobrancelha", color: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8" },
+  { day: 1, row: 5, span: 2, label: "Fernanda R. · Tratamento Facial", color: "#f0fdf4", border: "#bbf7d0", text: "#15803d" },
+  { day: 2, row: 0, span: 1, label: "Patricia L. · Massagem", color: "#f5f3ff", border: "#ddd6fe", text: "#7c3aed" },
+  { day: 2, row: 3, span: 2, label: "Andrea C. · Peeling Químico", color: "#fffbeb", border: "#fde68a", text: "#b45309" },
+  { day: 3, row: 1, span: 1, label: "Renata B. · Botox Preventivo", color: "#fff1f2", border: "#fecdd3", text: "#e11d48" },
+  { day: 3, row: 4, span: 1, label: "Marcos V. · Avaliação", color: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8" },
+  { day: 4, row: 2, span: 2, label: "Claudia S. · Bioestimulador", color: "#f0fdf4", border: "#bbf7d0", text: "#15803d" },
+  { day: 5, row: 1, span: 1, label: "Tânia M. · Drenagem", color: "#f5f3ff", border: "#ddd6fe", text: "#7c3aed" },
 ];
-const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const dates = [2, 3, 4, 5, 6, 7];
+
+const ROW_H = 28;
 
 function MockAgenda() {
   return (
     <MockWindow>
       <div className="flex h-[520px]">
-        <Sidebar active={0} />
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <div>
-              <h3 className="text-foreground text-sm font-medium">Agenda</h3>
-              <p className="text-muted-foreground text-[11px]">Junho 2026 · 6 atendimentos hoje</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground">
-                <Search size={11} /><span className="text-[11px]">Buscar cliente...</span>
-              </div>
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Bell size={12} className="text-primary" />
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 px-5 py-2.5 border-b border-border">
-            <button className="p-1 rounded-lg hover:bg-muted text-muted-foreground"><ChevronLeft size={13} /></button>
-            <div className="flex gap-1 flex-1">
-              {days.map((d, i) => (
-                <div key={d} className={`flex-1 flex flex-col items-center py-1.5 rounded-xl cursor-pointer text-xs transition-colors ${i === 2 ? "bg-primary/10" : "hover:bg-muted"}`}>
-                  <span className={i === 2 ? "text-primary font-medium" : "text-muted-foreground"}>{d}</span>
-                  <span className={`text-sm font-light mt-0.5 ${i === 2 ? "text-primary font-medium" : "text-foreground"}`}>{dates[i]}</span>
-                </div>
-              ))}
-            </div>
-            <button className="p-1 rounded-lg hover:bg-muted text-muted-foreground"><ChevronRight size={13} /></button>
-          </div>
-          <div className="flex-1 overflow-hidden px-5 py-3 space-y-2">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span className="text-[10px] text-primary font-medium">Agora · 11:45</span>
-              <div className="flex-1 border-t border-primary/20" />
-            </div>
-            {appts.map((a, i) => (
-              <div key={i} className={`flex items-center gap-3 px-3 py-2 rounded-xl border ${a.color}`}>
-                <div className="text-[10px] font-semibold w-10 flex-shrink-0">{a.time}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium truncate">{a.service}</div>
-                  <div className="text-[10px] opacity-70 truncate">{a.client}</div>
-                </div>
-                <div className="w-5 h-5 rounded-full bg-white/60 flex items-center justify-center text-[9px] font-medium flex-shrink-0">
-                  {a.client.split(" ").map(w => w[0]).join("")}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="w-44 border-l border-border flex flex-col p-4 gap-4 flex-shrink-0" style={{ background: "hsl(30 20% 97%)" }}>
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Hoje</p>
-            <div className="text-3xl font-light text-foreground">6</div>
-            <div className="text-muted-foreground text-[11px]">atendimentos</div>
-          </div>
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Faturamento</p>
-            <div className="text-lg font-light text-foreground">R$ 1.840</div>
-            <div className="text-muted-foreground text-[11px]">+12% esta semana</div>
-          </div>
-          <div className="space-y-1.5 mt-auto">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Especialistas</p>
-            {["Dra. Ana", "Bianca S.", "Dr. Felipe"].map((name) => (
-              <div key={name} className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center text-[9px] font-medium text-primary">
-                  {name.split(" ").map(w => w[0]).join("")}
-                </div>
-                <span className="text-[10px] text-muted-foreground truncate">{name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </MockWindow>
-  );
-}
-
-/* ─── 1. PRONTUÁRIO ─────────────────────────────────────────── */
-const clients = [
-  { name: "Camila Ferreira", last: "há 3 dias", visits: 12, tag: "Frequente" },
-  { name: "Juliana Martins", last: "há 10 dias", visits: 5, tag: "Ativa" },
-  { name: "Fernanda Rocha", last: "há 1 mês", visits: 3, tag: "Ativa" },
-  { name: "Patricia Lima", last: "há 3 meses", visits: 8, tag: "Inativa" },
-  { name: "Andrea Costa", last: "há 7 dias", visits: 20, tag: "VIP" },
-];
-const tagColor: Record<string, string> = {
-  Frequente: "bg-primary/10 text-primary",
-  Ativa: "bg-emerald-50 text-emerald-600",
-  Inativa: "bg-amber-50 text-amber-600",
-  VIP: "bg-violet-50 text-violet-600",
-};
-
-function MockProntuario() {
-  return (
-    <MockWindow>
-      <div className="flex h-[520px]">
         <Sidebar active={1} />
-        {/* client list */}
-        <div className="w-52 border-r border-border flex flex-col min-w-0 flex-shrink-0" style={{ background: "hsl(30 20% 97%)" }}>
-          <div className="px-3 py-3 border-b border-border">
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-white text-muted-foreground">
-              <Search size={11} /><span className="text-[11px]">Buscar cliente...</span>
+        <div className="flex-1 flex flex-col min-w-0">
+          <PageHeader icon={<Calendar size={14} className="text-primary" />} title="Agenda" subtitle="Junho 2026 · visão semanal" />
+
+          {/* Toolbar */}
+          <div className="flex items-center justify-between px-5 py-2 border-b border-border">
+            <div className="flex items-center gap-1">
+              <button className="p-1 rounded hover:bg-muted text-muted-foreground"><ChevronLeft size={12} /></button>
+              <span className="text-[11px] font-medium text-foreground mx-1">02 – 07 Jun 2026</span>
+              <button className="p-1 rounded hover:bg-muted text-muted-foreground"><ChevronRight size={12} /></button>
+            </div>
+            <div className="flex items-center gap-1">
+              {["Dia", "Semana", "Mês"].map((v, i) => (
+                <button key={v} className={`text-[10px] px-2.5 py-1 rounded-lg transition-colors ${i === 1 ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted border border-border"}`}>{v}</button>
+              ))}
+              <button className="ml-2 flex items-center gap-1 text-[10px] bg-primary/10 text-primary px-2.5 py-1 rounded-lg">
+                <Plus size={9} />Novo
+              </button>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden py-2">
-            {clients.map((c, i) => (
-              <div key={c.name} className={`px-3 py-2.5 cursor-pointer border-l-2 transition-all ${i === 0 ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted/60"}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-foreground truncate">{c.name}</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${tagColor[c.tag]}`}>{c.tag}</span>
-                </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">{c.visits} visitas · {c.last}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* detail */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Camila Ferreira</h3>
-              <p className="text-[11px] text-muted-foreground">12 visitas · última há 3 dias</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg border border-border bg-white flex items-center justify-center"><Phone size={11} className="text-muted-foreground" /></div>
-              <button className="text-[11px] bg-primary text-white px-3 py-1.5 rounded-lg font-medium">Novo atendimento</button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-hidden px-5 py-4 grid grid-cols-2 gap-4">
-            {/* anamnese */}
-            <div className="space-y-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Anamnese</p>
-              {[["Tipo de pele", "Mista/oleosa"], ["Alergias", "Nenhuma"], ["Objetivo", "Anti-aging"], ["Última avaliação", "02/06/2026"]].map(([k, v]) => (
-                <div key={k} className="flex justify-between border-b border-border/40 pb-1.5">
-                  <span className="text-[10px] text-muted-foreground">{k}</span>
-                  <span className="text-[10px] font-medium text-foreground">{v}</span>
-                </div>
+
+          {/* Calendar grid */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {/* Day headers */}
+            <div className="flex border-b border-border" style={{ paddingLeft: 44 }}>
+              {DAYS_SHORT.map((d, i) => (
+                <div key={d} className={`flex-1 text-center py-1.5 text-[10px] font-medium border-r border-border last:border-r-0 ${i === 2 ? "text-primary bg-primary/5" : "text-muted-foreground"}`}>{d}</div>
               ))}
             </div>
-            {/* history */}
-            <div className="space-y-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Histórico</p>
-              {[
-                { date: "02/06", proc: "Limpeza de Pele", prof: "Bianca S." },
-                { date: "15/05", proc: "Peeling Químico", prof: "Dra. Ana" },
-                { date: "28/04", proc: "Botox Preventivo", prof: "Dra. Ana" },
-                { date: "10/04", proc: "Limpeza de Pele", prof: "Bianca S." },
-              ].map((h, i) => (
-                <div key={i} className="flex items-start gap-2 pb-1.5 border-b border-border/40">
-                  <div className="text-[9px] text-muted-foreground w-12 pt-0.5 flex-shrink-0">{h.date}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-medium text-foreground truncate">{h.proc}</div>
-                    <div className="text-[10px] text-muted-foreground">{h.prof}</div>
+
+            {/* Scrollable time grid */}
+            <div className="flex-1 overflow-hidden relative" style={{ display: "flex" }}>
+              {/* Hour labels */}
+              <div className="flex flex-col flex-shrink-0" style={{ width: 44 }}>
+                {HOURS.map((h) => (
+                  <div key={h} className="flex items-start justify-end pr-2 text-[8px] text-muted-foreground/60 border-b border-border/40" style={{ height: ROW_H }}>
+                    {h}
                   </div>
-                  <FileText size={10} className="text-muted-foreground/50 mt-0.5 flex-shrink-0" />
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* observation box */}
-          <div className="px-5 pb-4">
-            <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">Observações do último atendimento</p>
-              <p className="text-[11px] text-foreground/80 leading-relaxed">Pele com discreta descamação na zona T. Recomendado hidratante FPS50 diário. Retorno em 30 dias para avaliação.</p>
+                ))}
+              </div>
+
+              {/* Day columns */}
+              <div className="flex flex-1 relative">
+                {DAYS_SHORT.map((d, di) => {
+                  const dayEvents = EVENTS.filter(e => e.day === di);
+                  return (
+                    <div key={d} className={`flex-1 relative border-r border-border/40 last:border-r-0 ${di === 2 ? "bg-primary/[0.02]" : ""}`}>
+                      {/* horizontal hour lines */}
+                      {HOURS.map((h) => (
+                        <div key={h} className="absolute w-full border-b border-border/25" style={{ top: HOURS.indexOf(h) * ROW_H, height: ROW_H }} />
+                      ))}
+                      {/* events */}
+                      {dayEvents.map((ev, ei) => (
+                        <div
+                          key={ei}
+                          className="absolute left-0.5 right-0.5 rounded overflow-hidden"
+                          style={{
+                            top: ev.row * ROW_H + 2,
+                            height: ev.span * ROW_H - 4,
+                            background: ev.color,
+                            borderLeft: `2px solid ${ev.border}`,
+                          }}
+                        >
+                          <span className="block text-[8px] font-medium px-1 pt-0.5 leading-tight truncate" style={{ color: ev.text }}>
+                            {ev.label}
+                          </span>
+                        </div>
+                      ))}
+                      {/* "now" indicator on Wed */}
+                      {di === 2 && (
+                        <div className="absolute left-0 right-0 flex items-center" style={{ top: 3.5 * ROW_H }}>
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                          <div className="flex-1 border-t border-primary" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -233,81 +187,94 @@ function MockProntuario() {
   );
 }
 
-/* ─── 2. FINANCEIRO ─────────────────────────────────────────── */
-const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"];
-const barHeights = [55, 65, 48, 72, 68, 88];
+/* ─── 1. CLIENTES ── real layout: search + filter + table ────────── */
+const CLIENT_ROWS = [
+  { name: "Camila Ferreira", email: "camila@gmail.com", phone: "(11) 9 8765-4321", visits: 12, since: "8 meses", tag: "VIP", tagColor: "bg-violet-50 text-violet-600" },
+  { name: "Juliana Martins", email: "ju.martins@email.com", phone: "(11) 9 9123-0012", visits: 5, since: "3 meses", tag: "Ativa", tagColor: "bg-emerald-50 text-emerald-600" },
+  { name: "Fernanda Rocha", email: "fernanda.r@me.com", phone: "(21) 9 8888-7766", visits: 3, since: "2 meses", tag: "Ativa", tagColor: "bg-emerald-50 text-emerald-600" },
+  { name: "Patricia Lima", email: "patricia_lima@email.com", phone: "(11) 9 7654-3210", visits: 8, since: "1 ano", tag: "Inativa", tagColor: "bg-amber-50 text-amber-600" },
+  { name: "Andrea Costa", email: "andrea.c@gmail.com", phone: "(11) 9 9001-2233", visits: 20, since: "2 anos", tag: "VIP", tagColor: "bg-violet-50 text-violet-600" },
+  { name: "Renata Batista", email: "renata.b@icloud.com", phone: "(21) 9 8000-4455", visits: 1, since: "1 mês", tag: "Nova", tagColor: "bg-primary/10 text-primary" },
+];
 
-function MockFinanceiro() {
+function MockClientes() {
   return (
     <MockWindow>
       <div className="flex h-[520px]">
         <Sidebar active={2} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Financeiro</h3>
-              <p className="text-[11px] text-muted-foreground">Junho 2026</p>
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 flex-shrink-0">
+                <Users size={14} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground leading-none">Clientes</h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5">312 clientes cadastrados</p>
+              </div>
             </div>
-            <button className="text-[11px] border border-border px-3 py-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors">Exportar</button>
+            <button className="flex items-center gap-1.5 text-[11px] bg-primary text-white px-3 py-1.5 rounded-lg font-medium">
+              <Plus size={11} />Novo cliente
+            </button>
           </div>
-          {/* KPI row */}
-          <div className="grid grid-cols-3 border-b border-border">
-            {[
-              { label: "Faturamento", value: "R$ 18.420", delta: "+23%", up: true },
-              { label: "Recebido", value: "R$ 16.750", delta: "+18%", up: true },
-              { label: "Inadimplência", value: "R$ 1.670", delta: "-4%", up: false },
-            ].map((k) => (
-              <div key={k.label} className="px-5 py-3.5 border-r border-border last:border-r-0">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{k.label}</p>
-                <div className="text-lg font-light text-foreground">{k.value}</div>
-                <div className={`flex items-center gap-1 mt-0.5 text-[10px] font-medium ${k.up ? "text-emerald-600" : "text-rose-500"}`}>
-                  {k.up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}{k.delta}
+
+          {/* Search + filter row */}
+          <div className="flex items-center gap-2 px-5 py-2.5 border-b border-border">
+            <div className="flex-1 relative">
+              <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <div className="w-full pl-7 pr-3 py-1.5 text-[11px] rounded-lg border border-border bg-white text-muted-foreground">
+                Buscar por nome, e-mail ou telefone...
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-white text-[11px] text-muted-foreground">
+              <Filter size={10} />Todos
+            </div>
+            <div className="text-[11px] border border-border px-2.5 py-1.5 rounded-lg text-muted-foreground bg-white">
+              Exportar
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="flex-1 overflow-hidden">
+            {/* thead */}
+            <div className="grid border-b border-border bg-muted/30 px-5" style={{ gridTemplateColumns: "2fr 2fr 1.2fr 0.7fr 0.9fr 0.8fr" }}>
+              {["Nome", "E-mail", "Telefone", "Visitas", "Cliente há", "Status"].map(h => (
+                <div key={h} className="py-2 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{h}</div>
+              ))}
+            </div>
+            {/* rows */}
+            {CLIENT_ROWS.map((r, i) => (
+              <div
+                key={r.name}
+                className={`grid items-center px-5 border-b border-border/60 hover:bg-muted/20 cursor-pointer transition-colors ${i === 0 ? "bg-primary/[0.03]" : ""}`}
+                style={{ gridTemplateColumns: "2fr 2fr 1.2fr 0.7fr 0.9fr 0.8fr" }}
+              >
+                <div className="py-2 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-[9px] font-medium text-primary flex-shrink-0">
+                    {r.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                  </div>
+                  <span className="text-[11px] font-medium text-foreground truncate">{r.name}</span>
+                </div>
+                <div className="py-2 text-[10px] text-muted-foreground truncate">{r.email}</div>
+                <div className="py-2 text-[10px] text-muted-foreground">{r.phone}</div>
+                <div className="py-2 text-[10px] text-foreground font-medium">{r.visits}</div>
+                <div className="py-2 text-[10px] text-muted-foreground">{r.since}</div>
+                <div className="py-2">
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${r.tagColor}`}>{r.tag}</span>
                 </div>
               </div>
             ))}
           </div>
-          {/* chart + transactions */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* bar chart */}
-            <div className="flex-1 px-5 py-4 border-r border-border min-w-0">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Faturamento mensal</p>
-              <div className="flex items-end gap-2 h-32">
-                {months.map((m, i) => (
-                  <div key={m} className="flex-1 flex flex-col items-center gap-1">
-                    <div
-                      className={`w-full rounded-t-md transition-all ${i === 5 ? "bg-primary" : "bg-primary/25"}`}
-                      style={{ height: `${barHeights[i]}%` }}
-                    />
-                    <span className="text-[9px] text-muted-foreground">{m}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* transactions */}
-            <div className="w-52 flex-shrink-0 flex flex-col">
-              <div className="px-4 py-3 border-b border-border">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Últimas transações</p>
-              </div>
-              <div className="flex-1 overflow-hidden py-1">
-                {[
-                  { name: "Limpeza de Pele", client: "Camila F.", val: "+ R$ 180", color: "text-emerald-600" },
-                  { name: "Botox Preventivo", client: "Renata B.", val: "+ R$ 650", color: "text-emerald-600" },
-                  { name: "Massagem", client: "Patricia L.", val: "+ R$ 120", color: "text-emerald-600" },
-                  { name: "Reembolso", client: "Juliana M.", val: "- R$ 80", color: "text-rose-500" },
-                  { name: "Peeling Químico", client: "Andrea C.", val: "+ R$ 350", color: "text-emerald-600" },
-                ].map((t, i) => (
-                  <div key={i} className="flex items-center gap-2 px-4 py-2 hover:bg-muted/40 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <CreditCard size={10} className="text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-medium text-foreground truncate">{t.name}</div>
-                      <div className="text-[9px] text-muted-foreground">{t.client}</div>
-                    </div>
-                    <span className={`text-[10px] font-medium flex-shrink-0 ${t.color}`}>{t.val}</span>
-                  </div>
-                ))}
-              </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-5 py-2 border-t border-border">
+            <span className="text-[10px] text-muted-foreground">Mostrando 1–20 de 312</span>
+            <div className="flex items-center gap-1">
+              <button className="w-6 h-6 rounded border border-border flex items-center justify-center text-muted-foreground"><ChevronLeft size={11} /></button>
+              {[1,2,3].map(n => (
+                <button key={n} className={`w-6 h-6 rounded text-[10px] ${n === 1 ? "bg-primary text-white" : "border border-border text-muted-foreground"}`}>{n}</button>
+              ))}
+              <button className="w-6 h-6 rounded border border-border flex items-center justify-center text-muted-foreground"><ChevronRight size={11} /></button>
             </div>
           </div>
         </div>
@@ -316,26 +283,160 @@ function MockFinanceiro() {
   );
 }
 
-/* ─── 3. MARKETING ──────────────────────────────────────────── */
+/* ─── 2. FATURAMENTO ── real layout: KPIs + table ────────────────── */
+const FAT_ROWS = [
+  { client: "Camila Ferreira", proc: "Limpeza de Pele", specialist: "Bianca S.", date: "09/06", value: "R$ 180", pay: "Cartão", status: "Pago", sc: "bg-emerald-50 text-emerald-700" },
+  { client: "Renata Batista", proc: "Botox Preventivo", specialist: "Dra. Ana", date: "09/06", value: "R$ 650", pay: "Pix", status: "Pago", sc: "bg-emerald-50 text-emerald-700" },
+  { client: "Patricia Lima", proc: "Massagem Relaxante", specialist: "Bianca S.", date: "08/06", value: "R$ 120", pay: "Dinheiro", status: "Pago", sc: "bg-emerald-50 text-emerald-700" },
+  { client: "Juliana Martins", proc: "Design de Sobrancelha", specialist: "Bianca S.", date: "08/06", value: "R$ 90", pay: "Cartão", status: "Pendente", sc: "bg-amber-50 text-amber-700" },
+  { client: "Andrea Costa", proc: "Peeling Químico", specialist: "Dra. Ana", date: "07/06", value: "R$ 350", pay: "Pix", status: "Pago", sc: "bg-emerald-50 text-emerald-700" },
+  { client: "Fernanda Rocha", proc: "Tratamento Facial", specialist: "Dr. Felipe", date: "07/06", value: "R$ 320", pay: "Cartão", status: "Pago", sc: "bg-emerald-50 text-emerald-700" },
+];
+
+/* mini SVG area sparkline */
+function AreaSparkline() {
+  const pts = [38, 52, 44, 68, 58, 80, 70, 88, 76, 96];
+  const h = 52; const w = 260;
+  const step = w / (pts.length - 1);
+  const max = Math.max(...pts);
+  const coords = pts.map((v, i) => [i * step, h - (v / max) * (h - 4)]);
+  const line = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const area = `${line} L${w},${h} L0,${h} Z`;
+  const PRIMARY = "hsl(10 75% 65%)";
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 52 }} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="fat-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={PRIMARY} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={PRIMARY} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[0.3, 0.6, 1].map(f => (
+        <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="hsl(var(--border))" strokeWidth="0.5" strokeOpacity="0.6" />
+      ))}
+      <path d={area} fill="url(#fat-grad)" />
+      <path d={line} fill="none" stroke={PRIMARY} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MockFaturamento() {
+  return (
+    <MockWindow>
+      <div className="flex h-[520px]">
+        <Sidebar active={4} />
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 flex-shrink-0">
+                <DollarSign size={14} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground leading-none">Faturamento</h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Visão financeira dos atendimentos realizados</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-[10px] border border-border px-2.5 py-1.5 rounded-lg text-muted-foreground">Junho 2026</div>
+              <div className="text-[10px] border border-border px-2.5 py-1.5 rounded-lg text-muted-foreground">Exportar</div>
+            </div>
+          </div>
+
+          {/* KPI strip */}
+          <div className="grid grid-cols-4 border-b border-border">
+            {[
+              { label: "Faturamento", val: "R$ 18.420", delta: "+23%", up: true },
+              { label: "Recebido", val: "R$ 16.750", delta: "+18%", up: true },
+              { label: "Pendente", val: "R$ 1.670", delta: "4 cobranças", up: null },
+              { label: "Ticket médio", val: "R$ 214", delta: "+7%", up: true },
+            ].map((k) => (
+              <div key={k.label} className="px-4 py-3 border-r border-border last:border-r-0">
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">{k.label}</p>
+                <div className="text-base font-light text-foreground leading-none">{k.val}</div>
+                <div className={`flex items-center gap-0.5 mt-1 text-[9px] font-medium ${k.up === true ? "text-emerald-600" : k.up === false ? "text-rose-500" : "text-muted-foreground"}`}>
+                  {k.up === true && <ArrowUpRight size={9} />}
+                  {k.up === false && <ArrowDownRight size={9} />}
+                  {k.delta}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chart */}
+          <div className="px-5 pt-3 pb-1 border-b border-border">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Faturamento no período</p>
+              <p className="text-[9px] text-muted-foreground">01/06 — 09/06</p>
+            </div>
+            <AreaSparkline />
+          </div>
+
+          {/* Table */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="grid border-b border-border bg-muted/30 px-5" style={{ gridTemplateColumns: "1.8fr 1.6fr 1fr 0.7fr 0.8fr 0.8fr 0.75fr" }}>
+              {["Paciente", "Procedimento", "Especialista", "Data", "Valor", "Pagamento", "Status"].map(h => (
+                <div key={h} className="py-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{h}</div>
+              ))}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              {FAT_ROWS.map((r, i) => (
+                <div
+                  key={i}
+                  className="grid items-center px-5 border-b border-border/60 hover:bg-muted/20 cursor-pointer transition-colors"
+                  style={{ gridTemplateColumns: "1.8fr 1.6fr 1fr 0.7fr 0.8fr 0.8fr 0.75fr" }}
+                >
+                  <div className="py-1.5 flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center text-[8px] font-medium text-primary flex-shrink-0">
+                      {r.client.split(" ").map(w => w[0]).join("").slice(0,2)}
+                    </div>
+                    <span className="text-[10px] font-medium text-foreground truncate">{r.client}</span>
+                  </div>
+                  <div className="py-1.5 text-[10px] text-muted-foreground truncate">{r.proc}</div>
+                  <div className="py-1.5 text-[10px] text-muted-foreground truncate">{r.specialist}</div>
+                  <div className="py-1.5 text-[10px] text-muted-foreground">{r.date}</div>
+                  <div className="py-1.5 text-[10px] font-medium text-foreground">{r.value}</div>
+                  <div className="py-1.5 text-[10px] text-muted-foreground">{r.pay}</div>
+                  <div className="py-1.5">
+                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-medium ${r.sc}`}>{r.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </MockWindow>
+  );
+}
+
+/* ─── 3. MARKETING ── real layout: list of campaigns ─────────────── */
 function MockMarketing() {
   return (
     <MockWindow>
       <div className="flex h-[520px]">
-        <Sidebar active={3} />
+        <Sidebar active={7} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Marketing Automatizado</h3>
-              <p className="text-[11px] text-muted-foreground">4 campanhas ativas</p>
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 flex-shrink-0">
+                <Megaphone size={14} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground leading-none">Marketing Automatizado</h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5">4 campanhas ativas</p>
+              </div>
             </div>
-            <button className="text-[11px] bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ Nova campanha</button>
+            <button className="flex items-center gap-1.5 text-[11px] bg-primary text-white px-3 py-1.5 rounded-lg font-medium">
+              <Plus size={11} />Nova campanha
+            </button>
           </div>
+
           {/* stats row */}
           <div className="grid grid-cols-4 border-b border-border">
             {[
               { label: "Mensagens enviadas", val: "1.240" },
               { label: "Taxa de abertura", val: "68%" },
-              { label: "Reativados", val: "47" },
+              { label: "Clientes reativados", val: "47" },
               { label: "Avaliações Google", val: "4.8 ★" },
             ].map((s) => (
               <div key={s.label} className="px-4 py-3 border-r border-border last:border-r-0 text-center">
@@ -344,63 +445,33 @@ function MockMarketing() {
               </div>
             ))}
           </div>
+
           {/* campaign list */}
-          <div className="flex-1 overflow-hidden px-5 py-3 space-y-2.5">
+          <div className="flex-1 overflow-hidden px-5 py-3 space-y-2">
             {[
-              {
-                name: "Reativação 90 dias",
-                desc: "Clientes sem visita há 90+ dias",
-                status: "Ativo",
-                sent: "312 enviados",
-                rate: "72% abertura",
-                channel: "WhatsApp",
-                color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-              },
-              {
-                name: "Lembrete de retorno",
-                desc: "30 dias após último procedimento",
-                status: "Ativo",
-                sent: "548 enviados",
-                rate: "81% abertura",
-                channel: "WhatsApp",
-                color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-              },
-              {
-                name: "Aniversariantes do mês",
-                desc: "Desconto especial no mês do aniversário",
-                status: "Ativo",
-                sent: "89 enviados",
-                rate: "91% abertura",
-                channel: "E-mail + WhatsApp",
-                color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-              },
-              {
-                name: "Pós-atendimento",
-                desc: "Solicita avaliação no Google 2h após visita",
-                status: "Rascunho",
-                sent: "—",
-                rate: "—",
-                channel: "WhatsApp",
-                color: "bg-muted text-muted-foreground border-border",
-              },
+              { name: "Reativação 90 dias", desc: "Clientes sem visita há 90+ dias", status: "Ativo", sent: "312 enviados", rate: "72% abertura", channel: "WhatsApp", active: true },
+              { name: "Lembrete de retorno", desc: "30 dias após último procedimento", status: "Ativo", sent: "548 enviados", rate: "81% abertura", channel: "WhatsApp", active: true },
+              { name: "Aniversariantes do mês", desc: "Desconto especial no aniversário", status: "Ativo", sent: "89 enviados", rate: "91% abertura", channel: "E-mail + WhatsApp", active: true },
+              { name: "Avaliação pós-atendimento", desc: "Solicita avaliação no Google 2h após visita", status: "Rascunho", sent: "—", rate: "—", channel: "WhatsApp", active: false },
             ].map((c, i) => (
-              <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl border border-border bg-white hover:shadow-sm transition-all">
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-white hover:shadow-sm transition-all cursor-pointer">
                 <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Send size={13} className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-medium text-foreground">{c.name}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-medium ${c.color}`}>{c.status}</span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-medium ${c.active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-muted text-muted-foreground border-border"}`}>
+                      {c.status}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{c.desc}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{c.desc}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <div className="text-[10px] font-medium text-foreground">{c.sent}</div>
                   <div className="text-[9px] text-muted-foreground">{c.rate}</div>
                 </div>
-                <div className="w-1 h-6 rounded-full bg-border/40 mx-1 flex-shrink-0" />
-                <div className="text-[9px] text-muted-foreground flex-shrink-0">{c.channel}</div>
+                <div className="text-[9px] text-muted-foreground border-l border-border pl-3 flex-shrink-0">{c.channel}</div>
               </div>
             ))}
           </div>
@@ -410,185 +481,100 @@ function MockMarketing() {
   );
 }
 
-/* ─── 4. RELATÓRIOS ─────────────────────────────────────────── */
-const specialists = [
-  { name: "Dra. Ana", revenue: "R$ 7.420", sessions: 42, bar: 88 },
-  { name: "Bianca S.", revenue: "R$ 5.810", sessions: 38, bar: 69 },
-  { name: "Dr. Felipe", revenue: "R$ 3.190", sessions: 21, bar: 38 },
-];
-
+/* ─── 4. RELATÓRIOS ── real layout: KPI cards + chart + table ─────── */
 function MockRelatorios() {
-  return (
-    <MockWindow>
-      <div className="flex h-[520px]">
-        <Sidebar active={4} />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Relatórios</h3>
-              <p className="text-[11px] text-muted-foreground">Junho 2026</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="text-[11px] border border-border px-3 py-1.5 rounded-lg text-muted-foreground">Últimos 30 dias</div>
-            </div>
-          </div>
-          <div className="flex-1 overflow-hidden px-5 py-4 grid grid-cols-2 gap-4">
-            {/* left col */}
-            <div className="space-y-4">
-              {/* KPIs */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: "Taxa de retorno", val: "68%", sub: "+5pp vs mês anterior", up: true },
-                  { label: "Ticket médio", val: "R$ 215", sub: "+12% vs mês anterior", up: true },
-                  { label: "Novos clientes", val: "34", sub: "+8 vs mês anterior", up: true },
-                  { label: "Cancelamentos", val: "4%", sub: "-2pp vs mês anterior", up: false },
-                ].map((k) => (
-                  <div key={k.label} className="p-3 rounded-xl border border-border bg-white">
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{k.label}</p>
-                    <div className="text-base font-light text-foreground mt-1">{k.val}</div>
-                    <div className={`flex items-center gap-0.5 text-[9px] mt-0.5 font-medium ${k.up ? "text-emerald-600" : "text-rose-500"}`}>
-                      {k.up ? <TrendingUp size={9} /> : <TrendingDown size={9} />}{k.sub}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* top services */}
-              <div className="p-3 rounded-xl border border-border bg-white">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Top serviços</p>
-                {[
-                  { name: "Limpeza de Pele", pct: 82 },
-                  { name: "Botox Preventivo", pct: 64 },
-                  { name: "Design de Sobrancelha", pct: 51 },
-                ].map((s) => (
-                  <div key={s.name} className="mb-2 last:mb-0">
-                    <div className="flex justify-between mb-0.5">
-                      <span className="text-[10px] text-foreground">{s.name}</span>
-                      <span className="text-[10px] text-muted-foreground">{s.pct}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-primary/60" style={{ width: `${s.pct}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* right col — specialists */}
-            <div className="space-y-4">
-              <div className="p-3 rounded-xl border border-border bg-white h-full">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Desempenho por especialista</p>
-                {specialists.map((s) => (
-                  <div key={s.name} className="mb-4 last:mb-0">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-[9px] font-medium text-primary">
-                          {s.name.split(" ").map(w => w[0]).join("")}
-                        </div>
-                        <span className="text-[11px] font-medium text-foreground">{s.name}</span>
-                      </div>
-                      <span className="text-[10px] font-medium text-foreground">{s.revenue}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-primary/50" style={{ width: `${s.bar}%` }} />
-                    </div>
-                    <span className="text-[9px] text-muted-foreground">{s.sessions} atendimentos</span>
-                  </div>
-                ))}
-                {/* star ratings */}
-                <div className="mt-4 pt-3 border-t border-border/60">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Avaliações recebidas</p>
-                  {[5, 5, 4, 5, 4].map((r, i) => (
-                    <div key={i} className="flex items-center gap-1 mb-1">
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <Star key={j} size={9} className={j < r ? "text-amber-400 fill-amber-400" : "text-border"} />
-                      ))}
-                      <span className="text-[9px] text-muted-foreground ml-1">{["Dra. Ana", "Bianca S.", "Dr. Felipe", "Dra. Ana", "Bianca S."][i]}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </MockWindow>
-  );
-}
+  const pts = [22, 35, 28, 55, 42, 68, 58, 72, 65, 80, 70, 88];
+  const h = 60; const w = 380;
+  const step = w / (pts.length - 1);
+  const max = Math.max(...pts);
+  const coords = pts.map((v, i) => [i * step, h - (v / max) * (h - 4)]);
+  const line = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const area = `${line} L${w},${h} L0,${h} Z`;
 
-/* ─── 5. AGENDAMENTO ONLINE ──────────────────────────────────── */
-function MockAgendamentoOnline() {
   return (
     <MockWindow>
       <div className="flex h-[520px]">
-        <Sidebar active={5} />
+        <Sidebar active={10} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Agendamento Online</h3>
-              <p className="text-[11px] text-muted-foreground">Link público · studio.bellex.com.br</p>
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 flex-shrink-0">
+                <BarChart3 size={14} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground leading-none">Relatórios</h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Visão gerencial da clínica</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 text-[11px] border border-border px-3 py-1.5 rounded-lg text-muted-foreground">
-                <Globe size={11} />bellex.com.br/agenda
-              </div>
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="text-[10px] border border-border px-2.5 py-1.5 rounded-lg text-muted-foreground">Últimos 30 dias</div>
             </div>
           </div>
-          <div className="flex-1 flex overflow-hidden">
-            {/* mock public page */}
-            <div className="flex-1 p-4 flex flex-col gap-3 border-r border-border min-w-0 overflow-hidden" style={{ background: "hsl(30 20% 97%)" }}>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Visualização pública</p>
-              <div className="rounded-xl border border-border bg-white p-4 shadow-sm flex-1 overflow-hidden flex flex-col">
-                {/* clinic header */}
-                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-border/60">
-                  <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                    <img src={logoColor} className="w-6 h-auto" alt="" />
-                  </div>
-                  <div>
-                    <div className="text-[12px] font-medium text-foreground">Studio Bellex</div>
-                    <div className="text-[10px] text-muted-foreground">São Paulo · Pinheiros</div>
-                  </div>
-                  <div className="ml-auto flex items-center gap-1">
-                    {[1,2,3,4,5].map(i => <Star key={i} size={9} className="text-amber-400 fill-amber-400" />)}
-                    <span className="text-[10px] text-muted-foreground ml-1">4.9</span>
-                  </div>
-                </div>
-                {/* service list */}
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Escolha o serviço</p>
-                <div className="space-y-1.5 flex-1 overflow-hidden">
-                  {[
-                    { name: "Limpeza de Pele", dur: "60 min", price: "R$ 180", selected: true },
-                    { name: "Design de Sobrancelha", dur: "30 min", price: "R$ 90", selected: false },
-                    { name: "Tratamento Facial", dur: "90 min", price: "R$ 320", selected: false },
-                    { name: "Massagem Relaxante", dur: "60 min", price: "R$ 120", selected: false },
-                  ].map((s) => (
-                    <div key={s.name} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${s.selected ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/20"}`}>
-                      <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${s.selected ? "border-primary bg-primary" : "border-border"}`}>
-                        {s.selected && <Check size={8} className="text-white" />}
-                      </div>
-                      <span className="text-[11px] font-medium text-foreground flex-1">{s.name}</span>
-                      <span className="text-[10px] text-muted-foreground">{s.dur}</span>
-                      <span className="text-[11px] font-medium text-primary">{s.price}</span>
-                    </div>
-                  ))}
-                </div>
-                {/* CTA */}
-                <button className="mt-3 w-full bg-primary text-white text-[11px] font-medium py-2 rounded-lg">
-                  Escolher horário →
-                </button>
-              </div>
-            </div>
-            {/* stats sidebar */}
-            <div className="w-44 flex-shrink-0 flex flex-col p-4 gap-4" style={{ background: "hsl(30 25% 99%)" }}>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Este mês</p>
+
+          <div className="flex-1 overflow-hidden px-5 py-3 space-y-3">
+            {/* KPI row 1 */}
+            <div className="grid grid-cols-4 gap-2.5">
               {[
-                { label: "Agendamentos online", val: "89" },
-                { label: "Sem intervenção", val: "100%" },
-                { label: "Fora do horário comercial", val: "34%" },
-                { label: "Conversão do link", val: "42%" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className="text-base font-light text-foreground">{s.val}</div>
-                  <div className="text-[10px] text-muted-foreground leading-tight">{s.label}</div>
+                { label: "Faturamento total", val: "R$ 18.420", color: "text-emerald-700", icon: DollarSign, iconBg: "bg-emerald-50" },
+                { label: "Atendimentos", val: "86", color: "text-primary", icon: Calendar, iconBg: "bg-primary/10" },
+                { label: "Clientes ativos", val: "312", color: "text-blue-700", icon: Users, iconBg: "bg-blue-50" },
+                { label: "Ticket médio", val: "R$ 214", color: "text-violet-700", icon: TrendingUp, iconBg: "bg-violet-50" },
+              ].map((k) => (
+                <div key={k.label} className="rounded-xl border border-border bg-white p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider leading-tight">{k.label}</p>
+                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center ${k.iconBg}`}>
+                      <k.icon size={10} className={k.color} />
+                    </div>
+                  </div>
+                  <div className={`text-lg font-semibold ${k.color} leading-none`}>{k.val}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Chart */}
+            <div className="rounded-xl border border-border bg-white p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Faturamento no período</p>
+                <p className="text-[9px] text-muted-foreground">10/05 — 09/06</p>
+              </div>
+              <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 60 }} preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="rel-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(30 12% 65%)" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="hsl(30 12% 65%)" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {[0.33, 0.66, 1].map(f => (
+                  <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="hsl(var(--border))" strokeWidth="0.5" strokeOpacity="0.6" />
+                ))}
+                <path d={area} fill="url(#rel-grad)" />
+                <path d={line} fill="none" stroke="hsl(30 12% 65%)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+              </svg>
+            </div>
+
+            {/* Last visits table */}
+            <div className="rounded-xl border border-border bg-white overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
+                <Clock size={11} className="text-muted-foreground" />
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Últimas visitas</p>
+              </div>
+              <div className="grid border-b border-border bg-muted/30 px-4" style={{ gridTemplateColumns: "2fr 1.5fr 1fr 1fr" }}>
+                {["Cliente", "Especialista", "Última Visita", "Valor"].map(h => (
+                  <div key={h} className="py-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{h}</div>
+                ))}
+              </div>
+              {[
+                { client: "Camila Ferreira", specialist: "Bianca S.", date: "09/06/2026", val: "R$ 180" },
+                { client: "Renata Batista", specialist: "Dra. Ana", date: "09/06/2026", val: "R$ 650" },
+                { client: "Fernanda Rocha", specialist: "Dr. Felipe", date: "07/06/2026", val: "R$ 320" },
+                { client: "Andrea Costa", specialist: "Dra. Ana", date: "07/06/2026", val: "R$ 350" },
+              ].map((r, i) => (
+                <div key={i} className="grid items-center px-4 border-b border-border/50 last:border-b-0 hover:bg-muted/20 cursor-pointer" style={{ gridTemplateColumns: "2fr 1.5fr 1fr 1fr" }}>
+                  <div className="py-1.5 text-[10px] font-medium text-foreground">{r.client}</div>
+                  <div className="py-1.5 text-[10px] text-muted-foreground">{r.specialist}</div>
+                  <div className="py-1.5 text-[10px] text-muted-foreground">{r.date}</div>
+                  <div className="py-1.5 text-[10px] font-medium text-foreground text-right">{r.val}</div>
                 </div>
               ))}
             </div>
@@ -599,36 +585,124 @@ function MockAgendamentoOnline() {
   );
 }
 
-/* ─── TABS COMPONENT ─────────────────────────────────────────── */
+/* ─── 5. AGENDAMENTO ONLINE ── real layout: public booking page ──── */
+const BOOKING_SERVICES = [
+  { name: "Botox Preventivo",        dur: "45min", price: "650,00 R$" },
+  { name: "Design de Sobrancelha",   dur: "30min", price:  "90,00 R$" },
+  { name: "Limpeza de Pele",         dur: "1h",    price: "180,00 R$" },
+  { name: "Massagem Relaxante",      dur: "1h",    price: "120,00 R$" },
+  { name: "Microagulhamento",        dur: "1h15",  price: "380,00 R$" },
+];
+
+function MockAgendamentoOnline() {
+  return (
+    <MockWindow>
+      <div className="h-[520px] flex flex-col overflow-hidden" style={{ background: "hsl(30 20% 96%)" }}>
+
+        {/* ── Salmon header ── */}
+        <div className="flex-shrink-0 bg-primary/80 flex items-center justify-center py-6" style={{ background: "hsl(10 68% 72%)" }}>
+          <img src={logoColor} alt="bellex" className="h-7 object-contain brightness-0 invert drop-shadow" />
+        </div>
+
+        {/* ── Card ── */}
+        <div className="flex-1 flex items-start justify-center px-8 py-5 overflow-hidden">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm overflow-hidden border border-border/40">
+
+            {/* Card header */}
+            <div className="px-5 py-3 border-b border-border/60 text-center">
+              <p className="text-[11px] font-semibold tracking-widest text-foreground uppercase">AGENDAR</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Escolha um serviço</p>
+            </div>
+
+            {/* Accordion — expanded */}
+            <div className="border-b border-border/60">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-muted/20">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles size={11} className="text-primary" />
+                  <span className="text-[11px] font-medium text-foreground">Estética e Beleza</span>
+                  <span className="text-[10px] text-muted-foreground ml-0.5">(8)</span>
+                </div>
+                <ChevronRight size={12} className="text-muted-foreground rotate-90" />
+              </div>
+
+              {BOOKING_SERVICES.map((s, i) => (
+                <div key={s.name} className={`flex items-center justify-between px-4 py-2.5 border-t border-border/40 ${i === 0 ? "bg-primary/5" : ""}`}>
+                  <div>
+                    <p className={`text-[11px] font-medium ${i === 0 ? "text-primary" : "text-foreground"}`}>{s.name}</p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Clock size={8} className="text-muted-foreground" />
+                      <span className="text-[9px] text-muted-foreground">{s.dur}</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">{s.price}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-2 text-center">
+              <span className="text-[9px] text-muted-foreground">Powered by Clínica</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </MockWindow>
+  );
+}
+
+/* ─── TABS ───────────────────────────────────────────────────────── */
 const tabs = [
-  { icon: Calendar, label: "Agenda", mock: <MockAgenda /> },
-  { icon: Users, label: "Prontuário", mock: <MockProntuario /> },
-  { icon: CreditCard, label: "Financeiro", mock: <MockFinanceiro /> },
-  { icon: Megaphone, label: "Marketing", mock: <MockMarketing /> },
-  { icon: BarChart3, label: "Relatórios", mock: <MockRelatorios /> },
-  { icon: Globe, label: "Online", mock: <MockAgendamentoOnline /> },
+  { icon: Calendar, label: "Agenda Inteligente", mock: <MockAgenda /> },
+  { icon: Users, label: "Gestão de Clientes", mock: <MockClientes /> },
+  { icon: DollarSign, label: "Cobranças & Faturamento", mock: <MockFaturamento /> },
+  { icon: Megaphone, label: "Marketing Automatizado", mock: <MockMarketing /> },
+  { icon: BarChart3, label: "Relatórios Gerenciais", mock: <MockRelatorios /> },
+  { icon: Globe, label: "Agendamento Online", mock: <MockAgendamentoOnline /> },
 ];
 
 export function FeatureMockupTabs() {
   const [active, setActive] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [paused, setPaused] = useState(false);
 
   function go(idx: number) {
     setDirection(idx > active ? 1 : -1);
     setActive(idx);
   }
 
+  // Auto-advance every 2s, pause on hover
+  const activeRef = React.useRef(active);
+  activeRef.current = active;
+
+  React.useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      const next = (activeRef.current + 1) % tabs.length;
+      setDirection(1);
+      setActive(next);
+    }, 2000);
+    return () => clearInterval(id);
+  }, [paused]);
+
   return (
-    <div className="space-y-4">
-      {/* tab bar */}
-      <div className="flex items-center gap-1 p-1 rounded-2xl border border-border/60 bg-muted/40 backdrop-blur-sm overflow-x-auto">
+    <div
+      className="space-y-4"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Tab bar — icon only when inactive, label on active */}
+      <div className="flex items-center gap-1 p-1 rounded-2xl border border-border/60 bg-muted/40 backdrop-blur-sm">
         {tabs.map((t, i) => {
           const isActive = i === active;
           return (
             <button
               key={t.label}
-              onClick={() => go(i)}
-              className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex-shrink-0 focus-visible:outline-none"
+              onClick={() => { setPaused(true); go(i); }}
+              className={`relative flex items-center gap-2 rounded-xl font-medium transition-all focus-visible:outline-none ${
+                isActive ? "px-4 py-2.5 flex-shrink-0" : "px-3 py-2.5 flex-1 justify-center"
+              }`}
+              title={!isActive ? t.label : undefined}
             >
               {isActive && (
                 <motion.span
@@ -637,14 +711,28 @@ export function FeatureMockupTabs() {
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <t.icon size={14} className={`relative z-10 transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              <span className={`relative z-10 transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`}>{t.label}</span>
+              <t.icon size={14} className={`relative z-10 transition-colors flex-shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              {isActive && (
+                <span className="relative z-10 text-sm text-foreground whitespace-nowrap">{t.label}</span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* mockup panel */}
+      {/* Progress bar */}
+      <div className="h-0.5 rounded-full bg-border/40 overflow-hidden -mt-2">
+        {!paused && (
+          <motion.div
+            key={active}
+            className="h-full bg-primary/40 rounded-full"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 2, ease: "linear" }}
+          />
+        )}
+      </div>
+
       <div className="relative overflow-hidden rounded-2xl border border-border/40 border-dotted p-3 bg-background/60">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div

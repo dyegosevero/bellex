@@ -33,11 +33,11 @@ type AgendaView = "calendar" | "list";
 type ViewType = "timeGridWeek" | "timeGridDay" | "dayGridMonth";
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  agendado: { bg: "#3B82F6", border: "#2563EB", text: "#fff" },
-  em_atendimento: { bg: "#F59E0B", border: "#D97706", text: "#fff" },
-  realizado: { bg: "#10B981", border: "#059669", text: "#fff" },
-  concluido: { bg: "#6366F1", border: "#4F46E5", text: "#fff" },
-  cancelado: { bg: "#EF4444", border: "#DC2626", text: "#fff" },
+  agendado:        { bg: "#6366F1", border: "#4F46E5", text: "#fff" },
+  em_atendimento:  { bg: "#F59E0B", border: "#D97706", text: "#fff" },
+  realizado:       { bg: "#10B981", border: "#059669", text: "#fff" },
+  concluido:       { bg: "#6366F1", border: "#4F46E5", text: "#fff" },
+  cancelado:       { bg: "#EF4444", border: "#DC2626", text: "#fff" },
 };
 
 const WEEKDAY_LABELS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
@@ -97,10 +97,26 @@ export function FullCalendarAgenda() {
         .lte("start_time", dateRange.end)
         .neq("status", "cancelado");
       if (error) throw error;
+      // Paleta de fallback para serviços sem cor — varia por service_id
+      const FALLBACK_COLORS = ["#e11d48","#ea580c","#d97706","#16a34a","#0d9488","#2563eb","#7c3aed","#9333ea","#db2777"];
+      const serviceColorMap = new Map<string, string>();
+      let fallbackIdx = 0;
+
       return (data ?? []).map((a: any) => {
         const colors = STATUS_COLORS[a.status] ?? STATUS_COLORS.agendado;
-        const serviceColor = a.services?.color;
-        // Pass raw UTC timestamps — FullCalendar + luxon plugin handles timezone conversion natively
+        let serviceColor = a.services?.color;
+
+        // Se não tem cor ou é a cor padrão azul genérica, atribui paleta variada por serviço
+        const isDefaultBlue = !serviceColor || serviceColor === "#3B82F6" || serviceColor === "#3b82f6";
+        if (isDefaultBlue) {
+          const sid = a.service_id ?? "unknown";
+          if (!serviceColorMap.has(sid)) {
+            serviceColorMap.set(sid, FALLBACK_COLORS[fallbackIdx % FALLBACK_COLORS.length]);
+            fallbackIdx++;
+          }
+          serviceColor = serviceColorMap.get(sid)!;
+        }
+
         const eventEnd = a.end_time ?? new Date(new Date(a.start_time).getTime() + (a.services?.duration_minutes ?? 30) * 60000).toISOString();
         return {
           id: a.id,
@@ -110,7 +126,7 @@ export function FullCalendarAgenda() {
           specialistId: a.specialist_id,
           backgroundColor: serviceColor || colors.bg,
           borderColor: serviceColor || colors.border,
-          textColor: colors.text,
+          textColor: serviceColor || colors.bg,
           extendedProps: { status: a.status, clientName: a.clients?.full_name, serviceName: a.services?.name, notes: a.notes },
         };
       });
@@ -444,7 +460,76 @@ export function FullCalendarAgenda() {
       );
     },
     eventDidMount: (arg: any) => {
+      const color = arg.event.backgroundColor;
       const isBlock = arg.event.id?.startsWith("block-");
+
+      if (color && !isBlock) {
+        // Extrai hue do hex
+        const hex = color.replace("#", "");
+        const r = parseInt(hex.slice(0, 2), 16) / 255;
+        const g = parseInt(hex.slice(2, 4), 16) / 255;
+        const b = parseInt(hex.slice(4, 6), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h = 0;
+        if (max !== min) {
+          const d = max - min;
+          if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+          else if (max === g) h = ((b - r) / d + 2) / 6;
+          else h = ((r - g) / d + 4) / 6;
+        }
+        const hue = Math.round(h * 360);
+
+        // Mapeia hue → paleta exata da LP (bg-X-50 / border-X-200 / text-X-600)
+        // rose:   0-15    → #fff1f2 / #fecdd3 / #e11d48
+        // orange: 16-45   → #fff7ed / #fed7aa / #ea580c
+        // amber:  46-65   → #fffbeb / #fde68a / #d97706
+        // yellow: 66-80   → #fefce8 / #fef08a / #ca8a04
+        // green:  81-155  → #f0fdf4 / #bbf7d0 / #16a34a
+        // teal:   156-185 → #f0fdfa / #99f6e4 / #0d9488
+        // blue:   186-240 → #eff6ff / #bfdbfe / #2563eb
+        // indigo: 241-270 → #eef2ff / #c7d2fe / #4338ca
+        // violet: 271-290 → #f5f3ff / #ddd6fe / #7c3aed
+        // purple: 291-320 → #faf5ff / #e9d5ff / #9333ea
+        // pink:   321-359 → #fdf2f8 / #fbcfe8 / #db2777
+
+        type Palette = [string, string, string]; // [bg, border, text]
+        const palettes: Array<[number, number, Palette]> = [
+          [0,   15,  ["#fff1f2", "#fecdd3", "#e11d48"]],  // rose
+          [16,  45,  ["#fff7ed", "#fed7aa", "#ea580c"]],  // orange
+          [46,  65,  ["#fffbeb", "#fde68a", "#d97706"]],  // amber
+          [66,  80,  ["#fefce8", "#fef08a", "#ca8a04"]],  // yellow
+          [81,  155, ["#f0fdf4", "#bbf7d0", "#16a34a"]],  // green
+          [156, 185, ["#f0fdfa", "#99f6e4", "#0d9488"]],  // teal
+          [186, 240, ["#eff6ff", "#bfdbfe", "#2563eb"]],  // blue
+          [241, 270, ["#eef2ff", "#c7d2fe", "#4338ca"]],  // indigo
+          [271, 290, ["#f5f3ff", "#ddd6fe", "#7c3aed"]],  // violet
+          [291, 320, ["#faf5ff", "#e9d5ff", "#9333ea"]],  // purple
+          [321, 359, ["#fdf2f8", "#fbcfe8", "#db2777"]],  // pink
+        ];
+
+        const match = palettes.find(([lo, hi]) => hue >= lo && hue <= hi);
+        const [bg, border, text] = match ? match[2] : ["#f1f5f9", "#cbd5e1", "#475569"];
+
+        // Sobrescreve as CSS variables que o FullCalendar usa internamente (daygrid/month)
+        arg.el.style.setProperty("--fc-event-bg-color", bg);
+        arg.el.style.setProperty("--fc-event-border-color", border);
+        arg.el.style.setProperty("--fc-event-text-color", text);
+
+        // Aplica inline direto também (timegrid/day/week)
+        arg.el.style.backgroundColor = bg;
+        arg.el.style.borderColor = border;
+        arg.el.style.borderWidth = "1px";
+        arg.el.style.borderStyle = "solid";
+        arg.el.style.borderRadius = "4px";
+        arg.el.style.boxShadow = "none";
+        arg.el.style.color = text;
+
+        // Força cor nos filhos (fc-event-main, fc-event-title, etc.)
+        arg.el.querySelectorAll("*").forEach((child: HTMLElement) => {
+          child.style.color = text;
+        });
+      }
+
       if (isBlock) {
         const reason = arg.event.extendedProps?.blockReason;
         arg.el.title = reason ? `Bloqueado · ${reason}` : "Horário bloqueado";
@@ -467,7 +552,7 @@ export function FullCalendarAgenda() {
   }
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
+    <div className="rounded-lg border border-border overflow-hidden bg-white">
       {/* Toolbar */}
       <div className="bg-card px-3 py-2 sticky top-0 z-20 border-b border-border">
         {/* ── DESKTOP (md+): single compact row ── */}
@@ -782,7 +867,7 @@ export function FullCalendarAgenda() {
                   }}
                 >
                   {(specialists ?? []).map((spec, idx) => (
-                    <div key={spec.user_id} className="bg-card border border-border border-t-0 first:border-l last:border-r border-x-0 [&:not(:last-child)]:border-r">
+                    <div key={spec.user_id} className="bg-card [&:not(:last-child)]:border-r border-border">
                       <div className="flex items-center gap-2.5 px-3 py-3 border-b border-border">
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={spec.avatar_url || undefined} alt={spec.full_name} />

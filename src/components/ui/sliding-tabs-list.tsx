@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 
 interface SlidingTabsListProps {
@@ -60,13 +61,12 @@ export function SlidingTabsList({ children, className }: SlidingTabsListProps) {
   }, []);
 
   return (
-    <div
+    <TabsPrimitive.List
       ref={barRef}
-      role="tablist"
       className={cn("t-tabs", className)}
     >
       <span ref={pillRef} className="t-tabs-pill" aria-hidden="true" />
       {children}
-    </div>
+    </TabsPrimitive.List>
   );
 }

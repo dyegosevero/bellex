@@ -122,12 +122,14 @@ export function WhatsAppMock({ flowKey = "agendamento" }: { flowKey?: string }) 
     setVisible(0);
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
+    // Start immediately with a short initial offset so first message appears right away
+    const OFFSET = 300;
     flow.delays.forEach((d, i) => {
-      timeouts.push(setTimeout(() => setVisible(i + 1), d));
+      timeouts.push(setTimeout(() => setVisible(i + 1), OFFSET + d));
     });
 
     // Restart after last message + pause
-    const restartDelay = flow.delays[flow.delays.length - 1] + 3600;
+    const restartDelay = OFFSET + flow.delays[flow.delays.length - 1] + 3600;
     timeouts.push(setTimeout(() => setVisible(0), restartDelay));
 
     return () => timeouts.forEach(clearTimeout);
@@ -188,18 +190,12 @@ export function WhatsAppMock({ flowKey = "agendamento" }: { flowKey?: string }) 
           <MoreVertical size={11} className="text-white ml-1" />
         </div>
 
-        {/* Messages area */}
+        {/* Messages area — flex-col-reverse so newest messages appear at bottom */}
         <div
           ref={chatRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 flex flex-col gap-1.5"
+          className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 flex flex-col-reverse gap-1.5"
           style={{ background: WA_BG, scrollBehavior: "smooth" }}
         >
-          <AnimatePresence initial={false}>
-            {flow.msgs.slice(0, visible).map((msg, i) => (
-              <Bubble key={`${flowKey}-${i}`} msg={msg} />
-            ))}
-          </AnimatePresence>
-
           {/* Typing indicator */}
           <AnimatePresence>
             {showTyping && (
@@ -223,8 +219,12 @@ export function WhatsAppMock({ flowKey = "agendamento" }: { flowKey?: string }) 
               </motion.div>
             )}
           </AnimatePresence>
-          {/* Scroll anchor */}
-          <div className="h-px flex-shrink-0" />
+
+          <AnimatePresence initial={false}>
+            {[...flow.msgs.slice(0, visible)].reverse().map((msg, i) => (
+              <Bubble key={`${flowKey}-${flow.msgs.slice(0, visible).length - 1 - i}`} msg={msg} />
+            ))}
+          </AnimatePresence>
         </div>
 
         {/* Input bar */}

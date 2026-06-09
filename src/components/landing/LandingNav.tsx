@@ -194,7 +194,7 @@ export function LandingNav() {
 
         {/* CTAs */}
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">
+          <Link to="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors border border-border/60 px-5 py-2.5 rounded-xl hover:bg-background/60 bg-background/40 backdrop-blur-sm">
             Entrar
           </Link>
           <button

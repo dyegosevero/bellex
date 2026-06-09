@@ -169,21 +169,8 @@ export const UsersTab = () => {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {usersWithRoles?.length ?? 0} usuários cadastrados
-      </p>
-
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Colaboradores</span>
-          </div>
-          <Button onClick={() => navigate("/admin/usuarios/novo")} size="sm">
-            <Plus className="w-4 h-4 mr-2" /> Novo Usuário
-          </Button>
-        </div>
-
-        <div className="rounded-lg overflow-hidden border border-border">
+      <Card className="overflow-hidden">
+        <div className="rounded-lg overflow-hidden border-0">
         <Table>
           <TableHeader>
             <TableRow>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,7 @@ import {
 import {
   Calendar, Users, DollarSign, TrendingUp,
   AlertCircle, BarChart3, ChevronRight, UserX,
-  MessageCircle, UserPlus, Funnel, CheckCheck,
+  MessageCircle, UserPlus, Funnel, CheckCheck, LayoutDashboard,
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -265,14 +266,16 @@ export default function DashboardHome() {
   const COLORS = ["hsl(10 75% 65%)", "hsl(210 80% 60%)", "hsl(142 70% 45%)", "hsl(30 90% 55%)", "hsl(262 80% 60%)"];
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px] mx-auto space-y-8">
+    <div className="space-y-8">
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-light text-foreground normal-case tracking-normal">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Visão geral da clínica</p>
-        </div>
+        <PageHeader
+          icon={<LayoutDashboard className="w-5 h-5" />}
+          title="Dashboard"
+          subtitle="Visão geral da clínica"
+          className="mb-0"
+        />
         <PeriodSelect value={period} onChange={setPeriod} />
       </div>
 

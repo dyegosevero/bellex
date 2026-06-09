@@ -88,6 +88,12 @@
   transition-delay: 0s;
 }
 
+/* ─── PublicBooking: logo entrance ───────────────────────────────────── */
+@keyframes booking-logo-in {
+  0%   { opacity: 0; transform: scale(0.82) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* ─── transitions-dev: number pop-in ─────────────────────────────────── */
 @keyframes t-digit-pop-in {
   0% {
@@ -538,11 +544,15 @@
   color: inherit !important;
   overflow: hidden;
 }
-/* Força o background vindo do JS a não ser sobrescrito */
+/* Cores controladas via eventDidMount — CSS variables sobrescritas pelo JS */
 .fc .fc-daygrid-event-harness .fc-daygrid-event {
   background-color: var(--fc-event-bg-color) !important;
   border-color: var(--fc-event-border-color) !important;
-  color: var(--fc-event-text-color, #fff) !important;
+  color: var(--fc-event-text-color) !important;
+  border-radius: 4px !important;
+}
+.fc .fc-daygrid-event-harness .fc-daygrid-event * {
+  color: var(--fc-event-text-color) !important;
 }
 .fc-direction-ltr .fc-daygrid-event .fc-event-time {
   font-weight: 700;
@@ -553,6 +563,12 @@
 }
 .fc .fc-timegrid-slot {
   height: 3em;
+}
+.fc .fc-timegrid-col,
+.fc .fc-daygrid-day,
+.fc-scrollgrid,
+.fc .fc-scrollgrid-section > td {
+  background: white !important;
 }
 .fc .fc-timegrid-slot-label-cushion {
   font-size: 0.7rem;

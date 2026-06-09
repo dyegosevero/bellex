@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, Bell, MessageCircle, Settings2, Save, Clock, Users, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Template {
   id: string;
@@ -125,12 +126,41 @@ export default function NotificationsTab() {
   const { data: inactivityDays } = useQuery({
     queryKey: ["clinic-inactivity-days"],
     queryFn: async () => {
-      const { data } = await supabase.from("clinic_settings").select("inactivity_days, inactive_notification_interval_days").limit(1).single();
+      const { data } = await supabase.from("clinic_settings").select("inactivity_days, inactive_notification_interval_days, reminder_lead").limit(1).single();
       const d = data as any;
       setIntervalDays(d?.inactive_notification_interval_days ?? 30);
+      setReminderLead(d?.reminder_lead ?? "24h");
       return d?.inactivity_days ?? 90;
     },
   });
+
+  const [reminderLead, setReminderLead] = useState("24h");
+  const [birthdayEnabled, setBirthdayEnabled] = useState(true);
+  const [inactiveEnabled, setInactiveEnabled] = useState(true);
+
+  useQuery({
+    queryKey: ["webhook-toggles"],
+    queryFn: async () => {
+      const { data } = await supabase.from("integration_settings").select("setting_key, setting_value")
+        .in("setting_key", ["n8n_webhook_enabled_birthday", "n8n_webhook_enabled_inactive"]);
+      (data ?? []).forEach((s: any) => {
+        if (s.setting_key === "n8n_webhook_enabled_birthday") setBirthdayEnabled(s.setting_value !== "false");
+        if (s.setting_key === "n8n_webhook_enabled_inactive") setInactiveEnabled(s.setting_value !== "false");
+      });
+      return data;
+    },
+  });
+
+  const toggleWebhook = async (key: string, value: boolean, setter: (v: boolean) => void) => {
+    setter(value);
+    await supabase.from("integration_settings").upsert({ setting_key: key, setting_value: String(value) } as any, { onConflict: "setting_key" });
+  };
+
+  const saveReminderLead = async (val: string) => {
+    setReminderLead(val);
+    await supabase.from("clinic_settings").update({ reminder_lead: val } as any).neq("id", "00000000-0000-0000-0000-000000000000");
+    toast.success("Antecedência de lembrete salva.");
+  };
 
   useQuery({
     queryKey: ["staff-booking-email-setting"],
@@ -341,6 +371,55 @@ export default function NotificationsTab() {
             checked={staffEmailEnabled}
             onCheckedChange={toggleStaffEmail}
           />
+        </div>
+      </Card>
+
+      {/* Antecedência de lembrete */}
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Clock className="w-5 h-5 text-muted-foreground" />
+          <Label className="text-sm font-semibold">Lembretes Automáticos</Label>
+        </div>
+        <div className="flex items-center justify-between bg-muted/30 rounded-lg p-4">
+          <div>
+            <p className="text-sm font-medium">Antecedência de lembrete por E-mail e SMS</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Com quanto tempo de antecedência enviar o lembrete de agendamento</p>
+          </div>
+          <Select value={reminderLead} onValueChange={saveReminderLead}>
+            <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1h">1h</SelectItem>
+              <SelectItem value="2h">2h</SelectItem>
+              <SelectItem value="4h">4h</SelectItem>
+              <SelectItem value="12h">12h</SelectItem>
+              <SelectItem value="24h">24h</SelectItem>
+              <SelectItem value="48h">48h</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </Card>
+
+      {/* Automações */}
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Bell className="w-5 h-5 text-muted-foreground" />
+          <Label className="text-sm font-semibold">Automações</Label>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+            <div>
+              <p className="text-sm font-medium">🎂 Aniversariantes</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Enviar mensagem automática no dia do aniversário</p>
+            </div>
+            <Switch checked={birthdayEnabled} onCheckedChange={(v) => toggleWebhook("n8n_webhook_enabled_birthday", v, setBirthdayEnabled)} />
+          </div>
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+            <div>
+              <p className="text-sm font-medium">💤 Clientes Inativos</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Enviar mensagem para clientes sem visita há mais de {inactivityDays ?? 90} dias</p>
+            </div>
+            <Switch checked={inactiveEnabled} onCheckedChange={(v) => toggleWebhook("n8n_webhook_enabled_inactive", v, setInactiveEnabled)} />
+          </div>
         </div>
       </Card>
 

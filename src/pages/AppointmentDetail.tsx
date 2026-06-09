@@ -1,4 +1,23 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, Component, type ReactNode, type ErrorInfo } from "react";
+
+class DetailErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(e: Error) { return { error: e }; }
+  componentDidCatch(e: Error, info: ErrorInfo) { console.error("AppointmentDetail error:", e, info); }
+  render() {
+    if (this.state.error) {
+      const err = this.state.error as Error;
+      return (
+        <div className="p-8 space-y-3 max-w-xl mx-auto">
+          <p className="text-destructive font-medium">Erro ao carregar atendimento</p>
+          <pre className="text-xs bg-muted p-4 rounded-xl overflow-auto whitespace-pre-wrap">{err.message}{"\n"}{err.stack}</pre>
+          <button className="text-sm text-primary underline" onClick={() => window.location.reload()}>Recarregar</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -797,4 +816,12 @@ const SpecialistCard = ({
   );
 };
 
-export default AppointmentDetail;
+function AppointmentDetailWithBoundary() {
+  return (
+    <DetailErrorBoundary>
+      <AppointmentDetail />
+    </DetailErrorBoundary>
+  );
+}
+
+export default AppointmentDetailWithBoundary;
