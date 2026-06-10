@@ -25,6 +25,7 @@ const NAV = [
   { to: "/workspace/usuarios",         icon: UserCog,         label: "Usuários" },
   { to: "/workspace/relatorios",       icon: BarChart3,       label: "Relatórios" },
   { to: "/workspace/notificacoes",     icon: Bell,            label: "Notificações", badge: 3 },
+  { to: "/workspace/suporte",          icon: LifeBuoy,        label: "Suporte", badge: 2 },
 ];
 
 const SIDEBAR_KEY = "bellex_workspace_sidebar";
@@ -101,18 +102,6 @@ export default function WorkspaceLayout() {
 
         {/* Footer */}
         <div className="px-2 pb-3 space-y-0.5 border-t border-border/40 pt-2">
-          <NavLink
-            to="/workspace/suporte"
-            title={!expanded ? "Suporte" : undefined}
-            className={({ isActive }) => cn(
-              "flex items-center h-9 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              expanded ? "px-2.5 gap-2.5" : "justify-center",
-              isActive && "bg-primary/10 text-primary"
-            )}
-          >
-            <LifeBuoy className="w-4 h-4 shrink-0" />
-            {expanded && <span className="text-[13px]">Suporte</span>}
-          </NavLink>
           <NavLink
             to="/workspace/configuracoes"
             title={!expanded ? "Configurações" : undefined}
