@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Building2, Plus, Search, MoreHorizontal, Globe, Users, Palette, ArrowUpRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Building2, Plus, Search, MoreHorizontal, Globe, Users, Palette, ArrowUpRight, Settings } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ const statusBadge: Record<string, string> = {
 };
 
 export default function WorkspaceClinics() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const filtered = CLINICAS.filter(c =>
@@ -72,8 +74,12 @@ export default function WorkspaceClinics() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem><ArrowUpRight className="w-3.5 h-3.5 mr-2" />Acessar painel</DropdownMenuItem>
-                    <DropdownMenuItem>Editar</DropdownMenuItem>
-                    <DropdownMenuItem>Alterar domínio</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/workspace/clinicas/${c.id}`)}>
+                      <Settings className="w-3.5 h-3.5 mr-2" />Configurações
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/workspace/clinicas/${c.id}`)}>
+                      <Globe className="w-3.5 h-3.5 mr-2" />Configurar domínio
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive">Suspender</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

@@ -74,6 +74,7 @@ const WorkspaceLayout = lazy(() => import("@/components/WorkspaceLayout"));
 const WorkspaceDashboard = lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
 const WorkspaceClientes = lazy(() => import("@/pages/workspace/WorkspaceClientes"));
 const WorkspaceClinics = lazy(() => import("@/pages/workspace/WorkspaceClinics"));
+const WorkspaceClinicDetail = lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
 const WorkspacePlanos = lazy(() => import("@/pages/workspace/WorkspacePlanos"));
 const WorkspaceFinanceiro = lazy(() => import("@/pages/workspace/WorkspaceFinanceiro"));
 const WorkspaceLicencas = lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
@@ -220,6 +221,7 @@ function AnimatedRoutes() {
                   <Route index element={<WorkspaceDashboard />} />
                   <Route path="clientes" element={<WorkspaceClientes />} />
                   <Route path="clinicas" element={<WorkspaceClinics />} />
+                  <Route path="clinicas/:id" element={<WorkspaceClinicDetail />} />
                   <Route path="planos" element={<WorkspacePlanos />} />
                   <Route path="financeiro" element={<WorkspaceFinanceiro />} />
                   <Route path="licencas" element={<WorkspaceLicencas />} />
