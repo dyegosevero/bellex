@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LogoDraw } from "@/components/ui/logo-draw";
 import { SlidingTabsList } from "@/components/ui/sliding-tabs-list";
+import { Tabs, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 
@@ -174,24 +175,15 @@ export const DSAnimations = () => {
         <code className="ds-code text-[10px] ml-2">prefers-reduced-motion</code> desativa automaticamente.
       </p>
       <div className="ds-card mb-8 flex flex-col items-start gap-4">
-        <SlidingTabsList>
-          {(["Dados", "Agenda", "Financeiro", "Relatórios"] as const).map((label, idx) => (
-            <button
-              key={label}
-              className="t-tab"
-              role="tab"
-              data-state={idx === 0 ? "active" : "inactive"}
-              onClick={(e) => {
-                const bar = (e.target as HTMLElement).closest(".t-tabs");
-                bar?.querySelectorAll("[role=tab]").forEach((t) => {
-                  (t as HTMLElement).dataset.state = t === e.target ? "active" : "inactive";
-                });
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </SlidingTabsList>
+        <Tabs defaultValue="dados" className="w-full">
+          <SlidingTabsList>
+            {(["dados", "agenda", "financeiro", "relatorios"] as const).map((val, idx) => (
+              <TabsTrigger key={val} value={val} className="t-tab">
+                {["Dados", "Agenda", "Financeiro", "Relatórios"][idx]}
+              </TabsTrigger>
+            ))}
+          </SlidingTabsList>
+        </Tabs>
         <p className="text-xs text-muted-foreground">Clique nas abas para ver o pill deslizar ↑</p>
       </div>
 
