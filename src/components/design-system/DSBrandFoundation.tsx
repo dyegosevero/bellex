@@ -1,5 +1,8 @@
 import { BrandGrain } from "@/components/BrandGrain";
 import { BRAND_GRAIN_PROPS, BRAND_COLORS } from "@/lib/brand";
+import logoSvg from "@/assets/logo-svg.svg";
+import logoColor from "@/assets/logo-color.png";
+import logoWhite from "@/assets/logo-1x1-white.png";
 
 export const DSBrandFoundation = () => {
   return (
@@ -56,27 +59,24 @@ export const DSBrandFoundation = () => {
       {/* Logo placeholder */}
       <h3 className="font-heading text-xl font-light mb-6">Logo — Bellex</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+        {/* Fundo escuro */}
         <div className="flex flex-col items-center gap-3">
           <div className="bg-foreground rounded-xl p-8 w-full flex items-center justify-center aspect-square">
-            <span className="font-heading font-light text-4xl text-white tracking-tight">
-              bellex<span className="text-primary">®</span>
-            </span>
+            <img src={logoWhite} alt="Bellex logo" className="w-full max-w-[160px]" />
           </div>
           <span className="text-xs text-muted-foreground">Fundo escuro</span>
         </div>
+        {/* Fundo claro */}
         <div className="flex flex-col items-center gap-3">
           <div className="bg-white border border-border rounded-xl p-8 w-full flex items-center justify-center aspect-square">
-            <span className="font-heading font-light text-4xl text-foreground tracking-tight">
-              bellex<span className="text-primary">®</span>
-            </span>
+            <img src={logoColor} alt="Bellex logo" className="w-full max-w-[160px]" />
           </div>
           <span className="text-xs text-muted-foreground">Fundo claro</span>
         </div>
+        {/* Fundo salmon */}
         <div className="flex flex-col items-center gap-3">
           <div className="bg-primary rounded-xl p-8 w-full flex items-center justify-center aspect-square">
-            <span className="font-heading font-light text-4xl text-white tracking-tight">
-              bellex®
-            </span>
+            <img src={logoWhite} alt="Bellex logo" className="w-full max-w-[160px]" />
           </div>
           <span className="text-xs text-muted-foreground">Fundo salmon</span>
         </div>
@@ -102,7 +102,7 @@ export const DSBrandFoundation = () => {
         <div className="flex flex-col gap-3">
           <div className="relative h-40 rounded-2xl overflow-hidden flex items-center justify-center">
             <BrandGrain overlay />
-            <p className="relative z-10 font-heading text-2xl font-light text-white tracking-tight">Bellex®</p>
+            <img src={logoWhite} alt="Bellex logo" className="relative z-10 w-32" />
           </div>
           <div className="text-xs text-muted-foreground text-center">
             <code className="bg-muted px-1.5 py-0.5 rounded font-mono">&lt;BrandGrain overlay /&gt;</code> — com texto branco

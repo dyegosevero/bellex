@@ -31,7 +31,7 @@ export function BrandGrain({ overlay = false, className }: BrandGrainProps) {
         <Grainient {...BRAND_GRAIN_PROPS} className="w-full h-full" />
       </div>
       {overlay && (
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/30 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#c4624a]/10 to-[#b85540]/25 pointer-events-none" />
       )}
     </>
   );

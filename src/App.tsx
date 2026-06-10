@@ -69,6 +69,18 @@ const RecursoMarketing = lazy(() => import("@/pages/recursos/Marketing"));
 const RecursoRelatorios = lazy(() => import("@/pages/recursos/Relatorios"));
 const RecursoAgendamentoOnline = lazy(() => import("@/pages/recursos/AgendamentoOnline"));
 
+// Workspace (Tenant Admin)
+const WorkspaceLayout = lazy(() => import("@/components/WorkspaceLayout"));
+const WorkspaceDashboard = lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
+const WorkspaceClientes = lazy(() => import("@/pages/workspace/WorkspaceClientes"));
+const WorkspaceClinics = lazy(() => import("@/pages/workspace/WorkspaceClinics"));
+const WorkspacePlanos = lazy(() => import("@/pages/workspace/WorkspacePlanos"));
+const WorkspaceFinanceiro = lazy(() => import("@/pages/workspace/WorkspaceFinanceiro"));
+const WorkspaceLicencas = lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
+const WorkspaceUsuarios = lazy(() => import("@/pages/workspace/WorkspaceUsuarios"));
+const WorkspaceRelatorios = lazy(() => import("@/pages/workspace/WorkspaceRelatorios"));
+const WorkspaceNotificacoes = lazy(() => import("@/pages/workspace/WorkspaceNotificacoes"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -202,6 +214,20 @@ function AnimatedRoutes() {
                 <Route path="/recursos/marketing" element={<RecursoMarketing />} />
                 <Route path="/recursos/relatorios" element={<RecursoRelatorios />} />
                 <Route path="/recursos/agendamento-online" element={<RecursoAgendamentoOnline />} />
+
+                {/* Workspace — Tenant Admin */}
+                <Route path="/workspace" element={<WorkspaceLayout />}>
+                  <Route index element={<WorkspaceDashboard />} />
+                  <Route path="clientes" element={<WorkspaceClientes />} />
+                  <Route path="clinicas" element={<WorkspaceClinics />} />
+                  <Route path="planos" element={<WorkspacePlanos />} />
+                  <Route path="financeiro" element={<WorkspaceFinanceiro />} />
+                  <Route path="licencas" element={<WorkspaceLicencas />} />
+                  <Route path="usuarios" element={<WorkspaceUsuarios />} />
+                  <Route path="relatorios" element={<WorkspaceRelatorios />} />
+                  <Route path="notificacoes" element={<WorkspaceNotificacoes />} />
+                </Route>
+
                 <Route path="*" element={<NotFound />} />
               </>
             )}
