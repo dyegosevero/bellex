@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CLINICAS = [
   { id: 1, name: "Clínica Estela Beauty", client: "Carla Mendonça", domain: "estelabeauty.bellex.app", users: 12, plan: "Pro", status: "ativo", color: "#e8957a", created: "15/03/2024" },
@@ -29,7 +26,6 @@ const statusBadge: Record<string, string> = {
 export default function WorkspaceClinics() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [open, setOpen] = useState(false);
   const filtered = CLINICAS.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.client.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,7 +41,7 @@ export default function WorkspaceClinics() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar clínica, cliente ou domínio..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <Button size="sm" onClick={() => setOpen(true)} className="gap-1.5">
+        <Button size="sm" onClick={() => navigate("/workspace/clinicas/nova")} className="gap-1.5">
           <Plus className="w-4 h-4" /> Nova clínica
         </Button>
       </div>
@@ -108,48 +104,6 @@ export default function WorkspaceClinics() {
         ))}
       </div>
 
-      {/* Modal nova clínica */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nova clínica</DialogTitle>
-            <DialogDescription>Cada clínica criada consome 1 seat da licença do cliente.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Cliente titular</Label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
-                <SelectContent>
-                  {CLINICAS.map((c, i) => <SelectItem key={i} value={c.client}>{c.client}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Nome da clínica</Label>
-              <Input placeholder="Ex: Studio Bella Premium" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Subdomínio</Label>
-              <div className="flex items-center">
-                <Input placeholder="minhaclinica" className="rounded-r-none" />
-                <span className="h-9 px-3 bg-muted border border-l-0 border-input rounded-r-md text-xs text-muted-foreground flex items-center">.bellex.app</span>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Cor principal</Label>
-              <div className="flex items-center gap-3">
-                <input type="color" defaultValue="#e8957a" className="w-9 h-9 rounded-lg border border-input cursor-pointer" />
-                <Input placeholder="#e8957a" className="flex-1" />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={() => setOpen(false)}>Criar clínica</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
