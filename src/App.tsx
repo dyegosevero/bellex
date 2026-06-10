@@ -81,6 +81,9 @@ const WorkspaceLicencas = lazy(() => import("@/pages/workspace/WorkspaceLicencas
 const WorkspaceUsuarios = lazy(() => import("@/pages/workspace/WorkspaceUsuarios"));
 const WorkspaceRelatorios = lazy(() => import("@/pages/workspace/WorkspaceRelatorios"));
 const WorkspaceNotificacoes = lazy(() => import("@/pages/workspace/WorkspaceNotificacoes"));
+const WorkspaceClinicNew = lazy(() => import("@/pages/workspace/WorkspaceClinicNew"));
+const WorkspaceConfiguracoes = lazy(() => import("@/pages/workspace/WorkspaceConfiguracoes"));
+const WorkspaceSuporte = lazy(() => import("@/pages/workspace/WorkspaceSuporte"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -221,6 +224,7 @@ function AnimatedRoutes() {
                   <Route index element={<WorkspaceDashboard />} />
                   <Route path="clientes" element={<WorkspaceClientes />} />
                   <Route path="clinicas" element={<WorkspaceClinics />} />
+                  <Route path="clinicas/nova" element={<WorkspaceClinicNew />} />
                   <Route path="clinicas/:id" element={<WorkspaceClinicDetail />} />
                   <Route path="planos" element={<WorkspacePlanos />} />
                   <Route path="financeiro" element={<WorkspaceFinanceiro />} />
@@ -228,6 +232,8 @@ function AnimatedRoutes() {
                   <Route path="usuarios" element={<WorkspaceUsuarios />} />
                   <Route path="relatorios" element={<WorkspaceRelatorios />} />
                   <Route path="notificacoes" element={<WorkspaceNotificacoes />} />
+                  <Route path="configuracoes" element={<WorkspaceConfiguracoes />} />
+                  <Route path="suporte" element={<WorkspaceSuporte />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />
