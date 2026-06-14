@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useWorkspaceClinics, type WorkspaceClinic } from "@/hooks/useWorkspaceClinics";
+import { supabase } from "@/integrations/supabase/client";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -133,17 +134,28 @@ export default function WorkspaceClinicDetail() {
   const verifyToken = `bellex-verify=${clinic.subdomain}-a4f8c2e1b7d3`;
   const planSupportsCustomDomain = clinic.plan === "pro" || clinic.plan === "scale";
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
+    if (!customDomain) { toast.error("Configure um domínio primeiro."); return; }
     setVerifying(true);
-    setTimeout(() => {
-      setVerifying(false);
-      if (customDomain) {
-        setDomainVerified(true);
-        toast.success("Domínio verificado com sucesso!");
-      } else {
-        toast.error("Nenhum domínio configurado.");
-      }
-    }, 2500);
+    const { data, error } = await supabase.functions.invoke("dns-verify", {
+      body: {
+        domain: customDomain,
+        subdomain: clinic.subdomain,
+        verify_token: `${clinic.subdomain}-a4f8c2e1b7d3`,
+      },
+    });
+    setVerifying(false);
+    if (error) { toast.error("Erro ao verificar DNS."); return; }
+    if (data?.verified) {
+      setDomainVerified(true);
+      await update(clinic.id, { custom_domain: customDomain });
+      toast.success("Domínio verificado e ativado!");
+    } else {
+      const missing = [];
+      if (!data?.txt_verified) missing.push("TXT");
+      if (!data?.cname_verified) missing.push("CNAME");
+      toast.error(`DNS incompleto — faltam registros: ${missing.join(", ")}`);
+    }
   };
 
   return (
