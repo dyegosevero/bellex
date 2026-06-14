@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 
 const CLIENTES = [
   "Carla Mendonça",
@@ -35,6 +37,7 @@ const STEPS = [
 export default function WorkspaceClinicNew() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     client: "",
     name: "",
@@ -42,6 +45,7 @@ export default function WorkspaceClinicNew() {
     color: "#e8957a",
     plan: "pro",
   });
+  const { create } = useWorkspaceClinics();
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -50,6 +54,26 @@ export default function WorkspaceClinicNew() {
     if (step === 2) return form.subdomain !== "";
     if (step === 3) return form.plan !== "";
     return true;
+  };
+
+  const handleCreate = async () => {
+    setSubmitting(true);
+    const { error } = await create({
+      name: form.name,
+      client_name: form.client,
+      subdomain: form.subdomain,
+      custom_domain: null,
+      color: form.color,
+      plan: form.plan as "starter" | "pro" | "scale",
+      status: "trial",
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error(error.includes("unique") ? "Subdomínio já existe. Escolha outro." : "Erro ao criar clínica.");
+    } else {
+      toast.success("Clínica criada com sucesso!");
+      navigate("/workspace/clinicas");
+    }
   };
 
   const selectedPlan = PLANOS.find(p => p.id === form.plan)!;
@@ -304,8 +328,8 @@ export default function WorkspaceClinicNew() {
                 Próximo <ChevronRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button onClick={() => navigate("/workspace/clinicas")} className="gap-1.5">
-                <Building2 className="w-4 h-4" /> Criar clínica
+              <Button onClick={handleCreate} disabled={submitting} className="gap-1.5">
+                <Building2 className="w-4 h-4" /> {submitting ? "Criando..." : "Criar clínica"}
               </Button>
             )}
           </div>
