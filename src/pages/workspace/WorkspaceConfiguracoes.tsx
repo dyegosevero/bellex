@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, Palette, Key, MessageSquare, Bot, Globe, Mail, Bell, Eye, EyeOff, CheckCircle2, AlertCircle, Copy } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useWorkspaceSettings } from "@/hooks/useWorkspaceSettings";
 
 function SecretInput({ value, placeholder, onChange }: { value: string; placeholder?: string; onChange: (v: string) => void }) {
   const [show, setShow] = useState(false);
@@ -60,20 +61,64 @@ const PRESET_COLORS = ["#e8957a", "#f5c87a", "#a78bfa", "#60a5fa", "#34d399", "#
 
 export default function WorkspaceConfiguracoes() {
   const { toast } = useToast();
+  const { settings, save: saveSettings, testResend } = useWorkspaceSettings();
   const [resendKey, setResendKey] = useState("");
+  const [resendFrom, setResendFrom] = useState("noreply@bellex.app");
   const [wpToken, setWpToken] = useState("");
   const [wpPhone, setWpPhone] = useState("");
   const [brandColor, setBrandColor] = useState("#e8957a");
-  const [workspaceName, setWorkspaceName] = useState("Bellex Workspace");
+  const [workspaceName, setWorkspaceName] = useState("Meu Workspace");
   const [domain, setDomain] = useState("app.bellex.com.br");
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifyWhatsapp, setNotifyWhatsapp] = useState(false);
   const [agentEnabled, setAgentEnabled] = useState(false);
   const [agentName, setAgentName] = useState("Assistente Bellex");
   const [agentPrompt, setAgentPrompt] = useState("Você é um assistente de suporte para clínicas que usam o sistema Bellex. Seja objetivo e amigável.");
+  const [saving, setSaving] = useState(false);
+  const [testingResend, setTestingResend] = useState(false);
 
-  const save = () => {
-    toast({ title: "Configurações salvas", description: "As alterações foram aplicadas." });
+  useEffect(() => {
+    if (!settings) return;
+    if (settings.resend_key) setResendKey(settings.resend_key);
+    if (settings.resend_from) setResendFrom(settings.resend_from);
+    if (settings.wp_token) setWpToken(settings.wp_token);
+    if (settings.wp_phone_id) setWpPhone(settings.wp_phone_id);
+    setBrandColor(settings.brand_color);
+    setWorkspaceName(settings.workspace_name);
+    setNotifyEmail(settings.notify_email);
+    setNotifyWhatsapp(settings.notify_whatsapp);
+    setAgentEnabled(settings.agent_enabled);
+    setAgentName(settings.agent_name);
+    if (settings.agent_prompt) setAgentPrompt(settings.agent_prompt);
+  }, [settings]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await saveSettings({
+      resend_key: resendKey || null,
+      resend_from: resendFrom,
+      wp_token: wpToken || null,
+      wp_phone_id: wpPhone || null,
+      brand_color: brandColor,
+      workspace_name: workspaceName,
+      notify_email: notifyEmail,
+      notify_whatsapp: notifyWhatsapp,
+      agent_enabled: agentEnabled,
+      agent_name: agentName,
+      agent_prompt: agentPrompt,
+    });
+    setSaving(false);
+    if (error) toast({ title: "Erro ao salvar", description: error, variant: "destructive" });
+    else toast({ title: "Configurações salvas", description: "As alterações foram aplicadas." });
+  };
+
+  const handleTestResend = async () => {
+    if (!resendKey) return;
+    setTestingResend(true);
+    const result = await testResend(resendKey);
+    setTestingResend(false);
+    if (result.valid) toast({ title: "Resend conectado!", description: "Chave válida e pronta para uso." });
+    else toast({ title: "Chave inválida", description: result.error ?? "Verifique a chave e tente novamente.", variant: "destructive" });
   };
 
   return (
@@ -174,12 +219,12 @@ export default function WorkspaceConfiguracoes() {
             {resendKey && (
               <div className="space-y-1.5">
                 <Label>From address padrão</Label>
-                <Input defaultValue="noreply@bellex.app" className="font-mono text-sm" />
+                <Input value={resendFrom} onChange={e => setResendFrom(e.target.value)} className="font-mono text-sm" />
               </div>
             )}
             <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => toast({ title: "Resend conectado!", description: "Chave válida e pronta para uso." })}>
-                Testar conexão
+              <Button size="sm" variant="outline" onClick={handleTestResend} disabled={!resendKey || testingResend}>
+                {testingResend ? "Testando..." : "Testar conexão"}
               </Button>
             </div>
           </section>
@@ -220,8 +265,8 @@ export default function WorkspaceConfiguracoes() {
               </div>
             )}
             <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => toast({ title: "WhatsApp conectado!", description: "Token verificado com sucesso." })}>
-                Testar conexão
+              <Button size="sm" variant="outline" onClick={save} disabled={saving}>
+                {saving ? "Salvando..." : "Salvar credenciais"}
               </Button>
             </div>
           </section>
