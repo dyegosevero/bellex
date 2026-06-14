@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { storage } from "@/lib/storage";
 import {
   ArrowLeft, Building2, Globe, Users, Palette, Settings, Shield,
   Copy, CheckCircle2, Clock, XCircle, AlertTriangle, ExternalLink,
-  RefreshCw, Pencil, Save, ToggleLeft, ToggleRight, Eye, EyeOff,
+  RefreshCw, Pencil, Save, ToggleLeft, ToggleRight, Eye, EyeOff, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,18 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const CLINICAS: Record<string, {
-  id: number; name: string; client: string; slug: string;
-  domain: string; customDomain: string | null; domainVerified: boolean;
-  users: number; plan: string; status: string; color: string;
-  created: string; logo: string | null;
-  features: Record<string, boolean>;
-}> = {
-  "1": { id: 1, name: "Clínica Estela Beauty", client: "Carla Mendonça", slug: "estelabeauty", domain: "estelabeauty.bellex.app", customDomain: "www.estelabeauty.com.br", domainVerified: true, users: 12, plan: "Pro", status: "ativo", color: "#e8957a", created: "15/03/2024", logo: null, features: { agenda: true, cobrancas: true, pipeline: true, mensagens: true, marketing: true } },
-  "2": { id: 2, name: "Studio Laser Gold", client: "Roberto Alves", slug: "studiolaser", domain: "studiolaser.bellex.app", customDomain: "studiolaser.com.br", domainVerified: false, users: 8, plan: "Starter", status: "ativo", color: "#f5c87a", created: "02/06/2024", logo: null, features: { agenda: true, cobrancas: true, pipeline: false, mensagens: false, marketing: false } },
-  "3": { id: 3, name: "Belle Skin Care", client: "Patrícia Souza", slug: "belleskin", domain: "belleskin.bellex.app", customDomain: null, domainVerified: false, users: 5, plan: "Enterprise", status: "ativo", color: "#a78bfa", created: "10/01/2024", logo: null, features: { agenda: true, cobrancas: true, pipeline: true, mensagens: true, marketing: true } },
-};
+import { useWorkspaceClinics, type WorkspaceClinic } from "@/hooks/useWorkspaceClinics";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -56,17 +46,92 @@ function DnsRow({ type, name, value, ttl }: { type: string; name: string; value:
 export default function WorkspaceClinicDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const clinic = CLINICAS[id ?? "1"] ?? CLINICAS["1"];
+  const { clinics, loading: clinicsLoading, update } = useWorkspaceClinics();
+  const clinic = clinics.find(c => c.id === id);
 
-  const [color, setColor] = useState(clinic.color);
-  const [name, setName] = useState(clinic.name);
-  const [customDomain, setCustomDomain] = useState(clinic.customDomain ?? "");
-  const [domainVerified, setDomainVerified] = useState(clinic.domainVerified);
+  const [color, setColor] = useState("#e8957a");
+  const [name, setName] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
+  const [domainVerified, setDomainVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [features, setFeatures] = useState(clinic.features);
+  const [saving, setSaving] = useState(false);
+  const [features, setFeatures] = useState<Record<string, boolean>>({ agenda: true, cobrancas: true, pipeline: false, mensagens: false, marketing: false });
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
-  const verifyToken = `bellex-verify=${clinic.slug}-a4f8c2e1b7d3`;
-  const planSupportsCustomDomain = clinic.plan === "Enterprise" || clinic.plan === "Pro";
+  useEffect(() => {
+    if (clinic) {
+      setColor(clinic.color);
+      setName(clinic.name);
+      setCustomDomain(clinic.custom_domain ?? "");
+    }
+  }, [clinic]);
+
+  const handleSave = async () => {
+    if (!clinic) return;
+    setSaving(true);
+    const { error } = await update(clinic.id, { name, color, custom_domain: customDomain || null });
+    setSaving(false);
+    if (error) toast.error("Erro ao salvar");
+    else toast.success("Alterações salvas!");
+  };
+
+  if (clinicsLoading) return (
+    <div className="flex items-center justify-center py-24 text-muted-foreground gap-2">
+      <Loader2 className="w-4 h-4 animate-spin" /> Carregando...
+    </div>
+  );
+
+  if (!clinic) return (
+    <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-3">
+      <Building2 className="w-10 h-10 opacity-20" />
+      <p className="text-sm">Clínica não encontrada.</p>
+      <Button size="sm" variant="outline" onClick={() => navigate("/workspace/clinicas")}>Voltar</Button>
+    </div>
+  );
+
+  const handleLogoUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `workspaces/${clinic.subdomain}/logo.${ext}`;
+      const { error } = await storage.from("clinic-branding").upload(path, file);
+      if (error) throw error;
+      const { data } = storage.from("clinic-branding").getPublicUrl(path);
+      setLogoUrl(data.publicUrl);
+      toast.success("Logo atualizado!");
+    } catch {
+      toast.error("Erro ao enviar logo.");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleFaviconUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingFavicon(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `workspaces/${clinic.subdomain}/favicon.${ext}`;
+      const { error } = await storage.from("clinic-branding").upload(path, file);
+      if (error) throw error;
+      const { data } = storage.from("clinic-branding").getPublicUrl(path);
+      setFaviconUrl(data.publicUrl);
+      toast.success("Favicon atualizado!");
+    } catch {
+      toast.error("Erro ao enviar favicon.");
+    } finally {
+      setUploadingFavicon(false);
+    }
+  };
+
+  const verifyToken = `bellex-verify=${clinic.subdomain}-a4f8c2e1b7d3`;
+  const planSupportsCustomDomain = clinic.plan === "pro" || clinic.plan === "scale";
 
   const handleVerify = () => {
     setVerifying(true);
@@ -94,10 +159,10 @@ export default function WorkspaceClinicDetail() {
           </div>
           <div>
             <h1 className="text-lg font-semibold leading-tight">{clinic.name}</h1>
-            <p className="text-xs text-muted-foreground">{clinic.client} · {clinic.plan} · <span className="text-green-600">{clinic.status}</span></p>
+            <p className="text-xs text-muted-foreground">{clinic.client_name} · {clinic.plan} · <span className="text-green-600">{clinic.status}</span></p>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="ml-auto gap-1.5" onClick={() => window.open(`https://${clinic.domain}`, "_blank")}>
+        <Button variant="outline" size="sm" className="ml-auto gap-1.5" onClick={() => window.open(`https://${clinic.subdomain + ".bellex.app"}`, "_blank")}>
           <ExternalLink className="w-3.5 h-3.5" /> Abrir painel
         </Button>
       </div>
@@ -133,13 +198,13 @@ export default function WorkspaceClinicDetail() {
               <div className="space-y-1.5">
                 <Label>Slug / subdomínio</Label>
                 <div className="flex items-center">
-                  <Input value={clinic.slug} readOnly className="rounded-r-none bg-muted/40" />
+                  <Input value={clinic.subdomain} readOnly className="rounded-r-none bg-muted/40" />
                   <span className="h-9 px-3 bg-muted border border-l-0 border-input rounded-r-md text-xs text-muted-foreground flex items-center">.bellex.app</span>
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label>Cliente titular</Label>
-                <Input value={clinic.client} readOnly className="bg-muted/40" />
+                <Input value={clinic.client_name} readOnly className="bg-muted/40" />
               </div>
               <div className="space-y-1.5">
                 <Label>Plano</Label>
@@ -168,9 +233,9 @@ export default function WorkspaceClinicDetail() {
             <p className="text-sm font-medium">Domínio padrão Bellex</p>
             <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/30">
               <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span className="text-sm font-mono flex-1">{clinic.domain}</span>
-              <CopyButton text={`https://${clinic.domain}`} />
-              <a href={`https://${clinic.domain}`} target="_blank" rel="noreferrer">
+              <span className="text-sm font-mono flex-1">{clinic.subdomain + ".bellex.app"}</span>
+              <CopyButton text={`https://${clinic.subdomain + ".bellex.app"}`} />
+              <a href={`https://${clinic.subdomain + ".bellex.app"}`} target="_blank" rel="noreferrer">
                 <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
               </a>
             </div>
@@ -354,7 +419,7 @@ export default function WorkspaceClinicDetail() {
           <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Usuários desta clínica</p>
-              <span className="text-xs text-muted-foreground">{clinic.users} usuários</span>
+              <span className="text-xs text-muted-foreground">{0} usuários</span>
             </div>
             {[
               { name: "Carla Mendonça", email: "carla@estelabeauty.com.br", role: "admin", last: "hoje" },
@@ -393,16 +458,52 @@ export default function WorkspaceClinicDetail() {
             </div>
             <div className="space-y-1.5">
               <Label>Logo</Label>
-              <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer">
-                <Building2 className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Clique para fazer upload ou arraste a imagem</p>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/svg+xml,image/jpeg"
+                className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }}
+              />
+              <div
+                className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                onClick={() => logoInputRef.current?.click()}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleLogoUpload(f); }}
+              >
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-12 mx-auto object-contain mb-2" />
+                ) : (
+                  <Building2 className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {uploadingLogo ? "Enviando..." : "Clique para fazer upload ou arraste a imagem"}
+                </p>
                 <p className="text-xs text-muted-foreground/60 mt-1">PNG, SVG · máx. 2MB · recomendado 400×120px</p>
               </div>
             </div>
             <div className="space-y-1.5">
               <Label>Favicon</Label>
-              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/40 transition-colors cursor-pointer">
-                <p className="text-sm text-muted-foreground">Upload do favicon</p>
+              <input
+                ref={faviconInputRef}
+                type="file"
+                accept="image/x-icon,image/png"
+                className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleFaviconUpload(f); }}
+              />
+              <div
+                className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                onClick={() => faviconInputRef.current?.click()}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFaviconUpload(f); }}
+              >
+                {faviconUrl ? (
+                  <img src={faviconUrl} alt="Favicon" className="w-8 h-8 mx-auto mb-2 object-contain" />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {uploadingFavicon ? "Enviando..." : "Upload do favicon"}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground/60 mt-1">ICO, PNG · 32×32px</p>
               </div>
             </div>
