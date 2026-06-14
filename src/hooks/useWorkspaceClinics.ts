@@ -8,6 +8,7 @@ export type WorkspaceClinic = {
   client_name: string;
   subdomain: string;
   custom_domain: string | null;
+  license_id: string | null;
   color: string;
   plan: "starter" | "pro" | "scale";
   status: "ativo" | "trial" | "inadimplente" | "suspenso" | "cancelado";

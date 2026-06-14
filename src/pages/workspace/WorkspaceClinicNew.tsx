@@ -9,15 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
-
-const CLIENTES = [
-  "Carla Mendonça",
-  "Roberto Alves",
-  "Patrícia Souza",
-  "Marcos Vieira",
-  "Ana Costa",
-  "Fernanda Lima",
-];
+import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
 
 const PLANOS = [
   { id: "starter", name: "Starter", price: "R$ 297/mês", seats: "1 clínica", features: ["Agenda", "Clientes", "Financeiro básico"] },
@@ -40,17 +32,20 @@ export default function WorkspaceClinicNew() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     client: "",
+    license_id: "",
     name: "",
     subdomain: "",
     color: "#e8957a",
     plan: "pro",
   });
   const { create } = useWorkspaceClinics();
+  const { licenses } = useWorkspaceLicenses();
+  const availableLicenses = licenses.filter(l => l.status !== "suspenso" && l.status !== "cancelado" && l.seats_used < l.seats_total);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const canNext = () => {
-    if (step === 1) return form.client !== "" && form.name !== "";
+    if (step === 1) return form.license_id !== "" && form.name !== "";
     if (step === 2) return form.subdomain !== "";
     if (step === 3) return form.plan !== "";
     return true;
@@ -63,6 +58,7 @@ export default function WorkspaceClinicNew() {
       client_name: form.client,
       subdomain: form.subdomain,
       custom_domain: null,
+      license_id: form.license_id || null,
       color: form.color,
       plan: form.plan as "starter" | "pro" | "scale",
       status: "trial",
@@ -129,14 +125,25 @@ export default function WorkspaceClinicNew() {
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Cliente titular <span className="text-destructive">*</span></Label>
-                  <Select value={form.client} onValueChange={v => set("client", v)}>
-                    <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
+                  <Label>Licença do cliente <span className="text-destructive">*</span></Label>
+                  <Select value={form.license_id} onValueChange={v => {
+                    const lic = availableLicenses.find(l => l.id === v);
+                    set("license_id", v);
+                    if (lic) set("client", lic.client_name);
+                  }}>
+                    <SelectTrigger><SelectValue placeholder="Selecione a licença" /></SelectTrigger>
                     <SelectContent>
-                      {CLIENTES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      {availableLicenses.length === 0 && (
+                        <SelectItem value="__none__" disabled>Nenhuma licença com seats disponíveis</SelectItem>
+                      )}
+                      {availableLicenses.map(l => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.client_name} — {l.plan} ({l.seats_used}/{l.seats_total} seats)
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">O cliente deve ter uma licença ativa com seats disponíveis.</p>
+                  <p className="text-xs text-muted-foreground">Apenas licenças ativas com seats disponíveis são exibidas.</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Nome da clínica <span className="text-destructive">*</span></Label>
