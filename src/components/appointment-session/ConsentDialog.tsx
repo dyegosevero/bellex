@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Eraser, Check, Loader2 } from "lucide-react";
@@ -181,7 +182,7 @@ export default function ConsentDialog({
       const clientBlob = await clientRes.blob();
       const ts = Date.now();
       const clientFileName = `${clientId}/${appointmentId}_client_${ts}.png`;
-      const { error: uploadErr1 } = await supabase.storage
+      const { error: uploadErr1 } = await storage
         .from("consent-signatures")
         .upload(clientFileName, clientBlob, { contentType: "image/png", upsert: true });
       if (uploadErr1) throw uploadErr1;
@@ -191,7 +192,7 @@ export default function ConsentDialog({
       const proRes = await fetch(proDataUrl);
       const proBlob = await proRes.blob();
       const proFileName = `${clientId}/${appointmentId}_pro_${ts}.png`;
-      const { error: uploadErr2 } = await supabase.storage
+      const { error: uploadErr2 } = await storage
         .from("consent-signatures")
         .upload(proFileName, proBlob, { contentType: "image/png", upsert: true });
       if (uploadErr2) throw uploadErr2;

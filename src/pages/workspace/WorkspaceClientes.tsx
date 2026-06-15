@@ -1,40 +1,91 @@
 import { useState } from "react";
-import { Users, Plus, Search, MoreHorizontal, Building2, Mail, Phone, ArrowUpRight } from "lucide-react";
+import { Users, Plus, Search, MoreHorizontal, Building2, Mail, ArrowUpRight, Loader2, Key } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-
-const CLIENTES = [
-  { id: 1, name: "Carla Mendonça", email: "carla@estelabeauty.com.br", phone: "(11) 99123-4567", clinicas: 2, status: "ativo", plano: "Pro", desde: "Mar 2024" },
-  { id: 2, name: "Roberto Alves", email: "roberto@studiolaser.com", phone: "(21) 98765-4321", clinicas: 1, status: "ativo", plano: "Starter", desde: "Jun 2024" },
-  { id: 3, name: "Patrícia Souza", email: "patricia@belleskin.com.br", phone: "(31) 97654-3210", clinicas: 3, status: "ativo", plano: "Enterprise", desde: "Jan 2024" },
-  { id: 4, name: "Marcos Vieira", email: "marcos@harmonia.com", phone: "(41) 96543-2109", clinicas: 1, status: "trial", plano: "Starter", desde: "Jun 2025" },
-  { id: 5, name: "Ana Costa", email: "ana@renova.com.br", phone: "(51) 95432-1098", clinicas: 1, status: "inadimplente", plano: "Pro", desde: "Ago 2024" },
-  { id: 6, name: "Fernanda Lima", email: "fernanda@glowclinica.com", phone: "(11) 94321-0987", clinicas: 2, status: "ativo", plano: "Pro", desde: "Abr 2024" },
-];
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
+import { toast } from "sonner";
 
 const statusBadge: Record<string, string> = {
   ativo: "bg-green-50 text-green-700 border-green-200",
   trial: "bg-blue-50 text-blue-700 border-blue-200",
   inadimplente: "bg-red-50 text-red-700 border-red-200",
+  expirando: "bg-amber-50 text-amber-700 border-amber-200",
+  suspenso: "bg-orange-50 text-orange-700 border-orange-200",
   cancelado: "bg-muted text-muted-foreground border-border",
 };
 
+const planLabel: Record<string, string> = {
+  starter: "Starter",
+  pro: "Pro",
+  scale: "Scale",
+};
+
 export default function WorkspaceClientes() {
+  const { licenses, loading, error, create } = useWorkspaceLicenses();
+  const { clinics } = useWorkspaceClinics();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
-  const filtered = CLIENTES.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.email.toLowerCase().includes(search.toLowerCase())
+  const [saving, setSaving] = useState(false);
+
+  // Form state
+  const [clientName, setClientName] = useState("");
+  const [plan, setPlan] = useState<"starter" | "pro" | "scale">("starter");
+  const [seatsTotal, setSeatsTotal] = useState(1);
+
+  // Count clinics per license
+  const clinicsPerLicense = (licenseId: string) =>
+    clinics.filter(c => c.license_id === licenseId).length;
+
+  const filtered = licenses.filter(l =>
+    l.client_name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleCreate = async () => {
+    if (!clientName.trim()) { toast.error("Nome do cliente obrigatório"); return; }
+    setSaving(true);
+    try {
+      await create({
+        client_name: clientName,
+        plan,
+        seats_total: seatsTotal,
+        status: "trial",
+      });
+      toast.success("Licença criada com sucesso.");
+      setOpen(false);
+      setClientName(""); setPlan("starter"); setSeatsTotal(1);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <PageHeader icon={<Users className="w-5 h-5" />} title="Clientes" subtitle="Parceiros e titulares de licença" />
+
+      {/* Stats */}
+      {!loading && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Total", value: licenses.length, color: "#e8957a" },
+            { label: "Ativos", value: licenses.filter(l => l.status === "ativo").length, color: "#22c55e" },
+            { label: "Trial", value: licenses.filter(l => l.status === "trial").length, color: "#3b82f6" },
+            { label: "Inadimplentes", value: licenses.filter(l => l.status === "inadimplente").length, color: "#ef4444" },
+          ].map(s => (
+            <div key={s.label} className="rounded-xl border border-border/40 bg-card p-4">
+              <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="flex items-center gap-3">
@@ -43,113 +94,126 @@ export default function WorkspaceClientes() {
           <Input placeholder="Buscar cliente..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Button size="sm" onClick={() => setOpen(true)} className="gap-1.5">
-          <Plus className="w-4 h-4" /> Novo cliente
+          <Plus className="w-4 h-4" /> Nova licença
         </Button>
       </div>
 
-      {/* Tabela */}
+      {/* Table */}
       <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border/40 bg-muted/30">
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Cliente</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">Contato</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Plano</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Clínicas</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">Desde</th>
-              <th className="p-4 w-10" />
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((c, i) => (
-              <tr key={c.id} className={`border-b border-border/30 hover:bg-muted/20 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                      {c.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
-                    </div>
-                    <span className="text-sm font-medium">{c.name}</span>
-                  </div>
-                </td>
-                <td className="p-4 hidden md:table-cell">
-                  <div className="space-y-0.5">
-                    <p className="text-xs flex items-center gap-1.5 text-muted-foreground"><Mail className="w-3 h-3" />{c.email}</p>
-                    <p className="text-xs flex items-center gap-1.5 text-muted-foreground"><Phone className="w-3 h-3" />{c.phone}</p>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <span className="text-sm font-medium">{c.plano}</span>
-                </td>
-                <td className="p-4 hidden sm:table-cell">
-                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Building2 className="w-3.5 h-3.5" />{c.clinicas}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${statusBadge[c.status]}`}>
-                    {c.status}
-                  </span>
-                </td>
-                <td className="p-4 hidden md:table-cell text-xs text-muted-foreground">{c.desde}</td>
-                <td className="p-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="w-8 h-8">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem><ArrowUpRight className="w-3.5 h-3.5 mr-2" />Ver clínicas</DropdownMenuItem>
-                      <DropdownMenuItem>Editar</DropdownMenuItem>
-                      <DropdownMenuItem>Alterar plano</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">Desativar</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
+        {loading ? (
+          <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Carregando clientes…</span>
+          </div>
+        ) : error ? (
+          <p className="text-center py-12 text-sm text-destructive">{error}</p>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 space-y-2">
+            <Users className="w-8 h-8 text-muted-foreground/40 mx-auto" />
+            <p className="text-sm text-muted-foreground">{search ? "Nenhum cliente encontrado." : "Nenhuma licença cadastrada ainda."}</p>
+            {!search && <Button size="sm" onClick={() => setOpen(true)} className="mt-2"><Plus className="w-4 h-4 mr-1.5" />Criar primeira licença</Button>}
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Cliente</th>
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Plano</th>
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Clínicas</th>
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Seats</th>
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">Desde</th>
+                <th className="p-4 w-10" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((l, i) => (
+                <tr key={l.id} className={`border-b border-border/30 hover:bg-muted/20 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                        {l.client_name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{l.client_name}</p>
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1"><Key className="w-2.5 h-2.5" />{l.license_key}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className="text-sm font-medium capitalize">{planLabel[l.plan] ?? l.plan}</span>
+                  </td>
+                  <td className="p-4 hidden sm:table-cell">
+                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Building2 className="w-3.5 h-3.5" />{clinicsPerLicense(l.id)}
+                    </span>
+                  </td>
+                  <td className="p-4 hidden sm:table-cell">
+                    <span className="text-sm text-muted-foreground">{l.seats_used}/{l.seats_total}</span>
+                  </td>
+                  <td className="p-4">
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${statusBadge[l.status] ?? statusBadge.cancelado}`}>
+                      {l.status}
+                    </span>
+                  </td>
+                  <td className="p-4 hidden md:table-cell text-xs text-muted-foreground">
+                    {new Date(l.created_at).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}
+                  </td>
+                  <td className="p-4">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="w-8 h-8">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem><ArrowUpRight className="w-3.5 h-3.5 mr-2" />Ver clínicas</DropdownMenuItem>
+                        <DropdownMenuItem>Alterar plano</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">Suspender</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Modal novo cliente */}
+      {/* Modal nova licença */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Novo cliente</DialogTitle>
+            <DialogTitle>Nova licença</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Nome do cliente *</Label>
+              <Input placeholder="Nome completo ou empresa" value={clientName} onChange={e => setClientName(e.target.value)} />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Nome</Label>
-                <Input placeholder="Nome completo" />
+                <Label>Plano</Label>
+                <Select value={plan} onValueChange={v => setPlan(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="starter">Starter</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="scale">Scale</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Empresa</Label>
-                <Input placeholder="Nome da empresa" />
+                <Label>Seats</Label>
+                <Input type="number" min={1} max={100} value={seatsTotal} onChange={e => setSeatsTotal(Number(e.target.value))} />
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>E-mail</Label>
-              <Input type="email" placeholder="email@empresa.com" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Telefone</Label>
-              <Input placeholder="(11) 99999-9999" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Plano inicial</Label>
-              <select className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
-                <option>Starter</option>
-                <option>Pro</option>
-                <option>Enterprise</option>
-              </select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={() => setOpen(false)}>Criar cliente</Button>
+            <Button onClick={handleCreate} disabled={saving}>
+              {saving && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}Criar licença
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

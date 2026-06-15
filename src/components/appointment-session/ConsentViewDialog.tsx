@@ -6,6 +6,7 @@ import { Download } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 
 const FALLBACK_TEXTS: Record<string, string> = {
   treatment_social: "Documento não encontrado.",
@@ -130,13 +131,13 @@ export default function ConsentViewDialog({ open, onOpenChange, consent }: Props
       };
 
       const clientPath = extractPath(consent.signature_url);
-      const { data: clientData } = await supabase.storage
+      const { data: clientData } = await storage
         .from("consent-signatures")
         .createSignedUrl(clientPath, 3600);
       setClientSigUrl(clientData?.signedUrl ?? null);
 
       const proPath = clientPath.replace("_client_", "_pro_");
-      const { data: proData } = await supabase.storage
+      const { data: proData } = await storage
         .from("consent-signatures")
         .createSignedUrl(proPath, 3600);
       setProSigUrl(proData?.signedUrl ?? null);

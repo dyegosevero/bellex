@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +22,7 @@ interface Props {
 const SignedImageSlot = ({ image, label, onDelete }: { image: any; label: string; onDelete: (id: string) => void }) => {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    supabase.storage.from("client-images").createSignedUrl(image.file_url, 3600).then(({ data }) => {
+    storage.from("client-images").createSignedUrl(image.file_url, 3600).then(({ data }) => {
       if (data?.signedUrl) setUrl(data.signedUrl);
     });
   }, [image.file_url]);
@@ -185,7 +186,7 @@ export default function SessionBeforeAfterTab({ appointmentId, clientId, clientN
     mutationFn: async ({ file, caption }: { file: File; caption: string }) => {
       const ext = file.name.split(".").pop();
       const path = `${clientId}/${appointmentId}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await storage
         .from("client-images")
         .upload(path, file, { contentType: file.type });
       if (uploadError) throw uploadError;
@@ -221,7 +222,7 @@ export default function SessionBeforeAfterTab({ appointmentId, clientId, clientN
 
       // Remove file from storage bucket
       if (img?.file_url) {
-        await supabase.storage.from("client-images").remove([img.file_url]);
+        await storage.from("client-images").remove([img.file_url]);
       }
     },
     onSuccess: () => {
@@ -315,7 +316,7 @@ export default function SessionBeforeAfterTab({ appointmentId, clientId, clientN
     setDeletingConsent(true);
     try {
       if (consent.signature_url) {
-        await supabase.storage.from("consent-signatures").remove([consent.signature_url]);
+        await storage.from("consent-signatures").remove([consent.signature_url]);
       }
       const { error } = await supabase.from("client_consents").delete().eq("id", consent.id);
       if (error) { toast.error("Erro ao excluir consentimento."); return; }

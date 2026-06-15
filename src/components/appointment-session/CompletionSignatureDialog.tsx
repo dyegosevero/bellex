@@ -3,6 +3,7 @@ import SignatureCanvas from "react-signature-canvas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Eraser, Check, Loader2, Clock, User, Sparkles, Calendar as CalendarIcon } from "lucide-react";
@@ -66,12 +67,12 @@ export default function CompletionSignatureDialog({
       const blob = await res.blob();
       const ts = Date.now();
       const fileName = `${clientId}/${appointmentId}_completion_${ts}.png`;
-      const { error: uploadErr } = await supabase.storage
+      const { error: uploadErr } = await storage
         .from("consent-signatures")
         .upload(fileName, blob, { contentType: "image/png", upsert: true });
       if (uploadErr) throw uploadErr;
 
-      const { data: urlData } = supabase.storage.from("consent-signatures").getPublicUrl(fileName);
+      const { data: urlData } = storage.from("consent-signatures").getPublicUrl(fileName);
 
       // Save as client_document
       const docName = `Assinatura de Realização - ${format(new Date(startTime), "dd/MM/yyyy", { locale: pt })} - ${serviceName}`;

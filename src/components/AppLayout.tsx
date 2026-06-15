@@ -66,6 +66,7 @@ const AppLayout = () => {
   const [expanded, setExpanded] = useState(() => {
     try { return localStorage.getItem(SIDEBAR_KEY) === "true"; } catch { return false; }
   });
+  const [hovered, setHovered] = useState(false);
   const [profileName, setProfileName] = useState<string | null>(null);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -115,33 +116,36 @@ const AppLayout = () => {
           top: 0,
           left: 0,
           height: "100vh",
-          zIndex: 40,
+          zIndex: !expanded && hovered ? 50 : 40,
           overflow: "hidden",
-          width: expanded ? 208 : 52,
+          width: expanded || hovered ? 208 : 52,
           transition: "width 0.2s cubic-bezier(0.4,0,0.2,1)",
           background: "hsl(30 22% 97%)",
           flexShrink: 0,
+          boxShadow: !expanded && hovered ? "4px 0 24px hsl(var(--foreground) / 0.08)" : "none",
         }}
+        onMouseEnter={() => { if (!expanded) setHovered(true); }}
+        onMouseLeave={() => setHovered(false)}
       >
         {/* Header: logo only */}
         <div className="flex items-center h-14 px-3 flex-shrink-0 gap-2">
-          {/* Compact icon — fades out when expanded */}
+          {/* Compact icon — fades out when expanded or hovered */}
           <img
             src={logo1x1}
             alt="Bellex"
             className={cn(
               "w-7 h-7 object-contain flex-shrink-0 cursor-pointer absolute transition-all duration-200",
-              expanded ? "opacity-0 scale-75 pointer-events-none" : "opacity-100 scale-100"
+              expanded || hovered ? "opacity-0 scale-75 pointer-events-none" : "opacity-100 scale-100"
             )}
             onClick={() => navigate("/dashboard")}
           />
-          {/* Full logo — fades in when expanded */}
+          {/* Full logo — fades in when expanded or hovered */}
           <img
             src={logoColor}
             alt="Bellex"
             className={cn(
               "h-6 w-auto object-contain flex-shrink-0 cursor-pointer transition-all duration-200",
-              expanded ? "opacity-100" : "opacity-0 pointer-events-none"
+              expanded || hovered ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
             onClick={() => navigate("/dashboard")}
           />
@@ -149,47 +153,53 @@ const AppLayout = () => {
 
         {/* Nav — always render label, animate width/opacity */}
         <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-2 flex flex-col gap-0.5 px-2">
-          {filteredNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              title={!expanded ? item.label : undefined}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center h-9 rounded-lg transition-colors overflow-hidden whitespace-nowrap",
-                  expanded ? "px-2.5 gap-2.5" : "px-0 justify-center gap-0",
-                  isActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <item.icon size={15} className="flex-shrink-0" />
-                  <span
-                    className={cn(
-                      "text-[13px] transition-all duration-200 overflow-hidden",
-                      expanded ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
+          {filteredNav.map((item) => {
+            const show = expanded || hovered;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                title={!show ? item.label : undefined}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center h-9 rounded-lg transition-colors overflow-hidden whitespace-nowrap",
+                    show ? "px-2.5 gap-2.5" : "px-0 justify-center gap-0",
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <item.icon size={15} className="flex-shrink-0" />
+                    <span
+                      className={cn(
+                        "text-[13px] transition-all duration-200 overflow-hidden",
+                        show ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* ── FOOTER ────────────────────────────────────────── */}
         <div style={{ flexShrink: 0, borderTop: "1px solid hsl(var(--border) / 0.4)", padding: "8px 8px 12px" }}>
-
+          {(() => {
+            const show = expanded || hovered;
+            return (
+              <>
           {/* Agendamento accordion */}
-          <SidebarBtn icon={<Link size={15} />} label="Agendamento" expanded={expanded} title="Agendamento online"
-            onClick={() => { if (expanded) setBookingOpen(o => !o); else { toggleSidebar(); setTimeout(() => setBookingOpen(true), 220); } }}
-            end={expanded ? <ChevronDown size={13} style={{ transform: bookingOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /> : undefined}
+          <SidebarBtn icon={<Link size={15} />} label="Agendamento" expanded={show} title="Agendamento online"
+            onClick={() => { if (show) setBookingOpen(o => !o); else { toggleSidebar(); setTimeout(() => setBookingOpen(true), 220); } }}
+            end={show ? <ChevronDown size={13} style={{ transform: bookingOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /> : undefined}
           />
-          {expanded && bookingOpen && (
+          {show && bookingOpen && (
             <div style={{ paddingLeft: 28 }}>
               <SidebarBtn icon={<Share2 size={13} />} label="Compartilhar" expanded={true} onClick={() => setShareOpen(true)} />
               <SidebarBtn icon={<ExternalLink size={13} />} label="Editar página" expanded={true} onClick={() => window.open("/agendamento", "_blank")} />
@@ -199,7 +209,7 @@ const AppLayout = () => {
           {/* Toggle */}
           <SidebarBtn
             icon={expanded ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
-            label="Recolher menu" expanded={expanded} title={expanded ? "Recolher" : "Expandir"}
+            label="Recolher menu" expanded={show} title={expanded ? "Recolher" : "Expandir"}
             onClick={toggleSidebar}
           />
 
@@ -208,8 +218,8 @@ const AppLayout = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  title={!expanded ? (profileName || user?.email || "") : undefined}
-                  style={{ display: "flex", alignItems: "center", width: "100%", gap: 10, padding: expanded ? "6px 10px" : "6px 0", borderRadius: 10, background: "transparent", border: "none", cursor: "pointer", justifyContent: expanded ? "flex-start" : "center", outline: "none" }}
+                  title={!show ? (profileName || user?.email || "") : undefined}
+                  style={{ display: "flex", alignItems: "center", width: "100%", gap: 10, padding: show ? "6px 10px" : "6px 0", borderRadius: 10, background: "transparent", border: "none", cursor: "pointer", justifyContent: show ? "flex-start" : "center", outline: "none" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--muted) / 0.5)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
@@ -220,13 +230,13 @@ const AppLayout = () => {
                       : getInitials(profileName || user?.email || "U")
                     }
                   </span>
-                  {expanded && (
+                  {show && (
                     <span style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                       <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "hsl(var(--foreground))", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profileName || "Minha conta"}</span>
                       <span style={{ display: "block", fontSize: 10, color: "hsl(var(--muted-foreground))", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.email}</span>
                     </span>
                   )}
-                  {expanded && <ChevronRight size={11} style={{ flexShrink: 0, color: "hsl(var(--muted-foreground))", opacity: 0.6 }} />}
+                  {show && <ChevronRight size={11} style={{ flexShrink: 0, color: "hsl(var(--muted-foreground))", opacity: 0.6 }} />}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="end" className="w-56">
@@ -243,6 +253,9 @@ const AppLayout = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+              </>
+            );
+          })()}
         </div>
       </aside>
 
@@ -320,7 +333,7 @@ const AppLayout = () => {
           "flex-1 min-w-0 min-h-0",
           ["/pipeline", "/mensagens"].includes(location.pathname)
             ? "overflow-hidden flex flex-col"
-            : "overflow-auto p-6 lg:p-8 max-w-[1600px] mx-auto w-full"
+            : "overflow-auto p-6 lg:p-8 w-full"
         )}>
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition key={location.pathname}>

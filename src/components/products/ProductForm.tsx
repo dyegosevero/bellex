@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,9 +99,9 @@ export const ProductForm = ({ initialData, mode = "create" }: ProductFormProps) 
     try {
       const ext = imageFile.name.split(".").pop();
       const path = `${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, imageFile);
+      const { error } = await storage.from("product-images").upload(path, imageFile);
       if (error) throw error;
-      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(path);
+      const { data: urlData } = storage.from("product-images").getPublicUrl(path);
       return urlData.publicUrl;
     } catch (err: any) {
       toast({ title: "Erro ao enviar imagem", description: err.message, variant: "destructive" });

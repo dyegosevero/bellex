@@ -39,9 +39,9 @@ export const testimonials = [
 export const plans = [
   {
     name: "Starter",
-    price: { monthly: "R$ 129", annual: "R$ 90" },
+    price: { monthly: "R$ 149", annual: "R$ 104" },
     period: "/mês",
-    annualNote: "R$ 1.080 cobrados anualmente",
+    annualNote: "R$ 1.248 cobrados anualmente",
     desc: "Para clínicas que estão começando.",
     features: [
       "Até 2 especialistas",
@@ -56,9 +56,9 @@ export const plans = [
   },
   {
     name: "Pro",
-    price: { monthly: "R$ 249", annual: "R$ 174" },
+    price: { monthly: "R$ 297", annual: "R$ 208" },
     period: "/mês",
-    annualNote: "R$ 2.088 cobrados anualmente",
+    annualNote: "R$ 2.496 cobrados anualmente",
     desc: "Para clínicas em crescimento.",
     features: [
       "Especialistas ilimitados",

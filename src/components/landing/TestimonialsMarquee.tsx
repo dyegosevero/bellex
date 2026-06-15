@@ -25,7 +25,7 @@ export function TestimonialsMarquee() {
   const row2 = testimonials2.map((t) => <Card key={t.name} {...t} />);
 
   return (
-    <section className="py-20 overflow-hidden" style={{ background: "hsl(30 25% 98%)" }}>
+    <section id="depoimentos" className="py-20 overflow-hidden" style={{ background: "hsl(30 25% 98%)" }}>
       <div className="max-w-5xl mx-auto px-6 mb-12 text-center">
         <p className="text-xs text-primary tracking-widest uppercase font-medium mb-3">Depoimentos</p>
         <h2 className="text-3xl font-light text-foreground">

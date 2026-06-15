@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -66,7 +67,7 @@ const Profile = () => {
 
     const path = `${user.id}/avatar.jpg`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storage
       .from("avatars")
       .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
 
@@ -76,7 +77,7 @@ const Profile = () => {
       return;
     }
 
-    const { data: publicData } = supabase.storage
+    const { data: publicData } = storage
       .from("avatars")
       .getPublicUrl(path);
 

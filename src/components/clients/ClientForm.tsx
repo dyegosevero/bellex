@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,7 @@ export const ClientForm = ({ initialData, mode = "create" }: ClientFormProps) =>
       if (pdfFile) {
         const fileExt = pdfFile.name.split(".").pop();
         const filePath = `${crypto.randomUUID()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await storage
           .from("consent-pdfs")
           .upload(filePath, pdfFile, { contentType: "application/pdf" });
         if (uploadError) throw uploadError;

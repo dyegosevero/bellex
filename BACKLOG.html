@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellex — Backlog</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8f8f7; color: #1a1a1a; font-size: 13px; }
+  .header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 16px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .header span { font-size: 11px; color: #888; background: #f0f0f0; padding: 2px 8px; border-radius: 99px; }
+  .updated { font-size: 11px; color: #aaa; margin-left: auto; }
+  .filters { display: flex; gap: 6px; padding: 12px 24px; background: #fff; border-bottom: 1px solid #e5e5e5; flex-wrap: wrap; }
+  .filter-btn { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 1px solid #e0e0e0; background: #fff; cursor: pointer; transition: all 0.15s; color: #555; }
+  .filter-btn:hover, .filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 24px 60px; }
+  .section { margin-bottom: 28px; }
+  .section-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #666; padding: 8px 0 10px; display: flex; align-items: center; gap-8px; border-bottom: 1px solid #eee; margin-bottom: 12px; }
+  .sprint { margin-bottom: 18px; }
+  .sprint-title { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 8px; padding: 4px 0; }
+  .items { display: flex; flex-direction: column; gap: 4px; }
+  .item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; background: #fff; border: 1px solid #eee; border-radius: 8px; transition: all 0.1s; cursor: pointer; user-select: none; }
+  .item:hover { border-color: #d0d0d0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .item.done { opacity: 0.45; }
+  .item.done .item-title { text-decoration: line-through; }
+  .item-code { font-size: 10px; font-weight: 700; color: #aaa; min-width: 44px; padding-top: 1px; font-family: monospace; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-title { font-size: 12.5px; line-height: 1.4; color: #1a1a1a; }
+  .item-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+  .badge { font-size: 10px; padding: 1px 7px; border-radius: 99px; border: 1px solid; font-weight: 500; white-space: nowrap; }
+  .badge-red { background: #fff1f0; color: #c0392b; border-color: #fcc; }
+  .badge-yellow { background: #fffbe6; color: #a67c00; border-color: #ffe58f; }
+  .badge-green { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+  .badge-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .badge-gray { background: #f5f5f5; color: #555; border-color: #e0e0e0; }
+  .badge-done { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+  .effort { font-size: 10px; color: #aaa; }
+  .check { width: 16px; height: 16px; border: 1.5px solid #d0d0d0; border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+  .item.done .check { background: #22c55e; border-color: #22c55e; }
+  .check-svg { display: none; }
+  .item.done .check-svg { display: block; }
+  .section-emoji { margin-right: 6px; }
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 10px 16px; min-width: 100px; }
+  .stat-val { font-size: 20px; font-weight: 700; }
+  .stat-label { font-size: 10px; color: #888; margin-top: 2px; }
+  .stat-val.green { color: #16a34a; }
+  .stat-val.blue { color: #2563eb; }
+  .stat-val.orange { color: #ea580c; }
+  .progress { height: 4px; background: #eee; border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #22c55e; border-radius: 99px; transition: width 0.3s; }
+  [data-area] { }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="width:28px;height:28px;background:#1a1a1a;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+    <svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+  </div>
+  <h1>Bellex — Backlog</h1>
+  <span id="total-count">…</span>
+  <span class="updated">Atualizado: 2026-06-15</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filter('all')">Todos</button>
+  <button class="filter-btn" onclick="filter('todo')">A fazer</button>
+  <button class="filter-btn" onclick="filter('done')">Concluídos</button>
+  <button class="filter-btn" onclick="filter('ws')">🏢 Workspace</button>
+  <button class="filter-btn" onclick="filter('lp')">🌐 Landing</button>
+  <button class="filter-btn" onclick="filter('fichas')">📋 Fichas</button>
+  <button class="filter-btn" onclick="filter('ux')">🔵 UX</button>
+  <button class="filter-btn" onclick="filter('fin')">💰 Financeiro App</button>
+  <button class="filter-btn" onclick="filter('sa')">⚙️ Super Admin</button>
+  <button class="filter-btn" onclick="filter('agentes')">🤖 Agentes IA</button>
+</div>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="stat-done">0</div><div class="stat-label">Concluídos</div></div>
+    <div class="stat"><div class="stat-val blue" id="stat-todo">0</div><div class="stat-label">A fazer</div></div>
+    <div class="stat"><div class="stat-val orange" id="stat-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat" style="flex:1;min-width:160px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="stat-label">Progresso geral</div>
+        <div class="stat-val green" id="stat-pct" style="font-size:15px">0%</div>
+      </div>
+      <div class="progress" style="margin-top:8px"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="section" data-area="ws">
+    <div class="section-header"><span class="section-emoji">🏢</span> Workspace — Backend</div>
+    <div class="sprint">
+      <div class="sprint-title">Sprint WS-1</div>
+      <div class="items">
+        <div class="item done" data-area="ws" onclick="toggle(this)">
+          <div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="item-code">WS-01</div>
+          <div class="item-body"><div class="item-title">Clínicas CRUD real via Supabase — migration, hooks, páginas conectadas</div><div class="item-meta"><span class="badge badge-done">✅ Feito</span></div></div>
+        </div>
+        <div class="item done" data-area="ws" onclick="toggle(this)">
+          <div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="item-code">WS-02</div>
+          <div class="item-body"><div class="item-title">Licenças vinculadas às clínicas + seat accounting automático (triggers)</div><div class="item-meta"><span class="badge badge-done">✅ Feito</span></div></div>
+        </div>
+        <div class="item done" data-area="ws" onclick="toggle(this)">
+          <div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="item-code">WS-03</div>
+          <div class="item-body"><div class="item-title">Resend real — chave salva no Supabase, teste via Edge Function</div><div class="item-meta"><span class="badge badge-done">✅ Feito</span></div></div>
+        </div>
+        <div class="item done" data-area="ws" onclick="toggle(this)">
+          <div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="item-code">WS-04</div>
+          <div class="item-body"><div class="item-title">Webhook WhatsApp Business API — verificação Meta + log de mensagens</div><div class="item-meta"><span class="badge badge-done">✅ Feito</span></div></div>
+        </div>
+        <div class="item done" data-area="ws" onclick="toggle(this)">
+          <div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="item-code">WS-05</div>
+          <div class="item-body"><div class="item-title">Verificação DNS real via Cloudflare DoH (TXT + CNAME)</div><div class="item-meta"><span class="badge badge-done">✅ Feito</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANDING PAGE -->
+  <div class="section" data-area="lp">
+    <div class="section-header"><span class="section-emoji">🌐</span> Landing Page & Conversão</div>
+    <div class="sprint"><div class="sprint-title">Sprint LP-1 — Fundação</div><div class="items">
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-01</div><div class="item-body"><div class="item-title">Instalar GA4 + Microsoft Clarity + eventos no CTA "Agendar Demo"</div><div class="item-meta"><span class="badge badge-red">🔴 Base</span><span class="effort">2h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-02</div><div class="item-body"><div class="item-title">Reescrever headline do hero — foco na dor da dona de clínica solo</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span><span class="effort">30min</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-03</div><div class="item-body"><div class="item-title">Badge de garantia no hero — "30 dias de garantia · sem cartão · cancela quando quiser"</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span><span class="effort">1h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-04</div><div class="item-body"><div class="item-title">Linha de credibilidade no hero — "Setup assistido · suporte BR · sem contrato"</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span><span class="effort">30min</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-05</div><div class="item-body"><div class="item-title">Coletar depoimentos reais — e-mail para 5 clientes beta pedindo texto + foto</div><div class="item-meta"><span class="badge badge-red">🔴 Crítico</span><span class="effort">1 email</span></div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">Sprint LP-2 — Copy e Prova Social</div><div class="items">
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-06</div><div class="item-body"><div class="item-title">Substituir depoimentos fictícios por reais com foto + cidade</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span><span class="effort">3h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-07</div><div class="item-body"><div class="item-title">Reescrever LandingProblem — copy de "status quo" (planilha, WhatsApp, sistema ruim)</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio-alto</span><span class="effort">2h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-08</div><div class="item-body"><div class="item-title">Avatar stack + contador real de clínicas no hero</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">2h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-09</div><div class="item-body"><div class="item-title">Seção "Como é a demo" — embed Calendly inline</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">3h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-10</div><div class="item-body"><div class="item-title">CTA segmentado: "Clínica pequena" vs "Equipe maior / múltiplas unidades"</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">2h</span></div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">Sprint LP-3 — Conversão Avançada</div><div class="items">
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-11</div><div class="item-body"><div class="item-title">Garantia 30 dias explícita no hero e pricing</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">1h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-12</div><div class="item-body"><div class="item-title">Seção LGPD dedicada com 4 pilares visuais</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">3h</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-13</div><div class="item-body"><div class="item-title">Vídeos de depoimento — vídeo vertical 60s de 3 clientes reais</div><div class="item-meta"><span class="badge badge-red">🔴 Muito alto</span><span class="effort">1 semana</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-14</div><div class="item-body"><div class="item-title">Quiz de onboarding inline — segmenta lead antes da demo</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">1 dia</span></div></div></div>
+      <div class="item" data-area="lp" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">LP-15</div><div class="item-body"><div class="item-title">Segmentação por nicho dentro da estética (depilação, skincare, corporal, oncológica, etc.) nas páginas de recursos</div><div class="item-meta"><span class="badge badge-green">🟢 Baixo</span><span class="effort">2 dias</span></div></div></div>
+    </div></div>
+  </div>
+
+  <!-- UX GLOBAL -->
+  <div class="section" data-area="ux">
+    <div class="section-header"><span class="section-emoji">🔵</span> UX Global</div>
+    <div class="sprint"><div class="sprint-title">Sprint UX-1 — Header + Busca Global</div><div class="items">
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-01</div><div class="item-body"><div class="item-title">Header superior global — busca global, botão Ajuda, botão Assistente IA</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span></div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-02</div><div class="item-body"><div class="item-title">Botão Ajuda — painel lateral com docs, tutoriais em vídeo e suporte</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span></div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-03</div><div class="item-body"><div class="item-title">Busca Global — paciente, agendamento, serviço, produto em tempo real</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span></div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-04</div><div class="item-body"><div class="item-title">Assistente IA flutuante — chat lateral, insights contextuais da clínica</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span></div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">Sprint UX-2 — Filtros da Agenda</div><div class="items">
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-05</div><div class="item-body"><div class="item-title">Botão "Filtros" na toolbar da agenda</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-06</div><div class="item-body"><div class="item-title">Barra de filtros expansível com animação suave</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-07</div><div class="item-body"><div class="item-title">Busca por paciente nos filtros da agenda em tempo real</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-08</div><div class="item-body"><div class="item-title">Filtro por especialista (checkboxes)</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-09</div><div class="item-body"><div class="item-title">Filtro por status — Confirmado, Pendente, Cancelado, No-show</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-10</div><div class="item-body"><div class="item-title">Filtro por serviço — dropdown multi-select</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-11</div><div class="item-body"><div class="item-title">Filtros disponíveis em todas as views: Dia, Semana, Mês, Lista</div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">Sprint UX-3 — Timer de Atendimento</div><div class="items">
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-11b</div><div class="item-body"><div class="item-title">Alerta de cobrança não registrada — mover para topo absoluto do layout</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span></div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-12</div><div class="item-body"><div class="item-title">Barra de atendimento ativa — cronômetro · status · Cancelar · Finalizar</div><div class="item-meta"><span class="badge badge-red">🔴 Alto</span></div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-13</div><div class="item-body"><div class="item-title">Auto-save de rascunho com timestamp no status</div></div></div>
+      <div class="item" data-area="ux" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">UX-14</div><div class="item-body"><div class="item-title">Alerta ao sair sem finalizar — modal de confirmação</div></div></div>
+    </div></div>
+  </div>
+
+  <!-- FICHAS -->
+  <div class="section" data-area="fichas">
+    <div class="section-header"><span class="section-emoji">📋</span> Fichas Clínicas</div>
+    <div class="sprint"><div class="sprint-title">FICHAS-0 — Infraestrutura</div><div class="items">
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-00</div><div class="item-body"><div class="item-title">registry.ts — metadados de todas as fichas com lazy import</div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-01</div><div class="item-body"><div class="item-title">Tabela ficha_configs no Supabase — { clinica_id, ficha_id, ativo }</div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-02</div><div class="item-body"><div class="item-title">Tabela servico_fichas — many-to-many (serviço ↔ ficha)</div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-03</div><div class="item-body"><div class="item-title">UI Admin/Configurações — toggle ativar/desativar fichas</div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-04</div><div class="item-body"><div class="item-title">UI Serviços — associar fichas ativas ao serviço</div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-05</div><div class="item-body"><div class="item-title">Tela de Atendimento — carregar fichas do serviço (lazy + Suspense)</div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">FICHAS-1 — Ficha Nutricional</div><div class="items">
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-10</div><div class="item-body"><div class="item-title">SVG — 3 silhuetas selecionáveis (ecto/meso/endomorfo)</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-11</div><div class="item-body"><div class="item-title">Campos: peso, altura, idade, sexo, circunferência do punho, % gordura</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-12</div><div class="item-body"><div class="item-title">Cálculo IMC + classificação automática</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-13</div><div class="item-body"><div class="item-title">Cálculo TMB — Harris-Benedict</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-14</div><div class="item-body"><div class="item-title">Cálculo VET = TMB × fator atividade física</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-15</div><div class="item-body"><div class="item-title">Estrutura óssea via circunferência do punho</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-16</div><div class="item-body"><div class="item-title">Export PDF da ficha nutricional preenchida</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">FICHAS-2 — Facial · FICHAS-3 — Corporal · FICHAS-4 — Injetáveis · FICHAS-5 — Odonto · FICHAS-6 — Beleza · FICHAS-7 — Capilar · FICHAS-8 — Epilação</div><div class="items">
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-20…26</div><div class="item-body"><div class="item-title">Ficha Facial — SVG face, Baumann, Fitzpatrick, Glogau, acne, rosácea, discromia</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-30…38</div><div class="item-body"><div class="item-title">Ficha Corporal — SVG corpo, adipometria, IMC, perimetria, estrias, somatotipo, diástase</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-40…44</div><div class="item-body"><div class="item-title">Ficha Injetáveis — SVG 3 ângulos, pontos coloridos por produto, foto camada</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-50…53</div><div class="item-body"><div class="item-title">Odontograma — 32 dentes SVG, status por face, exclusivo dentistas</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span><span class="effort">fora do escopo estética por ora</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-60…62</div><div class="item-body"><div class="item-title">Ficha Beleza — formato rosto, sobrancelhas, formato de unhas</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-70…75</div><div class="item-body"><div class="item-title">Ficha Capilar — couro cabeludo SVG, Ludwig/Hamilton, diagnóstico, histórico químicas</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fichas" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">F-80…83</div><div class="item-body"><div class="item-title">Ficha Epilação — corpo SVG, Fitzpatrick × método, contraindicações</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+    </div></div>
+  </div>
+
+  <!-- FINANCEIRO DO APP -->
+  <div class="section" data-area="fin">
+    <div class="section-header"><span class="section-emoji">💰</span> Financeiro — App da Clínica</div>
+    <div class="sprint"><div class="sprint-title">Sprint FIN-1 — Entradas e Faturamento</div><div class="items">
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-01</div><div class="item-body"><div class="item-title">Lançamento manual de entrada — valor, descrição, forma de pagamento, data, paciente (opcional)</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-02</div><div class="item-body"><div class="item-title">Lançamento de saída/despesa — categoria, valor, data, recorrência (opcional)</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-03</div><div class="item-body"><div class="item-title">Cruzamento automático: cobranças pagas (agendamentos) → entradas no financeiro</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-04</div><div class="item-body"><div class="item-title">Visão geral: receita bruta, despesas, lucro líquido do período (dia / semana / mês)</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-05</div><div class="item-body"><div class="item-title">Extrato cronológico com filtro por tipo (entrada/saída), forma de pagamento, período</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span></div></div></div>
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-06</div><div class="item-body"><div class="item-title">Relatório de faturamento por serviço — quais serviços geram mais receita</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span></div></div></div>
+      <div class="item" data-area="fin" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">FIN-07</div><div class="item-body"><div class="item-title">Export CSV/PDF do extrato do período</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span></div></div></div>
+    </div></div>
+  </div>
+
+  <!-- SUPER ADMIN -->
+  <div class="section" data-area="sa">
+    <div class="section-header"><span class="section-emoji">⚙️</span> Super Admin <small style="font-weight:400;text-transform:none;letter-spacing:0;color:#aaa;margin-left:8px">— controla todos os Workspaces da Bellex</small></div>
+    <div class="sprint"><div class="sprint-title">Sprint SA-1 — Financeiro Bellex</div><div class="items">
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-30</div><div class="item-body"><div class="item-title">MRR total + por plano — tabela de tenants com plano, valor, status</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-31</div><div class="item-body"><div class="item-title">Custo real de infraestrutura — campos manuais Supabase, R2, Resend, Meta</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-32</div><div class="item-body"><div class="item-title">Margem bruta = MRR − custos infra − custo IA</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-33</div><div class="item-body"><div class="item-title">Churn — campos de data de cancelamento e motivo por tenant</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-34</div><div class="item-body"><div class="item-title">LTV estimado = ticket médio × tempo médio de permanência</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-35</div><div class="item-body"><div class="item-title">CAC — campo manual para gasto de aquisição → cálculo de CAC</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-36</div><div class="item-body"><div class="item-title">Uso de IA por tenant — conversas vs limite do plano, custo real</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-37</div><div class="item-body"><div class="item-title">Uso de storage por tenant — GB consumido vs limite</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-38</div><div class="item-body"><div class="item-title">Dashboard consolidado — MRR evolução, custo vs receita, lucro por mês</div></div></div>
+    </div></div>
+    <div class="sprint"><div class="sprint-title">Sprint SA-2 — Gestão de Storage R2 <span style="color:#f59e0b;font-weight:600">⏸ STANDBY — avaliando migração total para Supabase Storage</span></div><div class="items">
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-10</div><div class="item-body"><div class="item-title">Cadastrar Access Token R2 por tenant no Super Admin</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-11</div><div class="item-body"><div class="item-title">Visualizar uso de storage por tenant em tempo real via API R2</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-12</div><div class="item-body"><div class="item-title">Alertas 80% e 100% de uso de storage</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-13</div><div class="item-body"><div class="item-title">Ação manual: expandir limite de storage sem trocar plano</div></div></div>
+      <div class="item" data-area="sa" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">SA-14</div><div class="item-body"><div class="item-title">Investigar API Cloudflare R2 para leitura de uso por bucket</div></div></div>
+    </div></div>
+  </div>
+
+  <!-- ── AGENTES IA ── -->
+  <div class="section" data-area="agentes">
+    <div class="section-header"><span class="section-emoji">🤖</span> Agentes IA — WhatsApp + Funil <small style="font-weight:400;text-transform:none;letter-spacing:0;color:#aaa;margin-left:8px">— EvolutionAPI + n8n + Bellex</small></div>
+
+    <div class="sprint"><div class="sprint-title">Sprint AG-1 — System Prompt com Cache via DataTables (n8n)</div><div class="items">
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-01</div><div class="item-body"><div class="item-title">Tabela <code>agent_configs</code> — system_prompt, locked (bool), funil_id, numero_id, owner_id</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-02</div><div class="item-body"><div class="item-title">Edge Function ou n8n webhook: ao salvar system_prompt → sincroniza para DataTable n8n (evita consulta por mensagem recebida)</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-03</div><div class="item-body"><div class="item-title">n8n DataTable como cache: o fluxo lê o system_prompt do DataTable local em vez de consultar Supabase a cada mensagem</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-04</div><div class="item-body"><div class="item-title">UI: Editor de System Prompt na tela de configuração do agente — campo textarea + botão Salvar + indicador "sincronizado"</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-05</div><div class="item-body"><div class="item-title">Toggle "Travar System Prompt" — quando LOCKED, o campo fica somente leitura e o botão Salvar é desativado para o operador. Apenas admin/dono pode desbloquear</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span><span class="badge badge-blue">🔒 Segurança</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-06</div><div class="item-body"><div class="item-title">RLS: campo locked verificado no server side — mesmo com acesso direto à API, operador sem role admin não consegue gravar system_prompt travado</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span><span class="badge badge-blue">🔒 Segurança</span></div></div></div>
+    </div></div>
+
+    <div class="sprint"><div class="sprint-title">Sprint AG-2 — EvolutionAPI: Instância + Webhook + Relacionamento Número × Funil</div><div class="items">
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-10</div><div class="item-body"><div class="item-title">Tabela <code>whatsapp_instances</code> — numero, evolution_instance_id, status (conectado/desconectado), owner_id</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-11</div><div class="item-body"><div class="item-title">UI: criar nova instância EvolutionAPI — nomear, salvar API key, exibir QR Code para pareamento do WhatsApp</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-12</div><div class="item-body"><div class="item-title">Configuração do webhook da instância → aponta para Edge Function ou endpoint n8n do tenant</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-13</div><div class="item-body"><div class="item-title">Relacionamento Número × Funil: 1 número pode atender até 2 colunas do funil com agentes distintos — tabela <code>number_funnel_bindings</code> (numero_id, funil_coluna_id, agent_config_id)</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-14</div><div class="item-body"><div class="item-title">UI: tela de relacionamento — para cada número, selecionar coluna(s) do funil (max 2) e o agente que atende cada coluna</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-15</div><div class="item-body"><div class="item-title">Roteamento no webhook: ao receber mensagem, identifica o número de destino → busca binding → carrega system_prompt do DataTable → roteia para agente correto</div><div class="item-meta"><span class="badge badge-red">🔴 Alta</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-16</div><div class="item-body"><div class="item-title">Status visual da instância: chip "Conectado / Desconectado" com polling da EvolutionAPI — alerta se desconectar</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span></div></div></div>
+      <div class="item" data-area="agentes" onclick="toggle(this)"><div class="check"><svg class="check-svg" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-code">AG-17</div><div class="item-body"><div class="item-title">Log de mensagens recebidas por instância — número, data, coluna do funil atendida, agente usado</div><div class="item-meta"><span class="badge badge-yellow">🟡 Médio</span></div></div></div>
+    </div></div>
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'bellex-backlog-v1';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function toggle(el) {
+  const code = el.querySelector('.item-code')?.textContent?.trim();
+  if (!code) return;
+  el.classList.toggle('done');
+  const state = loadState();
+  state[code] = el.classList.contains('done');
+  saveState(state);
+  updateStats();
+}
+
+function restoreState() {
+  const state = loadState();
+  document.querySelectorAll('.item').forEach(el => {
+    const code = el.querySelector('.item-code')?.textContent?.trim();
+    if (code && state[code]) el.classList.add('done');
+  });
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.item');
+  const done = document.querySelectorAll('.item.done');
+  const total = all.length;
+  const doneCount = done.length;
+  const pct = total ? Math.round(doneCount / total * 100) : 0;
+  document.getElementById('stat-done').textContent = doneCount;
+  document.getElementById('stat-todo').textContent = total - doneCount;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('total-count').textContent = total + ' itens';
+}
+
+let currentFilter = 'all';
+function filter(type) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  document.querySelectorAll('.section').forEach(section => {
+    const area = section.dataset.area;
+    if (type === 'all') {
+      section.classList.remove('hidden');
+    } else if (type === 'todo') {
+      section.classList.remove('hidden');
+    } else if (type === 'done') {
+      section.classList.remove('hidden');
+    } else {
+      section.classList.toggle('hidden', area !== type);
+    }
+  });
+
+  document.querySelectorAll('.item').forEach(item => {
+    const area = item.dataset.area;
+    let show = true;
+    if (type === 'todo') show = !item.classList.contains('done');
+    else if (type === 'done') show = item.classList.contains('done');
+    else if (type !== 'all') show = area === type;
+    item.classList.toggle('hidden', !show);
+  });
+}
+
+restoreState();
+updateStats();
+</script>
+</body>
+</html>

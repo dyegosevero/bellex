@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,9 +57,9 @@ export function BookingEditSidebar({ open, onOpenChange, settings, onSaved }: Pr
     try {
       const ext = file.name.split(".").pop();
       const path = `booking-${type}-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+      const { error } = await storage.from("product-images").upload(path, file, { upsert: true });
       if (error) throw error;
-      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(path);
+      const { data: urlData } = storage.from("product-images").getPublicUrl(path);
       update(type === "logo" ? "logo_url" : "cover_url", urlData.publicUrl);
     } catch (err: any) {
       toast.error(err.message || "Erro ao fazer upload.");

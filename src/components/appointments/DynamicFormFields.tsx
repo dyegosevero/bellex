@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { ServiceFormField } from "@/hooks/useAppointmentData";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,7 +102,7 @@ export const DynamicFormFields = ({
                   {existingUrls[field.field_name].map((url, i) => (
                     <div key={i} className="w-20 h-20 rounded border border-border overflow-hidden bg-muted">
                       <img
-                        src={supabase.storage.from("appointment-photos").getPublicUrl(url).data.publicUrl}
+                        src={storage.from("appointment-photos").getPublicUrl(url).data.publicUrl}
                         alt=""
                         className="w-full h-full object-cover"
                       />

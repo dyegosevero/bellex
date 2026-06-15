@@ -179,6 +179,18 @@ export function LandingNav() {
           </div>
 
           <button
+            onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Como funciona
+          </button>
+          <button
+            onClick={() => document.getElementById('depoimentos')?.scrollIntoView({ behavior: 'smooth' })}
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Depoimentos
+          </button>
+          <button
             onClick={() => document.getElementById('precos')?.scrollIntoView({ behavior: 'smooth' })}
             className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
@@ -232,7 +244,23 @@ export function LandingNav() {
               <span className="text-sm font-medium text-foreground">{r.label}</span>
             </Link>
           ))}
-          <div className="border-t border-border pt-4 mt-4 flex flex-col gap-3">
+          <div className="border-t border-border pt-4 mt-4 space-y-1">
+            {[
+              { label: "Como funciona", id: "como-funciona" },
+              { label: "Depoimentos", id: "depoimentos" },
+              { label: "Preços", id: "precos" },
+              { label: "FAQ", id: "faq" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => { document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' }); setMobileOpen(false); }}
+                className="block w-full text-left py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div className="border-t border-border pt-4 mt-2 flex flex-col gap-3">
             <Link to="/login" className="text-sm text-muted-foreground">Entrar</Link>
             <button onClick={openDemo} className="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl text-center">
               Agendar Demo

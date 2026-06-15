@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { differenceInYears, parse } from "date-fns";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
@@ -39,7 +40,7 @@ import { pt } from "date-fns/locale";
 const SignedClientImage = ({ fileUrl, caption }: { fileUrl: string; caption?: string }) => {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    supabase.storage.from("client-images").createSignedUrl(fileUrl, 3600).then(({ data }) => {
+    storage.from("client-images").createSignedUrl(fileUrl, 3600).then(({ data }) => {
       if (data?.signedUrl) setUrl(data.signedUrl);
     });
   }, [fileUrl]);
@@ -219,7 +220,7 @@ const ClientDetail = () => {
   }
 
   const consentPdfPublicUrl = client.consent_pdf_url
-    ? supabase.storage.from("consent-pdfs").getPublicUrl(client.consent_pdf_url).data.publicUrl
+    ? storage.from("consent-pdfs").getPublicUrl(client.consent_pdf_url).data.publicUrl
     : null;
 
   const totalInvested = charges?.filter((c) => c.status === "pago").reduce((sum, c) => sum + Number(c.amount), 0) ?? 0;
@@ -672,13 +673,13 @@ const ClientDocumentsTab = ({ clientId, consentPdfUrl }: { clientId: string; con
   };
 
   const getPublicUrl = (path: string) =>
-    supabase.storage.from("client-documents").getPublicUrl(path).data.publicUrl;
+    storage.from("client-documents").getPublicUrl(path).data.publicUrl;
 
   const handleDelete = async () => {
     if (!deleteDoc) return;
     setDeleting(true);
     try {
-      await supabase.storage.from("client-documents").remove([deleteDoc.file_url]);
+      await storage.from("client-documents").remove([deleteDoc.file_url]);
       const { error } = await supabase.from("client_documents").delete().eq("id", deleteDoc.id);
       if (error) { toast.error("Erro ao apagar."); return; }
       toast.success("Documento apagado.");
@@ -713,7 +714,7 @@ const ClientDocumentsTab = ({ clientId, consentPdfUrl }: { clientId: string; con
     try {
       // Remove signature file if exists
       if (deleteConsent.signature_url) {
-        await supabase.storage.from("consent-signatures").remove([deleteConsent.signature_url]);
+        await storage.from("consent-signatures").remove([deleteConsent.signature_url]);
       }
       const { error } = await supabase.from("client_consents").delete().eq("id", deleteConsent.id);
       if (error) { toast.error("Erro ao excluir consentimento."); return; }

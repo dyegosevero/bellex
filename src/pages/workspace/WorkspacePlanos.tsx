@@ -7,28 +7,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
 
-const PLANOS = [
+const PLANOS_CONFIG = [
   {
-    id: 1, name: "Starter", price: 197, seats: 1, active: 8, color: "#60a5fa",
+    key: "starter" as const, name: "Starter", price: 197, seats: 1, color: "#60a5fa",
     features: ["1 clínica", "Até 3 especialistas", "Agenda online", "Cobranças básicas", "Suporte por e-mail"],
-    disabled: [],
   },
   {
-    id: 2, name: "Pro", price: 397, seats: 3, active: 22, color: "#e8957a",
+    key: "pro" as const, name: "Pro", price: 397, seats: 3, color: "#e8957a",
     features: ["Até 3 clínicas", "Especialistas ilimitados", "Agenda online", "Cobranças + Faturamento", "Pipeline de vendas", "Mensagens omnichannel", "Relatórios avançados", "Suporte prioritário"],
-    disabled: [],
     popular: true,
   },
   {
-    id: 3, name: "Enterprise", price: 897, seats: 10, active: 5, color: "#a78bfa",
+    key: "scale" as const, name: "Scale", price: 897, seats: 10, color: "#a78bfa",
     features: ["Clínicas ilimitadas", "Especialistas ilimitados", "Tudo do Pro", "Domínio personalizado", "Branding completo", "API de integração", "SLA garantido", "Gerente de conta dedicado"],
-    disabled: [],
   },
 ];
 
 export default function WorkspacePlanos() {
   const [open, setOpen] = useState(false);
+  const { licenses } = useWorkspaceLicenses();
+
+  const activeByPlan = (key: string) => licenses.filter(l => l.plan === key && l.status === "ativo").length;
+  const totalByPlan = (key: string) => licenses.filter(l => l.plan === key).length;
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -42,8 +44,8 @@ export default function WorkspacePlanos() {
 
       {/* Cards de planos */}
       <div className="grid md:grid-cols-3 gap-6">
-        {PLANOS.map(p => (
-          <div key={p.id} className="relative rounded-2xl border border-border/40 bg-card overflow-hidden">
+        {PLANOS_CONFIG.map(p => (
+          <div key={p.key} className="relative rounded-2xl border border-border/40 bg-card overflow-hidden">
             {p.popular && (
               <div className="absolute top-4 right-4">
                 <Badge className="bg-primary text-white text-[10px]">Mais popular</Badge>
@@ -57,7 +59,9 @@ export default function WorkspacePlanos() {
                   <span className="text-3xl font-bold">R$ {p.price}</span>
                   <span className="text-sm text-muted-foreground">/mês</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Até {p.seats} {p.seats === 1 ? "clínica" : "clínicas"} · {p.active} assinantes ativos</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Até {p.seats} {p.seats === 1 ? "clínica" : "clínicas"} · <strong>{activeByPlan(p.key)}</strong> ativos · {totalByPlan(p.key)} total
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -92,8 +96,8 @@ export default function WorkspacePlanos() {
             <thead>
               <tr className="border-b border-border/30">
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground">Feature</th>
-                {PLANOS.map(p => (
-                  <th key={p.id} className="p-4 text-xs font-medium" style={{ color: p.color }}>{p.name}</th>
+                {PLANOS_CONFIG.map(p => (
+                  <th key={p.key} className="p-4 text-xs font-medium" style={{ color: p.color }}>{p.name}</th>
                 ))}
               </tr>
             </thead>
@@ -114,7 +118,7 @@ export default function WorkspacePlanos() {
                   {row.vals.map((v, j) => (
                     <td key={j} className="p-4 text-center">
                       {v
-                        ? <Check className="w-4 h-4 mx-auto" style={{ color: PLANOS[j].color }} />
+                        ? <Check className="w-4 h-4 mx-auto" style={{ color: PLANOS_CONFIG[j].color }} />
                         : <span className="text-muted-foreground/30 text-lg">—</span>
                       }
                     </td>

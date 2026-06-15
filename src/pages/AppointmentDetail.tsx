@@ -21,6 +21,7 @@ class DetailErrorBoundary extends Component<{ children: ReactNode }, { error: Er
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAllServices as useServices, useServiceFormFields, useSpecialists } from "@/hooks/useAppointmentData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -140,7 +141,7 @@ const AppointmentDetail = () => {
       if (error) throw error;
       const withUrls = await Promise.all(
         (data ?? []).map(async (img) => {
-          const { data: signed } = await supabase.storage
+          const { data: signed } = await storage
             .from("client-images")
             .createSignedUrl(img.file_url, 3600);
           return { ...img, signedUrl: signed?.signedUrl ?? null };

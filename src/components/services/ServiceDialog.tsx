@@ -246,20 +246,17 @@ const ServiceDialog = ({
     }
   };
 
-  // Count active obligations for badge
+  // Count active obligations for badge (Obrigações tab only — Documentos and Fichas have their own badges)
   const obligationsCount = [
     reqPhotos,
     consentPolicy !== "none",
-    selectedDocIds.length > 0,
-    reqFichaRosto,
-    reqFichaCorpo,
     reqCompletionSig,
   ].filter(Boolean).length;
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
           {/* Fixed header */}
           <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogHeader>
@@ -295,6 +292,22 @@ const ServiceDialog = ({
                     {obligationsCount > 0 && (
                       <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground">
                         {obligationsCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="documentos" className="flex-1 gap-1.5">
+                    Documentos
+                    {selectedDocIds.length > 0 && (
+                      <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground">
+                        {selectedDocIds.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="fichas" className="flex-1 gap-1.5">
+                    Fichas
+                    {(reqFichaRosto || reqFichaCorpo) && (
+                      <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground">
+                        {[reqFichaRosto, reqFichaCorpo].filter(Boolean).length}
                       </span>
                     )}
                   </TabsTrigger>
@@ -442,7 +455,18 @@ const ServiceDialog = ({
 
                 <div className="border-t border-border" />
 
-                {/* Documentos */}
+                {/* Assinatura de realização */}
+                <div className="flex items-center justify-between py-1">
+                  <div className="flex items-center gap-2.5">
+                    <PenLine className="w-4 h-4 text-muted-foreground" />
+                    <Label className="text-sm">Assinatura de realização obrigatória</Label>
+                  </div>
+                  <Switch checked={reqCompletionSig} onCheckedChange={setReqCompletionSig} />
+                </div>
+              </TabsContent>
+
+              {/* ── Tab: Documentos ── */}
+              <TabsContent value="documentos" className="flex-1 overflow-y-auto px-6 py-4 space-y-4 mt-0">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -490,33 +514,36 @@ const ServiceDialog = ({
                     </div>
                   )}
                 </div>
+              </TabsContent>
 
-                <div className="border-t border-border" />
-
-                {/* Fichas + Assinatura */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between py-1">
+              {/* ── Tab: Fichas ── */}
+              <TabsContent value="fichas" className="flex-1 overflow-y-auto px-6 py-4 space-y-4 mt-0">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Fichas clínicas</p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between py-2 px-3 rounded-lg border border-border hover:bg-muted/20">
                     <div className="flex items-center gap-2.5">
                       <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                      <Label className="text-sm">Ficha de Rosto</Label>
+                      <div>
+                        <Label className="text-sm">Ficha de Rosto</Label>
+                        <p className="text-[11px] text-muted-foreground">Anamnese e avaliação facial</p>
+                      </div>
                     </div>
                     <Switch checked={reqFichaRosto} onCheckedChange={setReqFichaRosto} />
                   </div>
-                  <div className="flex items-center justify-between py-1">
+                  <div className="flex items-center justify-between py-2 px-3 rounded-lg border border-border hover:bg-muted/20">
                     <div className="flex items-center gap-2.5">
                       <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                      <Label className="text-sm">Ficha de Corpo</Label>
+                      <div>
+                        <Label className="text-sm">Ficha de Corpo</Label>
+                        <p className="text-[11px] text-muted-foreground">Anamnese e avaliação corporal</p>
+                      </div>
                     </div>
                     <Switch checked={reqFichaCorpo} onCheckedChange={setReqFichaCorpo} />
                   </div>
-                  <div className="flex items-center justify-between py-1">
-                    <div className="flex items-center gap-2.5">
-                      <PenLine className="w-4 h-4 text-muted-foreground" />
-                      <Label className="text-sm">Assinatura de realização obrigatória</Label>
-                    </div>
-                    <Switch checked={reqCompletionSig} onCheckedChange={setReqCompletionSig} />
-                  </div>
                 </div>
+                <p className="text-[11px] text-muted-foreground">
+                  As fichas selecionadas serão solicitadas ao iniciar uma sessão deste serviço.
+                </p>
               </TabsContent>
             </Tabs>
 

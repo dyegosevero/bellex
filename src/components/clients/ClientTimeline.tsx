@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -210,7 +211,7 @@ const ImageThumb = ({ fileUrl }: { fileUrl: string }) => {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.storage.from("client-images").createSignedUrl(fileUrl, 3600).then(({ data }) => {
+    storage.from("client-images").createSignedUrl(fileUrl, 3600).then(({ data }) => {
       if (data?.signedUrl) setUrl(data.signedUrl);
     });
   }, [fileUrl]);

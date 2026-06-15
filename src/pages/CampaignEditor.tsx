@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -459,11 +460,11 @@ export default function CampaignEditor() {
     try {
       const ext = file.name.split(".").pop();
       const path = `campaign-images/${Date.now()}.${ext}`;
-      const { error: upError } = await supabase.storage
+      const { error: upError } = await storage
         .from("campaign-images")
         .upload(path, file, { upsert: true });
       if (upError) throw upError;
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = storage
         .from("campaign-images")
         .getPublicUrl(path);
       update({ header_image_url: urlData.publicUrl });

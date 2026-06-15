@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useServices,
@@ -164,7 +165,7 @@ const AppointmentNew = () => {
             for (const file of fileValues[field.field_name]) {
               const ext = file.name.split(".").pop();
               const path = `${appointmentId}/${field.field_name}/${crypto.randomUUID()}.${ext}`;
-              const { error: upErr } = await supabase.storage.from("appointment-photos").upload(path, file);
+              const { error: upErr } = await storage.from("appointment-photos").upload(path, file);
               if (upErr) throw upErr;
               file_urls.push(path);
             }

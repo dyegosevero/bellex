@@ -5,6 +5,7 @@ import { Download, Clock, User, Sparkles, Calendar as CalendarIcon } from "lucid
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/lib/storage";
 
 interface DocumentRecord {
   id: string;
@@ -42,7 +43,7 @@ export default function CompletionViewDialog({ open, onOpenChange, document: doc
   useEffect(() => {
     const loadUrl = async () => {
       if (!doc.file_url) { setSignatureUrl(null); return; }
-      const { data } = await supabase.storage
+      const { data } = await storage
         .from("consent-signatures")
         .createSignedUrl(doc.file_url, 3600);
       setSignatureUrl(data?.signedUrl ?? null);
