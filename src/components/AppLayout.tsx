@@ -12,7 +12,7 @@ import {
   DollarSign, BarChart3, Settings, LogOut, Menu, X,
   Sparkles, ExternalLink, Share2, Link, Megaphone,
   ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen, UserCog,
-  LayoutDashboard, Kanban, MessageCircle,
+  LayoutDashboard, Kanban, MessageCircle, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "motion/react";
@@ -29,6 +29,7 @@ const navItems = [
   { to: "/clientes",    icon: Users,            label: "Clientes" },
   { to: "/cobrancas",   icon: CreditCard,       label: "Cobranças" },
   { to: "/faturamento", icon: DollarSign,       label: "Faturamento" },
+  { to: "/caixa",       icon: Wallet,           label: "Caixa",        adminOnly: true },
   { to: "/produtos",    icon: Package,          label: "Produtos" },
   { to: "/servicos",    icon: Sparkles,         label: "Serviços",     roles: ["admin", "atendimento"] },
   { to: "/equipe",      icon: UserCog,          label: "Equipe",       adminOnly: true },

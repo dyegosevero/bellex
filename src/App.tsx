@@ -29,6 +29,7 @@ const Products = lazy(() => import("@/pages/Products"));
 const ProductNew = lazy(() => import("@/pages/ProductNew"));
 const ProductEdit = lazy(() => import("@/pages/ProductEdit"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
+const CaixaFinanceiro = lazy(() => import("@/pages/CaixaFinanceiro"));
 const Charges = lazy(() => import("@/pages/Charges"));
 const Faturamento = lazy(() => import("@/pages/Faturamento"));
 const ChargeNew = lazy(() => import("@/pages/ChargeNew"));
@@ -183,6 +184,7 @@ function AnimatedRoutes() {
                   <Route path="/cobrancas/:id/editar" element={<ChargeEdit />} />
                   <Route path="/clientes-inativos" element={<InactiveClients />} />
                   <Route path="/faturamento" element={<Faturamento />} />
+                  <Route path="/caixa" element={<CaixaFinanceiro />} />
                   <Route path="/relatorios" element={<Reports />} />
                   <Route path="/servicos" element={<Services />} />
                   <Route path="/equipe" element={<Equipe />} />
