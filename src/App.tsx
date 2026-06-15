@@ -71,6 +71,14 @@ const RecursoRelatorios = lazy(() => import("@/pages/recursos/Relatorios"));
 const RecursoAgendamentoOnline = lazy(() => import("@/pages/recursos/AgendamentoOnline"));
 
 // Workspace (Tenant Admin)
+const SuperAdminLayout = lazy(() => import("@/components/SuperAdminLayout"));
+const SaDashboard = lazy(() => import("@/pages/superadmin/SaDashboard"));
+const SaClientes = lazy(() => import("@/pages/superadmin/SaClientes"));
+const SaIntegracoes = lazy(() => import("@/pages/superadmin/SaIntegracoes"));
+const SaFinanceiro = lazy(() => import("@/pages/superadmin/SaFinanceiro"));
+const SaStorage = lazy(() => import("@/pages/superadmin/SaStorage"));
+const SaIA = lazy(() => import("@/pages/superadmin/SaIA"));
+const SaConfiguracoes = lazy(() => import("@/pages/superadmin/SaConfiguracoes"));
 const WorkspaceLayout = lazy(() => import("@/components/WorkspaceLayout"));
 const WorkspaceDashboard = lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
 const WorkspaceClientes = lazy(() => import("@/pages/workspace/WorkspaceClientes"));
@@ -222,6 +230,16 @@ function AnimatedRoutes() {
                 <Route path="/recursos/agendamento-online" element={<RecursoAgendamentoOnline />} />
 
                 {/* Workspace — Tenant Admin */}
+                <Route path="/superadmin" element={<SuperAdminLayout />}>
+                  <Route index element={<SaDashboard />} />
+                  <Route path="clientes" element={<SaClientes />} />
+                  <Route path="integracoes" element={<SaIntegracoes />} />
+                  <Route path="financeiro" element={<SaFinanceiro />} />
+                  <Route path="storage" element={<SaStorage />} />
+                  <Route path="ia" element={<SaIA />} />
+                  <Route path="configuracoes" element={<SaConfiguracoes />} />
+                </Route>
+
                 <Route path="/workspace" element={<WorkspaceLayout />}>
                   <Route index element={<WorkspaceDashboard />} />
                   <Route path="clientes" element={<WorkspaceClientes />} />
