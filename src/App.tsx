@@ -9,6 +9,9 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import { LogoDraw } from "@/components/ui/logo-draw";
 
+// Build mode — "clinic" removes Workspace/SuperAdmin routes (used for whitelabel deploys)
+const IS_CLINIC_BUILD = import.meta.env.VITE_APP_MODE === "clinic";
+
 // Lazy-loaded pages — only fetched when the route is accessed
 const Login = lazy(() => import("@/pages/Login"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
@@ -70,29 +73,29 @@ const RecursoMarketing = lazy(() => import("@/pages/recursos/Marketing"));
 const RecursoRelatorios = lazy(() => import("@/pages/recursos/Relatorios"));
 const RecursoAgendamentoOnline = lazy(() => import("@/pages/recursos/AgendamentoOnline"));
 
-// Workspace (Tenant Admin)
-const SuperAdminLayout = lazy(() => import("@/components/SuperAdminLayout"));
-const SaDashboard = lazy(() => import("@/pages/superadmin/SaDashboard"));
-const SaClientes = lazy(() => import("@/pages/superadmin/SaClientes"));
-const SaIntegracoes = lazy(() => import("@/pages/superadmin/SaIntegracoes"));
-const SaFinanceiro = lazy(() => import("@/pages/superadmin/SaFinanceiro"));
-const SaStorage = lazy(() => import("@/pages/superadmin/SaStorage"));
-const SaIA = lazy(() => import("@/pages/superadmin/SaIA"));
-const SaConfiguracoes = lazy(() => import("@/pages/superadmin/SaConfiguracoes"));
-const WorkspaceLayout = lazy(() => import("@/components/WorkspaceLayout"));
-const WorkspaceDashboard = lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
-const WorkspaceClientes = lazy(() => import("@/pages/workspace/WorkspaceClientes"));
-const WorkspaceClinics = lazy(() => import("@/pages/workspace/WorkspaceClinics"));
-const WorkspaceClinicDetail = lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
-const WorkspacePlanos = lazy(() => import("@/pages/workspace/WorkspacePlanos"));
-const WorkspaceFinanceiro = lazy(() => import("@/pages/workspace/WorkspaceFinanceiro"));
-const WorkspaceLicencas = lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
-const WorkspaceUsuarios = lazy(() => import("@/pages/workspace/WorkspaceUsuarios"));
-const WorkspaceRelatorios = lazy(() => import("@/pages/workspace/WorkspaceRelatorios"));
-const WorkspaceNotificacoes = lazy(() => import("@/pages/workspace/WorkspaceNotificacoes"));
-const WorkspaceClinicNew = lazy(() => import("@/pages/workspace/WorkspaceClinicNew"));
-const WorkspaceConfiguracoes = lazy(() => import("@/pages/workspace/WorkspaceConfiguracoes"));
-const WorkspaceSuporte = lazy(() => import("@/pages/workspace/WorkspaceSuporte"));
+// Workspace (Tenant Admin) — excluded from clinic builds
+const SuperAdminLayout = IS_CLINIC_BUILD ? null : lazy(() => import("@/components/SuperAdminLayout"));
+const SaDashboard = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaDashboard"));
+const SaClientes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaClientes"));
+const SaIntegracoes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaIntegracoes"));
+const SaFinanceiro = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaFinanceiro"));
+const SaStorage = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaStorage"));
+const SaIA = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaIA"));
+const SaConfiguracoes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/superadmin/SaConfiguracoes"));
+const WorkspaceLayout = IS_CLINIC_BUILD ? null : lazy(() => import("@/components/WorkspaceLayout"));
+const WorkspaceDashboard = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
+const WorkspaceClientes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceClientes"));
+const WorkspaceClinics = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceClinics"));
+const WorkspaceClinicDetail = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
+const WorkspacePlanos = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspacePlanos"));
+const WorkspaceFinanceiro = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceFinanceiro"));
+const WorkspaceLicencas = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
+const WorkspaceUsuarios = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceUsuarios"));
+const WorkspaceRelatorios = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceRelatorios"));
+const WorkspaceNotificacoes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceNotificacoes"));
+const WorkspaceClinicNew = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceClinicNew"));
+const WorkspaceConfiguracoes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceConfiguracoes"));
+const WorkspaceSuporte = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceSuporte"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -229,32 +232,36 @@ function AnimatedRoutes() {
                 <Route path="/recursos/relatorios" element={<RecursoRelatorios />} />
                 <Route path="/recursos/agendamento-online" element={<RecursoAgendamentoOnline />} />
 
-                {/* Workspace — Tenant Admin */}
-                <Route path="/superadmin" element={<SuperAdminLayout />}>
-                  <Route index element={<SaDashboard />} />
-                  <Route path="clientes" element={<SaClientes />} />
-                  <Route path="integracoes" element={<SaIntegracoes />} />
-                  <Route path="financeiro" element={<SaFinanceiro />} />
-                  <Route path="storage" element={<SaStorage />} />
-                  <Route path="ia" element={<SaIA />} />
-                  <Route path="configuracoes" element={<SaConfiguracoes />} />
-                </Route>
+                {/* Workspace — Tenant Admin (excluded from clinic builds) */}
+                {!IS_CLINIC_BUILD && SuperAdminLayout && (
+                  <Route path="/superadmin" element={<SuperAdminLayout />}>
+                    <Route index element={SaDashboard ? <SaDashboard /> : null} />
+                    <Route path="clientes" element={SaClientes ? <SaClientes /> : null} />
+                    <Route path="integracoes" element={SaIntegracoes ? <SaIntegracoes /> : null} />
+                    <Route path="financeiro" element={SaFinanceiro ? <SaFinanceiro /> : null} />
+                    <Route path="storage" element={SaStorage ? <SaStorage /> : null} />
+                    <Route path="ia" element={SaIA ? <SaIA /> : null} />
+                    <Route path="configuracoes" element={SaConfiguracoes ? <SaConfiguracoes /> : null} />
+                  </Route>
+                )}
 
-                <Route path="/workspace" element={<WorkspaceLayout />}>
-                  <Route index element={<WorkspaceDashboard />} />
-                  <Route path="clientes" element={<WorkspaceClientes />} />
-                  <Route path="clinicas" element={<WorkspaceClinics />} />
-                  <Route path="clinicas/nova" element={<WorkspaceClinicNew />} />
-                  <Route path="clinicas/:id" element={<WorkspaceClinicDetail />} />
-                  <Route path="planos" element={<WorkspacePlanos />} />
-                  <Route path="financeiro" element={<WorkspaceFinanceiro />} />
-                  <Route path="licencas" element={<WorkspaceLicencas />} />
-                  <Route path="usuarios" element={<WorkspaceUsuarios />} />
-                  <Route path="relatorios" element={<WorkspaceRelatorios />} />
-                  <Route path="notificacoes" element={<WorkspaceNotificacoes />} />
-                  <Route path="configuracoes" element={<WorkspaceConfiguracoes />} />
-                  <Route path="suporte" element={<WorkspaceSuporte />} />
-                </Route>
+                {!IS_CLINIC_BUILD && WorkspaceLayout && (
+                  <Route path="/workspace" element={<WorkspaceLayout />}>
+                    <Route index element={WorkspaceDashboard ? <WorkspaceDashboard /> : null} />
+                    <Route path="clientes" element={WorkspaceClientes ? <WorkspaceClientes /> : null} />
+                    <Route path="clinicas" element={WorkspaceClinics ? <WorkspaceClinics /> : null} />
+                    <Route path="clinicas/nova" element={WorkspaceClinicNew ? <WorkspaceClinicNew /> : null} />
+                    <Route path="clinicas/:id" element={WorkspaceClinicDetail ? <WorkspaceClinicDetail /> : null} />
+                    <Route path="planos" element={WorkspacePlanos ? <WorkspacePlanos /> : null} />
+                    <Route path="financeiro" element={WorkspaceFinanceiro ? <WorkspaceFinanceiro /> : null} />
+                    <Route path="licencas" element={WorkspaceLicencas ? <WorkspaceLicencas /> : null} />
+                    <Route path="usuarios" element={WorkspaceUsuarios ? <WorkspaceUsuarios /> : null} />
+                    <Route path="relatorios" element={WorkspaceRelatorios ? <WorkspaceRelatorios /> : null} />
+                    <Route path="notificacoes" element={WorkspaceNotificacoes ? <WorkspaceNotificacoes /> : null} />
+                    <Route path="configuracoes" element={WorkspaceConfiguracoes ? <WorkspaceConfiguracoes /> : null} />
+                    <Route path="suporte" element={WorkspaceSuporte ? <WorkspaceSuporte /> : null} />
+                  </Route>
+                )}
 
                 <Route path="*" element={<NotFound />} />
               </>
