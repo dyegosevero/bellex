@@ -11,6 +11,65 @@ export function getTimezone() {
   return _tz;
 }
 
+/** Returns true when the clinic timezone is in Europe (Portugal) */
+export function isPortugal(): boolean {
+  return _tz.startsWith("Europe/");
+}
+
+/** "NIF" (PT) or "CPF" (BR) */
+export function getDocLabel(): string {
+  return isPortugal() ? "NIF" : "CPF";
+}
+
+/** Placeholder for the document field */
+export function getDocPlaceholder(): string {
+  return isPortugal() ? "000 000 000" : "000.000.000-00";
+}
+
+/** Currency code */
+export function getCurrencyCode(): string {
+  return isPortugal() ? "EUR" : "BRL";
+}
+
+/** Currency symbol */
+export function getCurrencySymbol(): string {
+  return isPortugal() ? "€" : "R$";
+}
+
+/** VAT rate — 23% in PT, 0 in BR (not shown) */
+export function getVATRate(): number {
+  return isPortugal() ? 0.23 : 0;
+}
+
+/** VAT label — "IVA" in PT, null in BR */
+export function getVATLabel(): string | null {
+  return isPortugal() ? "IVA" : null;
+}
+
+/** Payment methods list for the current locale */
+export function getPaymentMethods(): Array<{ value: string; label: string }> {
+  if (isPortugal()) {
+    return [
+      { value: "dinheiro", label: "Dinheiro" },
+      { value: "mbway", label: "MB Way" },
+      { value: "multibanco", label: "Multibanco" },
+      { value: "cartao_credito", label: "Cartão de Crédito" },
+      { value: "cartao_debito", label: "Cartão de Débito" },
+      { value: "transferencia", label: "Transferência" },
+    ];
+  }
+  return [
+    { value: "dinheiro", label: "Dinheiro" },
+    { value: "pix", label: "Pix" },
+    { value: "cartao_credito", label: "Cartão de Crédito" },
+    { value: "cartao_debito", label: "Cartão de Débito" },
+    { value: "transferencia", label: "Transferência" },
+  ];
+}
+
+export const fmtCurrency = (v: number) =>
+  v.toLocaleString(DATE_LOCALE, { style: "currency", currency: getCurrencyCode() });
+
 export const fmtDate = (date: string | Date) =>
   new Date(date).toLocaleDateString(DATE_LOCALE, { timeZone: _tz });
 
@@ -23,9 +82,6 @@ export const fmtDateTime = (date: string | Date) =>
     hour: "2-digit",
     minute: "2-digit",
   });
-
-export const fmtCurrency = (v: number) =>
-  v.toLocaleString(DATE_LOCALE, { style: "currency", currency: "BRL" });
 
 export const fmtDateShort = (date: string | Date) =>
   new Date(date).toLocaleDateString(DATE_LOCALE, {
@@ -156,7 +212,7 @@ export function getDayRangeInTimezone(date: Date, tz: string = _tz) {
  * datetimes so PostgreSQL converts them to UTC correctly.
  */
 export function getTimezoneOffset(dateStr: string, tz: string = _tz): string {
-  const date = new Date(dateStr + "Z"); // parse as UTC to get a stable reference
+  const date = new Date(dateStr + "Z");
   const utcStr = date.toLocaleString("en-US", { timeZone: "UTC" });
   const tzStr = date.toLocaleString("en-US", { timeZone: tz });
   const diffMs = new Date(tzStr).getTime() - new Date(utcStr).getTime();
@@ -169,11 +225,11 @@ export function getTimezoneOffset(dateStr: string, tz: string = _tz): string {
 
 /**
  * Append the clinic timezone offset to a naive datetime string.
- * e.g. "2026-03-31T15:00:00" → "2026-03-31T15:00:00+01:00"
+ * e.g. "2026-03-31T15:00:00" -> "2026-03-31T15:00:00+01:00"
  */
 export function withTimezoneOffset(naiveDatetime: string, tz: string = _tz): string {
   if (/[+-]\d{2}:\d{2}$/.test(naiveDatetime) || naiveDatetime.endsWith("Z")) {
-    return naiveDatetime; // already has offset
+    return naiveDatetime;
   }
   const offset = getTimezoneOffset(naiveDatetime, tz);
   return `${naiveDatetime}${offset}`;

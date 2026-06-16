@@ -25,7 +25,7 @@ export const storage = {
           Bucket: BUCKET,
           Key: objectKey,
           Body: file,
-          ContentType: file instanceof File ? file.type : "application/octet-stream",
+          ContentType: (file as Blob).type || "application/octet-stream",
         }));
         return { error: null };
       },

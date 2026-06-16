@@ -13,11 +13,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
-import { fmtDateLong, fmtTime, fmtCurrency } from "@/lib/date";
-import { ArrowLeft, Loader2, CalendarIcon } from "lucide-react";
-import { format, parse } from "date-fns";
+import {
+  fmtDateLong, fmtTime, fmtCurrency,
+  getDocLabel, getDocPlaceholder, getCurrencySymbol,
+  getVATRate, getVATLabel, getPaymentMethods, isPortugal,
+} from "@/lib/date";
+import { ArrowLeft, Loader2, CalendarIcon, Package, X, Plus } from "lucide-react";
+import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+
+type ProductLine = {
+  product_id: string;
+  name: string;
+  unit_price: number;
+  quantity: number;
+};
 
 const ChargeNew = () => {
   const navigate = useNavigate();
@@ -43,15 +54,28 @@ const ChargeNew = () => {
   const [status, setStatus] = useState("");
   const [discountType, setDiscountType] = useState<"fixed" | "percentage">("percentage");
   const [discountValue, setDiscountValue] = useState("");
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [productSearch, setProductSearch] = useState("");
   const debouncedSearch = useDebounce(clientSearch, 400);
+  const debouncedProductSearch = useDebounce(productSearch, 300);
+
+  const docLabel = getDocLabel();
+  const docPlaceholder = getDocPlaceholder();
+  const currencySymbol = getCurrencySymbol();
+  const vatRate = getVATRate();
+  const vatLabel = getVATLabel();
+  const paymentMethods = getPaymentMethods();
+  const ptLocale = isPortugal();
 
   // Discount calculations
   const rawAmount = parseFloat(amount) || 0;
+  const productsTotal = productLines.reduce((s, l) => s + l.unit_price * l.quantity, 0);
+  const baseAmount = rawAmount + productsTotal;
   const discountVal = parseFloat(discountValue) || 0;
   const discountAmount = discountType === "percentage"
-    ? Math.min(Math.round((rawAmount * discountVal) / 100 * 100) / 100, rawAmount)
-    : Math.min(discountVal, rawAmount);
-  const finalAmount = Math.max(rawAmount - discountAmount, 0);
+    ? Math.min(Math.round((baseAmount * discountVal) / 100 * 100) / 100, baseAmount)
+    : Math.min(discountVal, baseAmount);
+  const finalAmount = Math.max(baseAmount - discountAmount, 0);
 
   const isPreFilled = !!preClientId;
 
@@ -67,7 +91,6 @@ const ChargeNew = () => {
     }
   }, [preClientId, preClientName]);
 
-  // Fetch products for this appointment (if pre-filled)
   const { data: appointmentProducts } = useQuery({
     queryKey: ["charge-appointment-products", preAppointmentId],
     queryFn: async () => {
@@ -81,7 +104,6 @@ const ChargeNew = () => {
     enabled: !!preAppointmentId,
   });
 
-  // Fetch service info for breakdown
   const { data: appointmentService } = useQuery({
     queryKey: ["charge-appointment-service", preAppointmentId],
     queryFn: async () => {
@@ -111,12 +133,45 @@ const ChargeNew = () => {
     enabled: debouncedSearch.length >= 2 && !isPreFilled,
   });
 
+  // Products catalog (for manual product addition)
+  const { data: allProducts } = useQuery({
+    queryKey: ["products-active"],
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("id, name, price").eq("active", true).order("name");
+      return data ?? [];
+    },
+    enabled: !preAppointmentId,
+  });
+
+  const filteredProducts = allProducts?.filter(p =>
+    p.name.toLowerCase().includes(debouncedProductSearch.toLowerCase())
+  ) ?? [];
+
+  function addProduct(p: { id: string; name: string; price: number }) {
+    setProductLines(prev => {
+      const existing = prev.find(l => l.product_id === p.id);
+      if (existing) {
+        return prev.map(l => l.product_id === p.id ? { ...l, quantity: l.quantity + 1 } : l);
+      }
+      return [...prev, { product_id: p.id, name: p.name, unit_price: p.price, quantity: 1 }];
+    });
+    setProductSearch("");
+  }
+
+  function removeProduct(product_id: string) {
+    setProductLines(prev => prev.filter(l => l.product_id !== product_id));
+  }
+
+  function updateQty(product_id: string, qty: number) {
+    if (qty < 1) return removeProduct(product_id);
+    setProductLines(prev => prev.map(l => l.product_id === product_id ? { ...l, quantity: qty } : l));
+  }
+
   const mutation = useMutation({
     mutationFn: async () => {
       if (!clientId) throw new Error("Selecione um cliente");
-      if (!amount || parseFloat(amount) <= 0) throw new Error("Informe um valor válido");
+      if (finalAmount <= 0) throw new Error("Informe um valor válido");
 
-      // Update client NIF if provided and client doesn't have one
       if (clientNif && !clientHasNif) {
         await supabase.from("clients").update({ cpf: clientNif }).eq("id", clientId);
       }
@@ -139,61 +194,39 @@ const ChargeNew = () => {
         appointment_id: preAppointmentId || null,
       };
 
-      if (status === "pago") {
-        chargeData.paid_at = now;
-      }
+      if (status === "pago") chargeData.paid_at = now;
 
       const { data, error } = await supabase.from("charges").insert(chargeData).select("id").single();
       if (error) throw error;
 
-      // Insert charge line items
       const items: Array<{ charge_id: string; item_type: string; description: string; product_id?: string; quantity: number; unit_price: number }> = [];
 
-      // Service line item — only add if service portion > 0
       if (appointmentService) {
-        const productsTotal = appointmentProducts?.reduce((sum: number, p: any) => sum + p.unit_price * p.quantity, 0) ?? 0;
-        const serviceUnitPrice = parseFloat(amount) - productsTotal;
-        if (serviceUnitPrice > 0) {
-          items.push({
-            charge_id: data.id,
-            item_type: "service",
-            description: appointmentService.name ?? "Serviço",
-            quantity: 1,
-            unit_price: serviceUnitPrice,
-          });
+        const apProdTotal = appointmentProducts?.reduce((sum: number, p: any) => sum + p.unit_price * p.quantity, 0) ?? 0;
+        const servicePrice = parseFloat(amount) - apProdTotal;
+        if (servicePrice > 0) {
+          items.push({ charge_id: data.id, item_type: "service", description: appointmentService.name ?? "Serviço", quantity: 1, unit_price: servicePrice });
         }
-      } else if (!appointmentProducts || appointmentProducts.length === 0) {
-        // No appointment and no products — single generic item
-        items.push({
-          charge_id: data.id,
-          item_type: "service",
-          description: "Serviço",
-          quantity: 1,
-          unit_price: parseFloat(amount),
-        });
+      } else if (!appointmentProducts?.length && productLines.length === 0) {
+        items.push({ charge_id: data.id, item_type: "service", description: "Serviço", quantity: 1, unit_price: parseFloat(amount) });
+      } else if (rawAmount > 0) {
+        items.push({ charge_id: data.id, item_type: "service", description: "Serviço", quantity: 1, unit_price: rawAmount });
       }
 
-      // Product line items
-      if (appointmentProducts && appointmentProducts.length > 0) {
+      if (appointmentProducts?.length) {
         for (const ap of appointmentProducts) {
-          items.push({
-            charge_id: data.id,
-            item_type: "product",
-            description: (ap as any).products?.name ?? "Produto",
-            product_id: ap.product_id,
-            quantity: ap.quantity,
-            unit_price: ap.unit_price,
-          });
+          items.push({ charge_id: data.id, item_type: "product", description: (ap as any).products?.name ?? "Produto", product_id: ap.product_id, quantity: ap.quantity, unit_price: ap.unit_price });
         }
+      }
+
+      for (const l of productLines) {
+        items.push({ charge_id: data.id, item_type: "product", description: l.name, product_id: l.product_id, quantity: l.quantity, unit_price: l.unit_price });
       }
 
       if (items.length > 0) {
         const { error: itemsErr } = await supabase.from("charge_items").insert(items);
         if (itemsErr) console.error("Error inserting charge items:", itemsErr);
       }
-
-      // Stock already deducted when products were added during session
-      // No need to deduct again here
 
       return data;
     },
@@ -220,6 +253,7 @@ const ChargeNew = () => {
 
       <BlurFade delay={0.15}>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }} className="space-y-5">
+
           {/* Cliente */}
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-wider text-muted-foreground">Cliente *</Label>
@@ -247,29 +281,30 @@ const ChargeNew = () => {
             )}
           </div>
 
-          {/* CPF do Cliente */}
+          {/* CPF / NIF do Cliente — opcional */}
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">CPF do Cliente</Label>
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+              {docLabel} do Cliente <span className="normal-case font-normal text-muted-foreground/60">(opcional)</span>
+            </Label>
             <Input
               value={clientNif}
               onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 9);
+                const v = e.target.value.replace(/\D/g, "").slice(0, ptLocale ? 9 : 11);
                 setClientNif(v);
               }}
-              placeholder="000 000 000"
-              maxLength={9}
+              placeholder={docPlaceholder}
               inputMode="numeric"
               disabled={clientHasNif}
             />
             {clientHasNif && (
-              <p className="text-xs text-muted-foreground">CPF já cadastrado no cadastro do cliente.</p>
+              <p className="text-xs text-muted-foreground">{docLabel} já cadastrado no cadastro do cliente.</p>
             )}
             {!clientHasNif && clientNif && clientId && (
-              <p className="text-xs text-muted-foreground">O CPF será salvo no cadastro do cliente ao criar a cobrança.</p>
+              <p className="text-xs text-muted-foreground">O {docLabel} será salvo no cadastro do cliente ao criar a cobrança.</p>
             )}
           </div>
 
-          {/* Atendimento reference (if pre-filled) */}
+          {/* Atendimento reference */}
           {preAppointmentId && preAppointmentDate && (
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Atendimento</Label>
@@ -279,7 +314,7 @@ const ChargeNew = () => {
             </div>
           )}
 
-          {/* Breakdown: service + products */}
+          {/* Breakdown: service + appointment products */}
           {preAppointmentId && (appointmentService || (appointmentProducts && appointmentProducts.length > 0)) && (
             <div className="bg-muted/50 rounded-lg px-4 py-3 space-y-1 text-sm">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Composição do valor</p>
@@ -298,10 +333,12 @@ const ChargeNew = () => {
             </div>
           )}
 
-          {/* Valor + Vencimento */}
+          {/* Valor do Serviço */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (€) *</Label>
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Valor do Serviço ({currencySymbol}) {!preAppointmentId && productLines.length === 0 ? "*" : ""}
+              </Label>
               <Input
                 type="number"
                 step="0.01"
@@ -326,17 +363,61 @@ const ChargeNew = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dueDate}
-                    onSelect={setDueDate}
-                    locale={pt}
-                    initialFocus
-                  />
+                  <Calendar mode="single" selected={dueDate} onSelect={setDueDate} locale={pt} initialFocus />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
+
+          {/* Produtos adicionais (quando não é pré-preenchido de atendimento) */}
+          {!preAppointmentId && (
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5" /> Produtos
+              </Label>
+
+              {productLines.length > 0 && (
+                <div className="rounded-lg border border-border/50 divide-y divide-border/40">
+                  {productLines.map((l) => (
+                    <div key={l.product_id} className="flex items-center gap-3 px-3 py-2">
+                      <span className="flex-1 text-sm truncate">{l.name}</span>
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => updateQty(l.product_id, l.quantity - 1)} className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors text-xs">−</button>
+                        <span className="w-6 text-center text-sm">{l.quantity}</span>
+                        <button type="button" onClick={() => updateQty(l.product_id, l.quantity + 1)} className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors text-xs">+</button>
+                      </div>
+                      <span className="text-sm text-muted-foreground w-20 text-right">{fmtCurrency(l.unit_price * l.quantity)}</span>
+                      <button type="button" onClick={() => removeProduct(l.product_id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="relative">
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Buscar produto..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                {productSearch && filteredProducts.length > 0 && (
+                  <div className="absolute z-10 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-md max-h-48 overflow-y-auto">
+                    {filteredProducts.map((p) => (
+                      <button key={p.id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors flex items-center justify-between gap-2"
+                        onClick={() => addProduct(p)}>
+                        <span className="flex items-center gap-2"><Plus className="w-3 h-3 text-muted-foreground" />{p.name}</span>
+                        <span className="text-muted-foreground text-xs">{fmtCurrency(p.price)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Desconto */}
           <div className="space-y-2">
@@ -348,7 +429,7 @@ const ChargeNew = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percentage">%</SelectItem>
-                  <SelectItem value="fixed">R$</SelectItem>
+                  <SelectItem value="fixed">{currencySymbol}</SelectItem>
                 </SelectContent>
               </Select>
               <Input
@@ -363,23 +444,31 @@ const ChargeNew = () => {
                 className="flex-1"
               />
               {discountType === "percentage" && discountVal > 0 && (
-                <Input
-                  readOnly
-                  value={fmtCurrency(discountAmount)}
-                  className="w-[120px] bg-muted text-muted-foreground"
-                />
+                <Input readOnly value={fmtCurrency(discountAmount)} className="w-[120px] bg-muted text-muted-foreground" />
               )}
             </div>
           </div>
 
-          {/* IVA breakdown preview */}
-          {rawAmount > 0 && (
+          {/* Resumo / IVA */}
+          {(baseAmount > 0 || productLines.length > 0) && (
             <div className="bg-muted/50 rounded-lg px-4 py-3 space-y-1 text-sm">
+              {productLines.length > 0 && rawAmount > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Serviço</span>
+                  <span>{fmtCurrency(rawAmount)}</span>
+                </div>
+              )}
+              {productLines.length > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Produtos</span>
+                  <span>{fmtCurrency(productsTotal)}</span>
+                </div>
+              )}
               {discountAmount > 0 && (
                 <>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Valor bruto</span>
-                    <span>{fmtCurrency(rawAmount)}</span>
+                    <span>Subtotal</span>
+                    <span>{fmtCurrency(baseAmount)}</span>
                   </div>
                   <div className="flex justify-between text-destructive">
                     <span>Desconto {discountType === "percentage" ? `(${discountVal}%)` : ""}</span>
@@ -387,14 +476,18 @@ const ChargeNew = () => {
                   </div>
                 </>
               )}
-              <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal (s/ IVA)</span>
-                <span>{fmtCurrency(finalAmount / 1.23)}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>IVA (23%)</span>
-                <span>{fmtCurrency(finalAmount - finalAmount / 1.23)}</span>
-              </div>
+              {vatRate > 0 && vatLabel && (
+                <>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Subtotal (s/ {vatLabel})</span>
+                    <span>{fmtCurrency(finalAmount / (1 + vatRate))}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>{vatLabel} ({Math.round(vatRate * 100)}%)</span>
+                    <span>{fmtCurrency(finalAmount - finalAmount / (1 + vatRate))}</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between font-semibold pt-1 border-t border-border">
                 <span>Total</span>
                 <span>{fmtCurrency(finalAmount)}</span>
@@ -411,11 +504,9 @@ const ChargeNew = () => {
                   <SelectValue placeholder="Selecione..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                  <SelectItem value="mbway">Pix</SelectItem>
-                  <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
-                  <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
-                  <SelectItem value="transferencia">Transferência</SelectItem>
+                  {paymentMethods.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -440,7 +531,6 @@ const ChargeNew = () => {
             <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={mutation.isPending} className="flex-1">
               {mutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

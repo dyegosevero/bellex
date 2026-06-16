@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pencil, AlertTriangle } from "lucide-react";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
   includeNoOptin: boolean;
   onChangeFilter: (f: string) => void;
   onChangeOptin: (v: boolean) => void;
+  serviceFilter?: string;
+  onChangeServiceFilter?: (serviceId: string) => void;
 }
 
 const channelContactField: Record<string, string> = {
@@ -37,9 +40,19 @@ export default function CampaignAudienceTab({
   includeNoOptin,
   onChangeFilter,
   onChangeOptin,
+  serviceFilter = "",
+  onChangeServiceFilter,
 }: Props) {
   const contactField = channelContactField[channel] || "email";
   const isEmailChannel = contactField === "email";
+
+  const { data: services } = useQuery({
+    queryKey: ["services-list"],
+    queryFn: async () => {
+      const { data } = await supabase.from("services").select("id, name").eq("active", true).order("name");
+      return data ?? [];
+    },
+  });
 
   const { data: counts } = useQuery({
     queryKey: ["campaign-audience-detail", channel, includeNoOptin],
@@ -147,6 +160,11 @@ export default function CampaignAudienceTab({
       label: `Clientes inativos (${counts?.inactive ?? "..."})`,
       desc: "Clientes sem marcações nos últimos 30 dias",
     },
+    {
+      value: "by_service",
+      label: "Por serviço",
+      desc: "Clientes que já realizaram um serviço específico",
+    },
   ];
 
   return (
@@ -172,19 +190,35 @@ export default function CampaignAudienceTab({
         {segments.map((seg) => (
           <label
             key={seg.value}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
+            className={`flex flex-col gap-2 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
               audienceFilter === seg.value
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/30"
             }`}
           >
-            <RadioGroupItem value={seg.value} />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">{seg.label}</p>
-              <p className="text-xs text-muted-foreground">{seg.desc}</p>
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value={seg.value} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{seg.label}</p>
+                <p className="text-xs text-muted-foreground">{seg.desc}</p>
+              </div>
+              {audienceFilter === seg.value && seg.value !== "by_service" && (
+                <Pencil className="w-4 h-4 text-muted-foreground" />
+              )}
             </div>
-            {audienceFilter === seg.value && (
-              <Pencil className="w-4 h-4 text-muted-foreground" />
+            {seg.value === "by_service" && audienceFilter === "by_service" && onChangeServiceFilter && (
+              <div className="pl-7" onClick={(e) => e.stopPropagation()}>
+                <Select value={serviceFilter} onValueChange={onChangeServiceFilter}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Selecionar serviço..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {services?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
           </label>
         ))}

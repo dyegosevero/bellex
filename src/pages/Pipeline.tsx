@@ -6,6 +6,7 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  useDroppable,
   type DragStartEvent,
   type DragEndEvent,
   type DragOverEvent,
@@ -17,7 +18,8 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList, Loader2, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import {
   fetchStages, upsertStage, fetchLeads, createLead, moveLead,
@@ -209,16 +211,18 @@ function StageColumn({
   onOpenCard: (card: CardData) => void;
 }) {
   const cardIds = stage.cards.map(c => c.id);
+  const { setNodeRef: setDropRef, isOver: isDropOver } = useDroppable({ id: stage.id });
 
-  // Soft bg from hex color
   const softBg = `${stage.color}18`;
   const borderColor = `${stage.color}40`;
+  const highlighting = isOver || isDropOver;
 
   return (
     <div
+      ref={setDropRef}
       className={cn(
         "flex flex-col rounded-2xl min-w-[272px] max-w-[272px] transition-all duration-200",
-        isOver && "scale-[1.01]"
+        highlighting && "scale-[1.01]"
       )}
       style={{ background: softBg, border: `1.5px solid ${borderColor}` }}
     >
@@ -245,7 +249,7 @@ function StageColumn({
       {/* Cards */}
       <div className={cn(
         "flex-1 px-3 pb-3 flex flex-col gap-2 min-h-[120px] transition-colors duration-150 rounded-b-2xl",
-        isOver && "bg-background/30"
+        highlighting && "bg-background/30"
       )}>
         <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
           {stage.cards.map(card => (
@@ -427,6 +431,7 @@ function StageConfigDialog({
 type CustomField = { id: string; label: string; value: string };
 
 function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
+  const navigate = useNavigate();
   const [input, setInput] = useState("");
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
@@ -497,6 +502,9 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
       <div className="h-14 border-b flex items-center px-4 gap-3 shrink-0 bg-background">
         <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={16} /> Voltar ao Pipeline
+        </button>
+        <button onClick={onBack} className="ml-auto w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground" title="Fechar">
+          <X size={16} />
         </button>
       </div>
 
@@ -586,14 +594,23 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
           {/* Actions */}
           <div className="p-5 border-t mt-auto space-y-2">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-3">Ações</p>
-            <button className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors">
+            <button
+              onClick={() => navigate(`/clientes/novo?name=${encodeURIComponent(card.name)}&phone=${encodeURIComponent(card.phone)}`)}
+              className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors"
+            >
               <UserPlus size={14} /> Criar cliente
             </button>
-            <button className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors">
+            <button
+              onClick={() => navigate("/atendimentos/novo")}
+              className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors"
+            >
               <Calendar size={14} /> Agendar sessão
             </button>
-            <button className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors">
-              <Tag size={14} /> Adicionar tag
+            <button
+              onClick={() => navigate(`/cobrancas/nova?client_name=${encodeURIComponent(card.name)}`)}
+              className="w-full flex items-center gap-2 text-sm text-foreground border border-border rounded-xl px-3 py-2 hover:bg-muted transition-colors"
+            >
+              <ExternalLink size={14} /> Nova cobrança
             </button>
           </div>
         </aside>
@@ -754,7 +771,7 @@ export default function Pipeline() {
   }, []);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(PointerSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   );
 
   // Find which stage a card belongs to

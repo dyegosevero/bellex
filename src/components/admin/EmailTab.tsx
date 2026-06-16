@@ -38,19 +38,37 @@ const SYSTEM_TEMPLATES = [
     variables: ["{nome}", "{email}", "{senha}"],
     defaultSubject: "Bem-vindo(a), {nome}!",
     defaultContent: `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Bem-vindo(a), {nome}!</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6; margin: 0 0 16px;">Sua conta foi criada com sucesso.</p>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6; margin: 0 0 8px;"><strong>Dados de acesso:</strong></p>
-    <p style="font-size: 14px; color: #2D2520; line-height: 1.6; margin: 0 0 4px;">E-mail: <strong>{email}</strong></p>
-    <p style="font-size: 14px; color: #2D2520; line-height: 1.6; margin: 0 0 24px;">Senha temporária: <strong>{senha}</strong></p>
-    <p style="font-size: 12px; color: #B0A496; margin: 0;">Recomendamos que altere sua senha no primeiro acesso.</p>
-  </div>
-</body>
-</html>`,
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <!-- Header -->
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+      </td></tr>
+      <!-- Body -->
+      <tr><td style="background:#fff;padding:40px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:300;color:#2D2520;letter-spacing:1px;">Bem-vindo(a), {nome}!</h1>
+        <p style="margin:0 0 28px;font-size:14px;color:#7C6E62;line-height:1.7;">A sua conta em {negocio} foi criada com sucesso. Abaixo estão os seus dados de acesso.</p>
+        <!-- Access box -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F5;border-radius:8px;border:1px solid #E8E2DA;margin-bottom:28px;">
+          <tr><td style="padding:20px 24px;">
+            <p style="margin:0 0 4px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Dados de Acesso</p>
+            <p style="margin:12px 0 4px;font-size:13px;color:#7C6E62;">E-mail: <strong style="color:#2D2520;">{email}</strong></p>
+            <p style="margin:0;font-size:13px;color:#7C6E62;">Senha temporária: <strong style="color:#2D2520;font-size:15px;letter-spacing:1px;">{senha}</strong></p>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:13px;color:#B0A496;">Recomendamos que altere a sua senha no primeiro acesso para maior segurança.</p>
+      </td></tr>
+      <!-- Footer -->
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:20px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">Este e-mail foi enviado automaticamente por {negocio}. Não responda.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`,
   },
   {
     slug: "recovery",
@@ -58,18 +76,31 @@ const SYSTEM_TEMPLATES = [
     variables: ["{nome}", "{link}"],
     defaultSubject: "Recuperação de Senha",
     defaultContent: `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Recuperação de Senha</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6; margin: 0 0 16px;">Olá, {nome}. Recebemos uma solicitação para redefinir sua senha.</p>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6; margin: 0 0 24px;">Clique no link abaixo para criar uma nova senha:</p>
-    <a href="{link}" style="display: inline-block; background: #B0A496; color: #fff; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">Redefinir Senha</a>
-    <p style="font-size: 12px; color: #B0A496; margin: 24px 0 0;">Se não solicitou esta alteração, ignore este e-mail.</p>
-  </div>
-</body>
-</html>`,
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:300;color:#2D2520;">Recuperação de Senha</h1>
+        <p style="margin:0 0 28px;font-size:14px;color:#7C6E62;line-height:1.7;">Olá, {nome}. Recebemos um pedido para redefinir a senha da sua conta em {negocio}. Clique no botão abaixo para criar uma nova senha.</p>
+        <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+          <tr><td style="background:#2D2520;border-radius:6px;">
+            <a href="{link}" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;letter-spacing:0.5px;">Redefinir Senha</a>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:13px;color:#B0A496;line-height:1.6;">Se não solicitou esta alteração, ignore este e-mail — a sua senha permanece a mesma.</p>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:20px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">Este e-mail foi enviado automaticamente por {negocio}. Não responda.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`,
   },
 ];
 
@@ -80,12 +111,45 @@ const NOTIFICATION_TEMPLATES = [
     variables: ["{nome}", "{negocio}", "{data}", "{horario}", "{servico}", "{especialista}", "{telefone}", "{link_cancelar}", "{link_site}", "{link_instagram}", "{link_facebook}"],
     defaultSubject: "Marcação Confirmada — {data}",
     defaultContent: `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Marcação Confirmada</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Olá, {nome}! A sua marcação em {negocio} está confirmada para <strong>{data}</strong>.</p>
-  </div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;">
+        <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+        <p style="margin:0;font-size:20px;font-weight:300;color:#FAF8F5;letter-spacing:0.5px;">Marcação Confirmada ✓</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;">
+        <p style="margin:0 0 24px;font-size:14px;color:#7C6E62;line-height:1.7;">Olá, <strong style="color:#2D2520;">{nome}</strong>! A sua marcação está confirmada. Vemo-nos em breve!</p>
+        <!-- Detail cards -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F5;border:1px solid #E8E2DA;border-radius:8px;margin-bottom:28px;">
+          <tr><td style="padding:20px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Data &amp; Horário</p>
+            <p style="margin:0;font-size:16px;font-weight:600;color:#2D2520;">{data} às {horario}</p>
+          </td></tr>
+          <tr><td style="padding:16px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Serviço</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{servico}</p>
+          </td></tr>
+          <tr><td style="padding:16px 24px;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Profissional</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{especialista}</p>
+          </td></tr>
+        </table>
+        <table cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+          <tr><td style="background:#FAF8F5;border:1px solid #E8E2DA;border-radius:6px;">
+            <a href="{link_cancelar}" style="display:inline-block;padding:10px 24px;font-size:13px;color:#7C6E62;text-decoration:none;">Cancelar marcação</a>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:13px;color:#B0A496;line-height:1.6;">Caso necessite remarcar, entre em contacto connosco com antecedência. Telefone: {telefone}</p>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:16px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">{negocio} · <a href="{link_site}" style="color:#B0A496;">{link_site}</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 </body></html>`,
   },
   {
@@ -94,12 +158,43 @@ const NOTIFICATION_TEMPLATES = [
     variables: ["{nome}", "{negocio}", "{data}", "{horario}", "{servico}", "{especialista}", "{link_cancelar}"],
     defaultSubject: "Marcação Alterada — {data}",
     defaultContent: `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Marcação Alterada</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Olá, {nome}! A sua marcação em {negocio} foi alterada para <strong>{data}</strong>.</p>
-  </div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;">
+        <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+        <p style="margin:0;font-size:20px;font-weight:300;color:#FAF8F5;letter-spacing:0.5px;">Marcação Alterada</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;">
+        <p style="margin:0 0 24px;font-size:14px;color:#7C6E62;line-height:1.7;">Olá, <strong style="color:#2D2520;">{nome}</strong>! A sua marcação em {negocio} foi atualizada. Consulte os novos detalhes abaixo.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F5;border:1px solid #E8E2DA;border-radius:8px;margin-bottom:28px;">
+          <tr><td style="padding:20px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Nova Data &amp; Horário</p>
+            <p style="margin:0;font-size:16px;font-weight:600;color:#2D2520;">{data} às {horario}</p>
+          </td></tr>
+          <tr><td style="padding:16px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Serviço</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{servico}</p>
+          </td></tr>
+          <tr><td style="padding:16px 24px;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Profissional</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{especialista}</p>
+          </td></tr>
+        </table>
+        <table cellpadding="0" cellspacing="0">
+          <tr><td style="background:#FAF8F5;border:1px solid #E8E2DA;border-radius:6px;">
+            <a href="{link_cancelar}" style="display:inline-block;padding:10px 24px;font-size:13px;color:#7C6E62;text-decoration:none;">Cancelar marcação</a>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:16px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">{negocio} · Este e-mail foi enviado automaticamente.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 </body></html>`,
   },
   {
@@ -108,12 +203,36 @@ const NOTIFICATION_TEMPLATES = [
     variables: ["{nome}", "{negocio}", "{data}", "{horario}", "{servico}", "{especialista}", "{link_agendamento}"],
     defaultSubject: "Marcação Cancelada — {data}",
     defaultContent: `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Marcação Cancelada</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Olá, {nome}. A sua marcação em {negocio} para {data} foi cancelada.</p>
-  </div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;">
+        <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+        <p style="margin:0;font-size:20px;font-weight:300;color:#FAF8F5;letter-spacing:0.5px;">Marcação Cancelada</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;">
+        <p style="margin:0 0 20px;font-size:14px;color:#7C6E62;line-height:1.7;">Olá, <strong style="color:#2D2520;">{nome}</strong>. A sua marcação agendada para <strong style="color:#2D2520;">{data}</strong> em {negocio} foi cancelada.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F5;border:1px solid #E8E2DA;border-radius:8px;margin-bottom:28px;">
+          <tr><td style="padding:16px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Serviço Cancelado</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{servico} — {data} às {horario}</p>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 20px;font-size:14px;color:#7C6E62;line-height:1.7;">Se quiser reagendar, utilize o link abaixo ou entre em contacto connosco.</p>
+        <table cellpadding="0" cellspacing="0">
+          <tr><td style="background:#2D2520;border-radius:6px;">
+            <a href="{link_agendamento}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;">Agendar novamente</a>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:16px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">{negocio} · Este e-mail foi enviado automaticamente.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 </body></html>`,
   },
   {
@@ -122,12 +241,39 @@ const NOTIFICATION_TEMPLATES = [
     variables: ["{nome}", "{negocio}", "{data}", "{horario}", "{servico}", "{especialista}", "{telefone}", "{link_cancelar}", "{link_site}"],
     defaultSubject: "Lembrete — Marcação {data}",
     defaultContent: `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Lembrete</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Olá, {nome}! Lembramos que tem uma marcação em {negocio} para <strong>{data}</strong>.</p>
-  </div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;">
+        <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+        <p style="margin:0;font-size:20px;font-weight:300;color:#FAF8F5;letter-spacing:0.5px;">Lembrete de Marcação</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;">
+        <p style="margin:0 0 24px;font-size:14px;color:#7C6E62;line-height:1.7;">Olá, <strong style="color:#2D2520;">{nome}</strong>! Este é um lembrete da sua marcação amanhã em {negocio}.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F5;border:1px solid #E8E2DA;border-radius:8px;margin-bottom:28px;">
+          <tr><td style="padding:20px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Data &amp; Horário</p>
+            <p style="margin:0;font-size:16px;font-weight:600;color:#2D2520;">{data} às {horario}</p>
+          </td></tr>
+          <tr><td style="padding:16px 24px;border-bottom:1px solid #E8E2DA;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Serviço</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{servico}</p>
+          </td></tr>
+          <tr><td style="padding:16px 24px;">
+            <p style="margin:0 0 2px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#B0A496;font-weight:600;">Profissional</p>
+            <p style="margin:0;font-size:14px;color:#2D2520;font-weight:500;">{especialista}</p>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:13px;color:#B0A496;line-height:1.6;">Precisa de cancelar? <a href="{link_cancelar}" style="color:#7C6E62;">Clique aqui</a>. Para mais informações: {telefone}</p>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:16px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">{negocio} · <a href="{link_site}" style="color:#B0A496;">{link_site}</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 </body></html>`,
   },
   {
@@ -136,12 +282,32 @@ const NOTIFICATION_TEMPLATES = [
     variables: ["{nome}", "{negocio}", "{link_agendamento}", "{link_site}", "{link_instagram}", "{link_facebook}"],
     defaultSubject: "Feliz Aniversário, {nome}! 🎂",
     defaultContent: `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Feliz Aniversário!</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Olá, {nome}! A equipa {negocio} deseja-lhe um feliz aniversário! 🎂</p>
-  </div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:32px;">🎂</p>
+        <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+        <p style="margin:0;font-size:22px;font-weight:300;color:#FAF8F5;">Feliz Aniversário!</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;text-align:center;">
+        <p style="margin:0 0 16px;font-size:16px;color:#2D2520;font-weight:500;">Parabéns, {nome}!</p>
+        <p style="margin:0 0 28px;font-size:14px;color:#7C6E62;line-height:1.7;">Toda a equipa de {negocio} deseja-lhe um feliz aniversário e um ano repleto de saúde, alegria e momentos especiais.</p>
+        <p style="margin:0 0 28px;font-size:14px;color:#7C6E62;line-height:1.7;">Aproveite esta data especial para cuidar de si! Marque uma sessão e celebre com mimo.</p>
+        <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+          <tr><td style="background:#2D2520;border-radius:6px;">
+            <a href="{link_agendamento}" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;">Agendar Sessão</a>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:16px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">{negocio} · <a href="{link_site}" style="color:#B0A496;">{link_site}</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 </body></html>`,
   },
   {
@@ -150,13 +316,31 @@ const NOTIFICATION_TEMPLATES = [
     variables: ["{nome}", "{ultima_visita}", "{dias_inativo}", "{link_agendamento}", "{link_site}", "{link_instagram}"],
     defaultSubject: "Sentimos sua falta, {nome}!",
     defaultContent: `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="font-family: 'Manrope', Arial, sans-serif; background: #FAF8F5; padding: 40px 20px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 8px; border: 1px solid #E8E2DA; padding: 40px;">
-    <h1 style="font-size: 20px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #2D2520; margin: 0 0 24px;">Sentimos sua falta!</h1>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Olá, {nome}! Último atendimento: <strong>{ultima_visita}</strong> — {dias_inativo} dias atrás.</p>
-    <p style="font-size: 14px; color: #807668; line-height: 1.6;">Adoraríamos recebê-lo(a) novamente!</p>
-  </div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F0EB;font-family:'Manrope',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+      <tr><td style="background:#2D2520;border-radius:10px 10px 0 0;padding:32px 40px;">
+        <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C4A882;font-weight:600;">{negocio}</p>
+        <p style="margin:0;font-size:20px;font-weight:300;color:#FAF8F5;letter-spacing:0.5px;">Sentimos a sua falta, {nome}.</p>
+      </td></tr>
+      <tr><td style="background:#fff;padding:40px;">
+        <p style="margin:0 0 20px;font-size:14px;color:#7C6E62;line-height:1.7;">Faz <strong style="color:#2D2520;">{dias_inativo} dias</strong> que não o(a) vemos por aqui. A última visita foi em <strong style="color:#2D2520;">{ultima_visita}</strong>.</p>
+        <p style="margin:0 0 28px;font-size:14px;color:#7C6E62;line-height:1.7;">Cuidar de si faz diferença. Que tal agendarmos uma sessão? Estamos prontos para o(a) receber.</p>
+        <table cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          <tr><td style="background:#2D2520;border-radius:6px;">
+            <a href="{link_agendamento}" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;">Marcar Sessão</a>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:13px;color:#B0A496;line-height:1.6;">Tem dúvidas? Contacte-nos pelo Instagram <a href="{link_instagram}" style="color:#7C6E62;">@{negocio}</a>.</p>
+      </td></tr>
+      <tr><td style="background:#FAF8F5;border-top:1px solid #E8E2DA;border-radius:0 0 10px 10px;padding:16px 40px;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#B0A496;">{negocio} · <a href="{link_site}" style="color:#B0A496;">{link_site}</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 </body></html>`,
   },
 ];

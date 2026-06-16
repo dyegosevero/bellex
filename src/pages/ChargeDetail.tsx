@@ -267,7 +267,12 @@ const ChargeDetail = () => {
           <div className="px-8 py-6 grid grid-cols-2 gap-6">
             <div>
               <p className="text-xs uppercase tracking-[2px] text-muted-foreground mb-2 font-semibold">Emitido para</p>
-              <p className="text-base font-semibold">{clientName}</p>
+              <button
+                className="text-base font-semibold hover:underline text-left text-primary/80 hover:text-primary transition-colors"
+                onClick={() => charge?.client_id && navigate(`/clientes/${charge.client_id}`)}
+              >
+                {clientName}
+              </button>
               {client?.email && <p className="text-sm text-muted-foreground mt-0.5">{client.email}</p>}
               {client?.phone && <p className="text-sm text-muted-foreground mt-0.5">{client.phone}</p>}
               {client?.cpf && (

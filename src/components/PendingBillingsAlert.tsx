@@ -44,17 +44,14 @@ export function PendingBillingsAlert() {
 
   return (
     <>
-      {/* Barra vermelha flutuante — todos os papéis */}
+      {/* Barra de cobrança — sempre visível no topo da área de conteúdo */}
       <div
-        className="sticky top-[51px] z-40 mx-0.5 px-0.5"
+        className={cn(
+          "border-b border-destructive/30",
+          "bg-destructive text-destructive-foreground"
+        )}
         role="alert"
       >
-        <div
-          className={cn(
-            "rounded-xl shadow-md border border-destructive/20",
-            "bg-destructive text-destructive-foreground"
-          )}
-        >
         <div className="px-4 py-1.5 flex items-center gap-3 text-xs">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span className="font-semibold">
@@ -78,7 +75,6 @@ export function PendingBillingsAlert() {
               Informe a recepção para emitir.
             </span>
           )}
-        </div>
         </div>
       </div>
 

@@ -35,7 +35,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Image as ImageIcon, Star, MessageSquare, Loader2, CheckCircle2, XCircle, ClipboardList, Clock, Timer, Banknote, Receipt, Eye, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, Star, MessageSquare, Loader2, CheckCircle2, XCircle, ClipboardList, Clock, Timer, Banknote, Receipt, Eye, X, Trash2, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtCurrency, fmtDateLong, fmtDateShort, fmtTime } from "@/lib/date";
 import { toast } from "sonner";
 import FeedbackDialog from "@/components/appointments/FeedbackDialog";
@@ -51,6 +53,9 @@ const AppointmentDetail = () => {
   const queryClient = useQueryClient();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [newProductId, setNewProductId] = useState("");
+  const [newProductQty, setNewProductQty] = useState("1");
   const navigate = useNavigate();
   const { data: services } = useServices();
   const { isSpecialist, isAdmin } = useAuth();
@@ -112,6 +117,36 @@ const AppointmentDetail = () => {
       return data;
     },
     enabled: !!id,
+  });
+
+  const { data: availableProducts } = useQuery({
+    queryKey: ["products-active"],
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("id, name, price").eq("active", true).order("name");
+      return data ?? [];
+    },
+  });
+
+  const addProductMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      const product = availableProducts?.find((p) => p.id === productId);
+      if (!product) throw new Error("Produto não encontrado");
+      const { error } = await supabase.from("appointment_products").insert({
+        appointment_id: id!,
+        product_id: productId,
+        quantity,
+        unit_price: product.price,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointment-products", id] });
+      setAddingProduct(false);
+      setNewProductId("");
+      setNewProductQty("1");
+      toast.success("Produto adicionado.");
+    },
+    onError: (err: any) => toast.error(`Erro: ${err.message}`),
   });
 
   // Check if a charge already exists for this appointment
@@ -415,7 +450,14 @@ const AppointmentDetail = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <InfoCard label="Cliente" value={(appointment as any).clients?.full_name ?? "—"} />
+        <InfoCard label="Cliente">
+          <button
+            className="text-sm font-medium hover:underline text-left text-primary/80 hover:text-primary transition-colors"
+            onClick={() => appointment.client_id && navigate(`/clientes/${appointment.client_id}`)}
+          >
+            {(appointment as any).clients?.full_name ?? "—"}
+          </button>
+        </InfoCard>
         <SpecialistCard
           appointmentId={id!}
           specialistName={(appointment as any).specialist_name}
@@ -541,29 +583,70 @@ const AppointmentDetail = () => {
         </div>
       )}
 
-      {soldProducts && soldProducts.length > 0 && (
+      {((soldProducts && soldProducts.length > 0) || !isSpecialist) && (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <div className="p-4 border-b border-border">
+          <div className="p-4 border-b border-border flex items-center justify-between">
             <h2 className="text-sm uppercase tracking-wider text-muted-foreground">Produtos Vendidos</h2>
+            {!isSpecialist && (
+              <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs" onClick={() => setAddingProduct(true)}>
+                <Plus className="w-3 h-3" /> Adicionar
+              </Button>
+            )}
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-xs uppercase tracking-wider">Produto</TableHead>
-                <TableHead className="text-xs uppercase tracking-wider">Qtd</TableHead>
-                <TableHead className="text-xs uppercase tracking-wider text-right">Valor</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {soldProducts.map((sp: any) => (
-                <TableRow key={sp.id}>
-                  <TableCell>{sp.products?.name ?? "—"}</TableCell>
-                  <TableCell>{sp.quantity}</TableCell>
-                  <TableCell className="text-right">{fmtCurrency(sp.unit_price * sp.quantity)}</TableCell>
+          {soldProducts && soldProducts.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs uppercase tracking-wider">Produto</TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider">Qtd</TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider text-right">Valor</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {soldProducts.map((sp: any) => (
+                  <TableRow key={sp.id}>
+                    <TableCell>{sp.products?.name ?? "—"}</TableCell>
+                    <TableCell>{sp.quantity}</TableCell>
+                    <TableCell className="text-right">{fmtCurrency(sp.unit_price * sp.quantity)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          {addingProduct && (
+            <div className="p-4 border-t border-border flex items-end gap-2">
+              <div className="flex-1">
+                <Select value={newProductId} onValueChange={setNewProductId}>
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue placeholder="Selecionar produto..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProducts?.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Input
+                type="number"
+                min="1"
+                value={newProductQty}
+                onChange={(e) => setNewProductQty(e.target.value)}
+                className="w-16 h-8 text-sm"
+              />
+              <Button
+                size="sm"
+                className="h-8"
+                disabled={!newProductId || addProductMutation.isPending}
+                onClick={() => addProductMutation.mutate({ productId: newProductId, quantity: parseInt(newProductQty) || 1 })}
+              >
+                {addProductMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "OK"}
+              </Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => { setAddingProduct(false); setNewProductId(""); setNewProductQty("1"); }}>
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
