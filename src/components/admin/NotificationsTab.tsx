@@ -277,7 +277,7 @@ export default function NotificationsTab() {
   const isInactiveSlug = (slug: string) => INACTIVE_SLUGS.includes(slug);
 
   const renderTemplateItem = (t: Template, rows = 3) => (
-    <div key={t.id} className="space-y-3 p-4 rounded-lg border border-border">
+    <div key={t.id} className="space-y-3 p-4 rounded-lg bg-muted/30">
       <div className="flex items-center justify-between">
         <div>
           <Label className="text-sm font-medium">{t.label.replace(/ \(SMS\)| \(WhatsApp\)| \(Email\)/g, "")}</Label>
@@ -359,7 +359,7 @@ export default function NotificationsTab() {
           <Users className="w-5 h-5 text-muted-foreground" />
           <Label className="text-sm font-semibold">Notificações Internas</Label>
         </div>
-        <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
           <div>
             <p className="text-sm font-medium">E-mail para Especialistas e Admins</p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -406,14 +406,14 @@ export default function NotificationsTab() {
           <Label className="text-sm font-semibold">Automações</Label>
         </div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
             <div>
               <p className="text-sm font-medium">🎂 Aniversariantes</p>
               <p className="text-xs text-muted-foreground mt-0.5">Enviar mensagem automática no dia do aniversário</p>
             </div>
             <Switch checked={birthdayEnabled} onCheckedChange={(v) => toggleWebhook("n8n_webhook_enabled_birthday", v, setBirthdayEnabled)} />
           </div>
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
             <div>
               <p className="text-sm font-medium">💤 Clientes Inativos</p>
               <p className="text-xs text-muted-foreground mt-0.5">Enviar mensagem para clientes sem visita há mais de {inactivityDays ?? 90} dias</p>

@@ -73,7 +73,7 @@ const BusinessHours = () => {
 
   return (
     <div>
-      <Button variant="ghost" size="sm" className="mb-4 -ml-1 text-muted-foreground" onClick={() => navigate("/admin")}>
+      <Button variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/admin")}>
         <ChevronLeft className="w-4 h-4 mr-1" /> Configurações
       </Button>
       <BlurFade delay={0.05}>
