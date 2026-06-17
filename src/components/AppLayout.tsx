@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logo1x1 from "@/assets/logo-1x1.png";
 import logoColor from "@/assets/logo-color.png";
 import ShareBookingDialog from "@/components/ShareBookingDialog";
-import { ActiveSessionBar } from "@/components/ActiveSessionBar";
+import { ActiveSessionBar, ActiveSessionPill } from "@/components/ActiveSessionBar";
 import { PendingBillingsAlert } from "@/components/PendingBillingsAlert";
 import {
   Calendar, Users, Package, CreditCard,
@@ -328,7 +328,6 @@ const AppLayout = () => {
         className="flex-1 flex flex-col min-w-0 pt-14 lg:pt-0"
         style={{ marginLeft: expanded ? 208 : 52, transition: "margin-left 0.2s cubic-bezier(0.4,0,0.2,1)" }}
       >
-        <ActiveSessionBar />
         <PendingBillingsAlert />
         <main className={cn(
           "flex-1 min-w-0 min-h-0",
@@ -345,6 +344,7 @@ const AppLayout = () => {
       </div>
 
       <ShareBookingDialog open={shareOpen} onOpenChange={setShareOpen} />
+      <ActiveSessionPill />
     </div>
   );
 };
