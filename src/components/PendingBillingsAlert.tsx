@@ -23,10 +23,10 @@ export function PendingBillingsAlert() {
         <AlertTriangle className="w-4 h-4 shrink-0" />
         <span>
           <span className="font-semibold">
-            {count} {count === 1 ? "cobrança pendente" : "cobranças pendentes"}
+            {count} {count === 1 ? "atendimento finalizado" : "atendimentos finalizados"}
           </span>
           <span className="opacity-80 hidden sm:inline">
-            {" "}atendimentos finalizados sem cobrança registrada.
+            {" "}sem cobrança registrada.
           </span>
         </span>
         {!isSpecialist && (
