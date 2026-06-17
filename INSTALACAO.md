@@ -1,158 +1,201 @@
-# Guia de Implementação — Bellex
+# Guia de Instalação — Bellex
+
+Dois builds, um produto. O mesmo código serve para ambas as situações.
+
+```
+bun run build:clinic  →  app da clínica (sempre instalado)
+bun run build:admin   →  Workspace (só na Situação 2)
+```
 
 ---
 
-## Opção A — Clínica (sem Workspace)
+## Situação 1 — Solo (uma clínica, um app)
 
-Clínica roda como **tenant no projeto Supabase principal da Bellex**. Sem infraestrutura própria.
+**Quando usar:** cliente quer um app só para ela, sem filiais.
 
-### 1. Infraestrutura
+### 1. Supabase
 
-- [ ] Nenhum projeto Supabase novo — clínica é tenant no principal
-- [ ] Criar conta Cloudflare para a clínica
+- [ ] Criar novo projeto Supabase (dashboard.supabase.com)
+- [ ] Anotar `Project URL` e `anon key` (Settings → API)
+- [ ] Rodar as migrations: `supabase db push` apontando para o novo projeto
+- [ ] Criar o primeiro tenant na tabela `clinics` com o nome da clínica
+- [ ] Criar o usuário admin (Authentication → Users → Invite)
+
+### 2. Cloudflare R2
+
+- [ ] Criar conta Cloudflare (cloudflare.com)
 - [ ] Criar bucket R2 → nome: `bellex`
-- [ ] Gerar API Token R2 com permissão *Object Read & Write*
-- [ ] Apontar domínio/subdomínio da clínica para o VPS (registro A ou CNAME)
+- [ ] Gerar API Token → permissão *Object Read & Write*
+- [ ] Anotar: `Account ID`, `Access Key ID`, `Secret Access Key`
 
-### 2. Branding / Whitelabel
+### 3. Variáveis de ambiente
 
-- [ ] Substituir `logo-color.png` e `logo-1x1.png` pelo logo da clínica
-- [ ] Ajustar cor primária no `tailwind.config.ts` (variável `--primary`)
-- [ ] Atualizar nome da clínica nas configs do Supabase (tabela `settings` ou `clinics`)
-- [ ] Favicon
-
-### 3. Integrações
-
-- [ ] **Resend** — criar conta, gerar API Key, configurar domínio de envio, verificar DNS
-- [ ] **WhatsApp (Evolution API)** — subir instância da EvoAPI no VPS, conectar número via QR Code, salvar `instance_name` e `api_key`
-- [ ] **OpenAI** — gerar API Key, definir modelo (`gpt-4o-mini`), configurar prompt do agente
-
-### 4. Migração de Dados
-
-- [ ] Importar clientes via CSV (nome, telefone, e-mail, data de nascimento)
-- [ ] Cadastrar especialistas e definir roles (admin / especialista / atendimento)
-- [ ] Cadastrar serviços com duração e preço
-- [ ] Configurar horários de funcionamento
-
-### 5. Variáveis de Ambiente
+Crie o arquivo `.env` na raiz do projeto:
 
 ```env
-# Supabase (compartilhado — não muda)
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_URL=https://<project>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key>
 
-# R2 da clínica
 VITE_R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
 VITE_R2_ACCESS_KEY_ID=
 VITE_R2_SECRET_ACCESS_KEY=
 VITE_R2_BUCKET=bellex
 VITE_R2_ACCOUNT_ID=
-
-# Resend
-RESEND_API_KEY=
-RESEND_FROM=noreply@dominio.com.br
-
-# Evolution API (WhatsApp)
-EVO_API_URL=
-EVO_API_KEY=
-EVO_INSTANCE=
-
-# OpenAI
-OPENAI_API_KEY=
 ```
 
-### 6. Treinamento
+### 4. Build e deploy
 
-- [ ] Onboarding com a equipe (agenda, clientes, cobranças)
-- [ ] Configurar agendamento online e testar link público
+```bash
+bun run build:clinic
+```
+
+Suba o conteúdo da pasta `dist/` para a pasta do subdomínio na Hostinger.
+
+Crie o arquivo `.htaccess` na raiz da pasta:
+
+```apache
+Options -MultiViews
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.html [QSA,L]
+```
+
+### 5. Branding
+
+- [ ] Substituir `public/logo-color.png` e `public/logo-1x1.png`
+- [ ] Ajustar cor primária em `tailwind.config.ts` (variável `--primary`)
+- [ ] Favicon (`public/favicon.ico`)
+- [ ] Atualizar nome da clínica no Supabase (tabela `clinic_settings`)
+
+### 6. Integrações (opcionais)
+
+- [ ] **Resend** — criar conta, gerar API Key, verificar domínio de envio
+- [ ] **WhatsApp (Evolution API)** — subir instância, conectar número via QR Code
+- [ ] **OpenAI** — gerar API Key para o agente de atendimento
+
+### 7. Onboarding
+
+- [ ] Cadastrar especialistas e definir roles (admin / especialista / recepção)
+- [ ] Cadastrar serviços com duração e preço
+- [ ] Configurar horários de funcionamento
+- [ ] Importar clientes via CSV
 - [ ] Testar fluxo completo: agendamento → atendimento → cobrança
 
 ---
 
-## Opção B — Workspace + Clínicas (Whitelabel completo)
+## Situação 2 — Multi-unidade (Workspace + N clínicas)
 
-Mentora/dona de franquia com **Supabase próprio**, **R2 próprio** e painel `/workspace` para gerenciar múltiplas clínicas.
+**Quando usar:** cliente tem filiais, ou mentora com mentoradas — uma pessoa gerencia várias.
 
-### 1. Infraestrutura
+São **dois deploys separados**:
+- Um Workspace (painel de controle da gestora)
+- Um app Clinic para cada unidade/mentorada
 
-- [ ] Criar novo projeto Supabase na sua org (Management API ou dashboard)
-- [ ] Anotar `SUPABASE_URL`, `anon key` e `service_role key` do novo projeto
-- [ ] Rodar todas as migrations no novo projeto
-- [ ] Criar conta Cloudflare para a mentora
+### 1. Supabase
+
+- [ ] Criar novo projeto Supabase
+- [ ] Anotar `Project URL` e `anon key`
+- [ ] Rodar migrations
+- [ ] Criar a gestora como usuário admin
+- [ ] Criar um tenant na tabela `clinics` para cada unidade
+
+### 2. Cloudflare R2
+
+Mesmo processo da Situação 1 — um bucket compartilhado entre todas as unidades.
+
 - [ ] Criar bucket R2 → nome: `bellex`
-- [ ] Gerar API Token R2 com permissão *Object Read & Write*
-- [ ] Apontar domínio principal da mentora + subdomínios das clínicas para o VPS
+- [ ] Gerar API Token → permissão *Object Read & Write*
 
-### 2. Branding / Whitelabel
+### 3. Variáveis de ambiente
 
-- [ ] Substituir `logo-color.png`, `logo-1x1.png` e `logo-1x1-white.png`
-- [ ] Ajustar cor primária no `tailwind.config.ts`
-- [ ] Atualizar nome do Workspace nas configs
-- [ ] Favicon + meta tags (título, descrição, og:image)
-- [ ] Configurar domínio personalizado no Workspace (DNS TXT + CNAME + A record)
-
-### 3. Integrações
-
-- [ ] **Resend** — criar conta, gerar API Key, verificar domínio de envio da mentora
-- [ ] **WhatsApp (Evolution API)** — subir instância da EvoAPI, conectar número da mentora via QR Code
-- [ ] **OpenAI** — gerar API Key, configurar agente de suporte nas clínicas (Claude Haiku ou GPT-4o mini)
-- [ ] Configurar webhook do WhatsApp apontando para o endpoint da instância
-
-### 4. Migração de Dados
-
-- [ ] Importar clínicas existentes da mentora (nome, CNPJ, endereço)
-- [ ] Importar clientes de cada clínica via CSV
-- [ ] Cadastrar especialistas por clínica com roles
-- [ ] Cadastrar serviços por clínica com duração e preço
-- [ ] Configurar horários de funcionamento por clínica
-- [ ] Configurar planos que a mentora vende para suas clínicas
-
-### 5. Variáveis de Ambiente
+Mesmo `.env` da Situação 1 — o Supabase é o mesmo para Workspace e todas as clínicas.
 
 ```env
-# Supabase próprio da mentora
-VITE_SUPABASE_URL=https://<projeto_mentora>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=
-VITE_SUPABASE_PROJECT_ID=
+VITE_SUPABASE_URL=https://<project>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key>
 
-# R2 da mentora
 VITE_R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
 VITE_R2_ACCESS_KEY_ID=
 VITE_R2_SECRET_ACCESS_KEY=
 VITE_R2_BUCKET=bellex
 VITE_R2_ACCOUNT_ID=
-
-# Resend
-RESEND_API_KEY=
-RESEND_FROM=noreply@dominio.com.br
-
-# Evolution API (WhatsApp)
-EVO_API_URL=
-EVO_API_KEY=
-EVO_INSTANCE=
-
-# OpenAI
-OPENAI_API_KEY=
 ```
 
-### 6. Treinamento
+### 4. Build e deploy
 
-- [ ] Onboarding com a mentora — Workspace (clínicas, usuários, planos, licenças)
-- [ ] Onboarding com cada clínica — agenda, clientes, cobranças
-- [ ] Testar agendamento online de cada clínica
-- [ ] Testar fluxo de suporte (ticket da clínica → mentora resolve)
+**Workspace (gestora):**
+
+```bash
+bun run build:admin
+```
+
+Suba `dist/` para `workspace.dominio.com` (ou `app.dominio.com/admin`).
+
+**Cada clínica/unidade:**
+
+```bash
+bun run build:clinic
+```
+
+Suba `dist/` para `unidade1.dominio.com`, `unidade2.dominio.com`, etc.
+
+Cada pasta recebe seu próprio `.htaccess`:
+
+```apache
+Options -MultiViews
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.html [QSA,L]
+```
+
+### 5. DNS (para cada subdomínio)
+
+No DNS do domínio, adicionar registro `A` para cada subdomínio:
+
+```
+workspace  →  185.245.180.165  (IP Hostinger)
+unidade1   →  185.245.180.165
+unidade2   →  185.245.180.165
+```
+
+### 6. Branding
+
+- [ ] Logo e favicon (igual Situação 1)
+- [ ] Cor primária por instalação se necessário
+- [ ] Nome de cada unidade configurado no Supabase por `clinic_id`
+
+### 7. Integrações
+
+- [ ] **Resend** — uma conta, vários domínios de envio (um por unidade) ou domínio da gestora
+- [ ] **WhatsApp** — uma instância Evolution API por número (uma por unidade)
+- [ ] **OpenAI** — uma API Key compartilhada ou por unidade
+
+### 8. Onboarding
+
+- [ ] Onboarding com a gestora — Workspace (visão geral das unidades)
+- [ ] Onboarding com cada unidade — agenda, clientes, cobranças
+- [ ] Testar agendamento online de cada unidade separadamente
 
 ---
 
 ## Comparativo
 
-| | Clínica | Workspace |
-|--|---------|-----------|
-| Supabase próprio | ❌ | ✅ |
-| R2 próprio | ✅ | ✅ |
-| Painel `/workspace` | ❌ | ✅ |
-| Gerencia múltiplas clínicas | ❌ | ✅ |
-| Migrations novas | ❌ | ✅ |
-| Custo infra/mês | ~R$ 5 | ~R$ 172 |
-| Setup | R$ 7.000 | R$ 12.000 |
-| Mensalidade | R$ 500 | R$ 750 |
+| | Situação 1 — Solo | Situação 2 — Multi |
+|--|--|--|
+| Supabase | 1 projeto | 1 projeto compartilhado |
+| Tenants | 1 | N |
+| Deploys | 1 (clinic) | 1 workspace + N clinic |
+| Subdomínios | 1 | N + 1 |
+| Workspace | ❌ | ✅ |
+| Complexidade de setup | Baixa | Média |
+
+---
+
+## Checklist rápido pré-entrega
+
+- [ ] App abre sem erros no browser
+- [ ] Login funciona
+- [ ] Agendamento online público acessível
+- [ ] E-mail de confirmação chega (Resend)
+- [ ] Upload de foto funciona (R2)
+- [ ] HTTPS ativo (SSL Hostinger automático)
