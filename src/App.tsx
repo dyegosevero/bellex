@@ -41,6 +41,11 @@ const ChargeEdit = lazy(() => import("@/pages/ChargeEdit"));
 const InactiveClients = lazy(() => import("@/pages/InactiveClients"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Admin = lazy(() => import("@/pages/Admin"));
+const AdminAgenda = lazy(() => import("@/pages/admin/AdminAgenda"));
+const AdminEmail = lazy(() => import("@/pages/admin/AdminEmail"));
+const AdminNotificacoes = lazy(() => import("@/pages/admin/AdminNotificacoes"));
+const AdminIntegracoes = lazy(() => import("@/pages/admin/AdminIntegracoes"));
+const AdminDocumentos = lazy(() => import("@/pages/admin/AdminDocumentos"));
 const Services = lazy(() => import("@/pages/Services"));
 const UserNew = lazy(() => import("@/pages/UserNew"));
 const UserDetail = lazy(() => import("@/pages/UserDetail"));
@@ -202,6 +207,11 @@ function AnimatedRoutes() {
                   <Route path="/documentos" element={<Documents />} />
                   <Route path="/documentos/:id" element={<DocumentEdit />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/agenda" element={<AdminAgenda />} />
+                  <Route path="/admin/email" element={<AdminEmail />} />
+                  <Route path="/admin/notificacoes" element={<AdminNotificacoes />} />
+                  <Route path="/admin/integracoes" element={<AdminIntegracoes />} />
+                  <Route path="/admin/documentos" element={<AdminDocumentos />} />
                   <Route path="/admin/usuarios/novo" element={<UserNew />} />
                   <Route path="/admin/usuarios/:id" element={<UserDetail />} />
                   <Route path="/admin/usuarios/:id/editar" element={<UserEdit />} />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdgeFunction } from "@/lib/edge-functions";
@@ -8,24 +8,13 @@ import { Navigate } from "react-router-dom";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Settings, Users, Mail, Shield, CalendarDays, Plus, Edit, Bell, Plug, CalendarClock, Clock, Trash2, KeyRound, Eye, EyeOff, AlertTriangle, Ban, FileSignature } from "lucide-react";
+import { Settings, Edit, CalendarClock, Clock, Mail, Bell, Plug, FileSignature, Trash2, KeyRound, Eye, EyeOff, AlertTriangle, Ban, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -33,13 +22,6 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { BlurFade } from "@/components/ui/blur-fade";
-
-import EmailTab from "@/components/admin/EmailTab";
-import NotificationsTab from "@/components/admin/NotificationsTab";
-import IntegrationsTab from "@/components/admin/IntegrationsTab";
-import AgendaTab from "@/components/admin/AgendaTab";
-import BusinessHoursTab from "@/components/admin/BusinessHoursTab";
-import DocumentsTab from "@/components/admin/DocumentsTab";
 import { fmtDate } from "@/lib/date";
 
 const roleLabels: Record<string, string> = {
@@ -48,44 +30,49 @@ const roleLabels: Record<string, string> = {
   atendimento: "Recepcionista",
 };
 
+const settingsItems = [
+  { to: "/admin/agenda",       icon: CalendarClock, label: "Agenda",       desc: "Configurações de agendamento e reservas online" },
+  { to: "/admin/horarios",     icon: Clock,         label: "Horários",     desc: "Horários de funcionamento e disponibilidade" },
+  { to: "/admin/email",        icon: Mail,          label: "E-mail",       desc: "Configurações de envio de e-mails" },
+  { to: "/admin/notificacoes", icon: Bell,          label: "Notificações", desc: "Lembretes automáticos e alertas" },
+  { to: "/admin/integracoes",  icon: Plug,          label: "Integrações",  desc: "Conexões com serviços externos e APIs" },
+  { to: "/admin/documentos",   icon: FileSignature, label: "Documentos",   desc: "Termos de consentimento e documentos" },
+];
+
 const Admin = () => {
   const { role } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get("tab") ?? "agenda";
   if (role !== "admin") return <Navigate to="/dashboard" replace />;
 
   return (
     <div>
       <BlurFade delay={0.05}>
         <div className="mb-8">
-          <PageHeader icon={<Settings className="w-5 h-5" />} title="Configurações" subtitle="Gestão de usuários e configurações do sistema" />
+          <PageHeader icon={<Settings className="w-5 h-5" />} title="Configurações" subtitle="Gestão e configurações do sistema" />
         </div>
       </BlurFade>
 
-      <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="agenda" className="gap-2 normal-case"><CalendarClock className="w-4 h-4" /> Agenda</TabsTrigger>
-          <TabsTrigger value="horarios" className="gap-2 normal-case"><Clock className="w-4 h-4" /> Horários</TabsTrigger>
-          {/* Equipa movida para /equipe no sidebar */}
-          {/* <TabsTrigger value="roles" className="gap-2 normal-case"><Shield className="w-4 h-4" /> Permissões</TabsTrigger> */}
-          <TabsTrigger value="email" className="gap-2 normal-case"><Mail className="w-4 h-4" /> E-mail</TabsTrigger>
-          
-          <TabsTrigger value="notifications" className="gap-2 normal-case"><Bell className="w-4 h-4" /> Notificações</TabsTrigger>
-          <TabsTrigger value="integrations" className="gap-2 normal-case"><Plug className="w-4 h-4" /> Integrações</TabsTrigger>
-          <TabsTrigger value="documents" className="gap-2 normal-case"><FileSignature className="w-4 h-4" /> Documentos</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="agenda" forceMount className="data-[state=inactive]:hidden"><AgendaTab /></TabsContent>
-        <TabsContent value="horarios" forceMount className="data-[state=inactive]:hidden"><BusinessHoursTab /></TabsContent>
-        {/* UsersTab movida para /equipe */}
-        <TabsContent value="roles" forceMount className="data-[state=inactive]:hidden"><RolesInfoTab /></TabsContent>
-        <TabsContent value="email" forceMount className="data-[state=inactive]:hidden"><EmailTab /></TabsContent>
-        
-        <TabsContent value="notifications" forceMount className="data-[state=inactive]:hidden"><NotificationsTab /></TabsContent>
-        <TabsContent value="integrations" forceMount className="data-[state=inactive]:hidden"><IntegrationsTab /></TabsContent>
-        <TabsContent value="documents" forceMount className="data-[state=inactive]:hidden"><DocumentsTab /></TabsContent>
-      </Tabs>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {settingsItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.to}
+              onClick={() => navigate(item.to)}
+              className="flex items-center gap-4 p-5 rounded-xl border border-border bg-card hover:bg-muted/30 transition-colors text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                <Icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{item.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.desc}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
