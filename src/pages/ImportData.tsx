@@ -9,7 +9,7 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
+  ChevronLeft,
   Upload,
   Loader2,
   CheckCircle,
@@ -407,7 +407,7 @@ const ImportData = () => {
           className="mb-4 -ml-2 text-muted-foreground"
           onClick={() => navigate("/admin")}
         >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+          <ChevronLeft className="w-4 h-4" /> Voltar
         </Button>
         <h1 className="text-2xl font-light tracking-wider mb-1">Importar / Exportar Dados</h1>
         <p className="text-sm text-muted-foreground mb-8">

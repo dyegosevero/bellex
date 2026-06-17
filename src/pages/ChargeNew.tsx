@@ -18,7 +18,7 @@ import {
   getDocLabel, getDocPlaceholder, getCurrencySymbol,
   getVATRate, getVATLabel, getPaymentMethods, isPortugal,
 } from "@/lib/date";
-import { ArrowLeft, Loader2, CalendarIcon, Package, X, Plus } from "lucide-react";
+import { ChevronLeft, Loader2, CalendarIcon, Package, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -244,8 +244,8 @@ const ChargeNew = () => {
   return (
     <div className="max-w-lg">
       <BlurFade delay={0.05}>
-        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/cobrancas")}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+        <Button variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/cobrancas")}>
+          <ChevronLeft className="w-4 h-4" /> Voltar
         </Button>
         <h1 className="text-2xl font-light tracking-wider mb-1">Nova Cobrança</h1>
         <p className="text-sm text-muted-foreground mb-8">Registre uma nova cobrança para um cliente</p>
@@ -261,7 +261,7 @@ const ChargeNew = () => {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium bg-muted px-3 py-1.5 rounded">{clientName}</span>
                 {!isPreFilled && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => { setClientId(""); setClientName(""); setClientNif(""); setClientHasNif(false); }}>Trocar</Button>
+                  <Button type="button" variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => { setClientId(""); setClientName(""); setClientNif(""); setClientHasNif(false); }}>Trocar</Button>
                 )}
               </div>
             ) : (

@@ -6,7 +6,7 @@ import { invokeEdgeFunction } from "@/lib/edge-functions";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Download, Pencil, Share2, Loader2, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Download, Pencil, Share2, Loader2, CheckCircle2 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { fmtCurrency, fmtDate, fmtDateTime } from "@/lib/date";
 import { downloadChargePdf, generateChargeHtml, generateChargePdfBase64 } from "@/lib/charge-pdf";
@@ -188,7 +188,7 @@ const ChargeDetail = () => {
       <BlurFade delay={0.05}>
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="sm" className="-ml-2 text-muted-foreground" onClick={() => navigate("/cobrancas")}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+            <ChevronLeft className="w-4 h-4" /> Voltar
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => navigate(`/cobrancas/${id}/editar`)}>

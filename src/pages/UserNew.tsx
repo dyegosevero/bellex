@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Eye, EyeOff, RefreshCw, Loader2 } from "lucide-react";
+import { ChevronLeft, Eye, EyeOff, RefreshCw, Loader2 } from "lucide-react";
 
 const generatePassword = (length = 12) => {
   const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%";
@@ -68,8 +68,8 @@ const UserNew = () => {
   return (
     <div className="max-w-lg">
       <BlurFade delay={0.05}>
-        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/equipe")}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+        <Button variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/equipe")}>
+          <ChevronLeft className="w-4 h-4" /> Voltar
         </Button>
         <h1 className="text-2xl font-light tracking-wider mb-1">Novo Usuário</h1>
         <p className="text-sm text-muted-foreground mb-8">Crie uma conta para um membro da equipa</p>

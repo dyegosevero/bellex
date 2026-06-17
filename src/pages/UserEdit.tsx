@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { ChevronLeft, Loader2, Trash2 } from "lucide-react";
 import SpecialistHoursTab from "@/components/services/SpecialistHoursTab";
 import SpecialistServicesTab from "@/components/services/SpecialistServicesTab";
 
@@ -96,8 +96,8 @@ const UserEdit = () => {
   if (!profile) {
     return (
       <div className="max-w-2xl">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/equipe")} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+        <Button variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/equipe")} className="mb-4">
+          <ChevronLeft className="w-4 h-4" /> Voltar
         </Button>
         <p className="text-muted-foreground">Usuário não encontrado.</p>
       </div>
@@ -110,8 +110,8 @@ const UserEdit = () => {
   return (
     <div className="max-w-2xl">
       <BlurFade delay={0.05}>
-        <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground" onClick={() => navigate("/equipe")}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+        <Button variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/equipe")}>
+          <ChevronLeft className="w-4 h-4" /> Voltar
         </Button>
         <h1 className="text-2xl font-light tracking-wider mb-1">Editar Colaborador</h1>
       </BlurFade>
