@@ -237,7 +237,7 @@ export default function Mensagens() {
   const [archived, setArchived] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [newConvOpen, setNewConvOpen] = useState(false);
-  const [newConvForm, setNewConvForm] = useState({ name: "", phone: "", channel: "whatsapp" as Channel });
+  const [newConvForm, setNewConvForm] = useState({ name: "", phone: "" });
   const [newConvSaving, setNewConvSaving] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -306,10 +306,9 @@ export default function Mensagens() {
   }
 
   async function handleNewConv() {
-    if (!newConvForm.name.trim()) return;
+    if (!newConvForm.name.trim() || !newConvForm.phone.trim()) return;
     setNewConvSaving(true);
     try {
-      // Busca stage "Novo Lead" para criar o lead
       const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
       const { data: stages } = await sb.from("pipeline_stages").select("id").order("position").limit(1);
       const stageId = stages?.[0]?.id ?? null;
@@ -318,18 +317,17 @@ export default function Mensagens() {
         name: newConvForm.name.trim(),
         phone: newConvForm.phone || null,
         email: null,
-        source: newConvForm.channel,
+        source: "whatsapp",
         stage_id: stageId,
         last_message: null,
         notes: null,
       });
-      const conv = await createConversation(lead.id, newConvForm.channel);
+      const conv = await createConversation(lead.id, "whatsapp");
 
-      // Adiciona na lista local
       const uiConv: UIConversation = {
         id: conv.id,
         contactName: lead.name,
-        channel: newConvForm.channel,
+        channel: "whatsapp",
         lastMessage: "",
         lastTime: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
         unread: 0,
@@ -339,7 +337,7 @@ export default function Mensagens() {
       setConvs(prev => [uiConv, ...prev]);
       setSelected(conv.id);
       setNewConvOpen(false);
-      setNewConvForm({ name: "", phone: "", channel: "whatsapp" });
+      setNewConvForm({ name: "", phone: "" });
     } catch (e) {
       console.error(e);
     } finally {
@@ -703,31 +701,21 @@ export default function Mensagens() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Telefone</label>
+                <label className="text-xs font-medium text-muted-foreground">WhatsApp</label>
                 <Input
-                  placeholder="+55 (11) 99999-0000"
+                  placeholder="(11) 99999-0000"
+                  inputMode="numeric"
                   value={newConvForm.phone}
-                  onChange={e => setNewConvForm(f => ({ ...f, phone: e.target.value }))}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+                    let fmt = digits;
+                    if (digits.length > 10) fmt = `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+                    else if (digits.length > 6) fmt = `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+                    else if (digits.length > 2) fmt = `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+                    else if (digits.length > 0) fmt = `(${digits}`;
+                    setNewConvForm(f => ({ ...f, phone: fmt }));
+                  }}
                 />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Canal</label>
-                <div className="flex gap-2">
-                  {(["whatsapp", "instagram"] as Channel[]).map(ch => (
-                    <button
-                      key={ch}
-                      onClick={() => setNewConvForm(f => ({ ...f, channel: ch }))}
-                      className={cn(
-                        "flex-1 h-9 rounded-xl border text-sm font-medium transition-colors",
-                        newConvForm.channel === ch
-                          ? ch === "whatsapp" ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400" : "border-pink-500 bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-400"
-                          : "border-border text-muted-foreground hover:bg-muted"
-                      )}
-                    >
-                      {ch === "whatsapp" ? "WhatsApp" : "Instagram"}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
@@ -735,7 +723,7 @@ export default function Mensagens() {
               <Button variant="outline" className="flex-1" onClick={() => setNewConvOpen(false)}>Cancelar</Button>
               <Button
                 className="flex-1"
-                disabled={!newConvForm.name.trim() || newConvSaving}
+                disabled={!newConvForm.name.trim() || !newConvForm.phone.trim() || newConvSaving}
                 onClick={handleNewConv}
               >
                 {newConvSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Iniciar conversa"}
