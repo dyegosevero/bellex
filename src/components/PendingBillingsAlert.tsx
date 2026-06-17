@@ -16,7 +16,7 @@ export function PendingBillingsAlert() {
 
   return (
     <div
-      className={cn("border-b border-destructive/30", "bg-destructive text-destructive-foreground")}
+      className="border-b border-red-200 bg-red-50 text-red-800"
       role="alert"
     >
       <div className="px-4 py-1.5 flex items-center gap-3 text-xs">
