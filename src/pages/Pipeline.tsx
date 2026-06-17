@@ -77,7 +77,10 @@ type Stage = {
   color: string; // hex
   cards: CardData[];
   agent: StageAgent;
+  agentId: string | null;
 };
+
+type AgentOption = { id: string; name: string; phone_number_id: string | null };
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -287,6 +290,13 @@ function StageConfigDialog({
   onSave: (updated: Stage) => void;
 }) {
   const [draft, setDraft] = useState<Stage | null>(null);
+  const [agents, setAgents] = useState<AgentOption[]>([]);
+
+  useEffect(() => {
+    import("@/integrations/supabase/client").then(({ supabase }) =>
+      supabase.from("agents").select("id, name, phone_number_id").eq("active", true).then(({ data }) => setAgents(data ?? []))
+    );
+  }, []);
 
   // Reset draft when stage changes
   if (stage && (!draft || draft.id !== stage.id)) setDraft({ ...stage, agent: { ...stage.agent } });
@@ -344,10 +354,35 @@ function StageConfigDialog({
 
           {/* Agent */}
           <div className="space-y-4 pt-1 border-t border-border/40">
+            {/* Agent picker */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Agente de IA (opcional)</label>
+              <Select
+                value={draft.agentId ?? "__none__"}
+                onValueChange={v => setDraft(d => d ? { ...d, agentId: v === "__none__" ? null : v, agent: { ...d.agent, enabled: v !== "__none__" } } : d)}
+              >
+                <SelectTrigger className="h-9 rounded-xl text-sm border-border/60">
+                  <div className="flex items-center gap-2">
+                    <Bot size={13} className="text-muted-foreground" />
+                    <SelectValue placeholder="Sem agente" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Sem agente</SelectItem>
+                  {agents.map(a => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}{a.phone_number_id ? ` · ${a.phone_number_id}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">Selecione um agente configurado em Agentes IA.</p>
+            </div>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-foreground">Agente de IA</p>
-                <p className="text-xs text-muted-foreground">Responde automaticamente nesta etapa</p>
+                <p className="text-sm font-medium text-foreground">Config. avançada do agente</p>
+                <p className="text-xs text-muted-foreground">Sobrescreve o prompt do agente selecionado</p>
               </div>
               <Switch
                 checked={draft.agent.enabled}
@@ -741,6 +776,7 @@ function dbStageToUI(s: PipelineStage, leads: Lead[]): Stage {
       prompt: s.agent_prompt ?? "",
       schedule: (s.agent_schedule as StageAgent["schedule"]) ?? "always",
     },
+    agentId: s.agent_id ?? null,
   };
 }
 
@@ -850,6 +886,7 @@ export default function Pipeline() {
         color: saved.color,
         cards: [],
         agent: { enabled: false, model: "gpt-4o", prompt: "", schedule: "always" },
+        agentId: null,
       };
       setStages(prev => [...prev, newStage]);
       setConfigStage(newStage);
@@ -869,6 +906,7 @@ export default function Pipeline() {
       agent_model: updated.agent.model,
       agent_prompt: updated.agent.prompt,
       agent_schedule: updated.agent.schedule,
+      agent_id: updated.agentId,
     }).catch(console.error);
   }
 

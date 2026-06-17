@@ -47,6 +47,7 @@ const AdminNotificacoes = lazy(() => import("@/pages/admin/AdminNotificacoes"));
 const AdminIntegracoes = lazy(() => import("@/pages/admin/AdminIntegracoes"));
 const AdminDocumentos = lazy(() => import("@/pages/admin/AdminDocumentos"));
 const AdminAgentes = lazy(() => import("@/pages/admin/AdminAgentes"));
+const AdminWhatsApp = lazy(() => import("@/pages/admin/AdminWhatsApp"));
 const Services = lazy(() => import("@/pages/Services"));
 const UserNew = lazy(() => import("@/pages/UserNew"));
 const UserDetail = lazy(() => import("@/pages/UserDetail"));
@@ -214,6 +215,7 @@ function AnimatedRoutes() {
                   <Route path="/admin/integracoes" element={<AdminIntegracoes />} />
                   <Route path="/admin/documentos" element={<AdminDocumentos />} />
                   <Route path="/admin/agentes" element={<AdminAgentes />} />
+                  <Route path="/admin/whatsapp" element={<AdminWhatsApp />} />
                   <Route path="/admin/usuarios/novo" element={<UserNew />} />
                   <Route path="/admin/usuarios/:id" element={<UserDetail />} />
                   <Route path="/admin/usuarios/:id/editar" element={<UserEdit />} />

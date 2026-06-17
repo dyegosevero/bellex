@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Edit, CalendarClock, Clock, Mail, Bell, Plug, FileSignature, Trash2, KeyRound, Eye, EyeOff, AlertTriangle, Ban, ChevronRight, Bot } from "lucide-react";
+import { Settings, Edit, CalendarClock, Clock, Mail, Bell, Plug, FileSignature, Trash2, KeyRound, Eye, EyeOff, AlertTriangle, Ban, ChevronRight, Bot, Smartphone } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
@@ -37,6 +37,7 @@ const settingsItems = [
   { to: "/admin/notificacoes", icon: Bell,          label: "Notificações", desc: "Lembretes automáticos e alertas" },
   { to: "/admin/integracoes",  icon: Plug,          label: "Integrações",  desc: "Conexões com serviços externos e APIs" },
   { to: "/admin/documentos",   icon: FileSignature, label: "Documentos",   desc: "Termos de consentimento e documentos" },
+  { to: "/admin/whatsapp",     icon: Smartphone,    label: "WhatsApp",     desc: "Gerenciar instâncias WhatsApp via Evolution API" },
   { to: "/admin/agentes",      icon: Bot,           label: "Agentes IA",   desc: "Configurar agentes de IA para atendimento automático" },
 ];
 

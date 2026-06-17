@@ -17,6 +17,7 @@ export interface PipelineStage {
   agent_model: string | null
   agent_prompt: string | null
   agent_schedule: string | null
+  agent_id: string | null
   created_at: string
   updated_at: string
 }
