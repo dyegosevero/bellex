@@ -347,8 +347,8 @@ export default function NotificationsTab() {
     <div className="space-y-4">
       {/* Tab header */}
       <div className="mb-2">
-        <h3 className="text-lg font-light tracking-wider flex items-center gap-2">
-          <Bell className="w-5 h-5" /> NOTIFICAÇÕES
+        <h3 className="text-lg font-light tracking-wider">
+          NOTIFICAÇÕES
         </h3>
         <p className="text-sm text-muted-foreground mt-1">Configure as notificações e mensagens enviadas automaticamente aos clientes por SMS e WhatsApp.</p>
       </div>

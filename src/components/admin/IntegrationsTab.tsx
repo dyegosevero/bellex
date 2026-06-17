@@ -1074,8 +1074,8 @@ export default function IntegrationsTab() {
   return (
     <div className="space-y-4">
       <div className="mb-2">
-        <h3 className="text-lg font-light tracking-wider flex items-center gap-2">
-          <Plug className="w-5 h-5" /> INTEGRAÇÕES
+        <h3 className="text-lg font-light tracking-wider">
+          INTEGRAÇÕES
         </h3>
         <p className="text-sm text-muted-foreground mt-1">Configure chaves de API e URLs para integrações externas.</p>
       </div>
