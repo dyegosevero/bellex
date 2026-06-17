@@ -16,7 +16,7 @@ export function PendingBillingsAlert() {
 
   return (
     <div
-      className="border-b border-red-200 bg-red-50 text-red-800"
+      className="border border-destructive/20 bg-destructive/80 text-destructive-foreground rounded-b-xl"
       role="alert"
     >
       <div className="px-4 py-1.5 flex items-center gap-3 text-xs">
