@@ -324,7 +324,7 @@ export default function NotificationsTab() {
       <div className="flex justify-end">
         <Button size="sm" variant="outline" onClick={() => saveTemplate(t)} disabled={saving === t.id}>
           {saving === t.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          {saving === t.id ? "A gravar..." : "Gravar"}
+          {saving === t.id ? "Salvando..." : "Salvar"}
         </Button>
       </div>
     </div>
@@ -447,7 +447,7 @@ export default function NotificationsTab() {
             <span className="text-sm text-muted-foreground">dias</span>
             <Button size="sm" variant="outline" onClick={saveIntervalDays} disabled={savingInterval}>
               {savingInterval ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-              Gravar
+              Salvar
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -512,7 +512,7 @@ export default function NotificationsTab() {
       <div className="flex justify-end">
         <Button onClick={saveAll} disabled={savingAll}>
           {savingAll ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          {savingAll ? "A gravar..." : "Gravar Tudo"}
+          {savingAll ? "Salvando..." : "Salvar Tudo"}
         </Button>
       </div>
     </div>

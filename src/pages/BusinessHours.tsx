@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Check } from "lucide-react";
+import { Loader2, Plus, Trash2, Check, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WEEKDAY_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -68,8 +69,13 @@ const BusinessHours = () => {
         .filter((h) => h.active)
     : [];
 
+  const navigate = useNavigate();
+
   return (
     <div>
+      <Button variant="ghost" size="sm" className="mb-4 -ml-1 text-muted-foreground" onClick={() => navigate("/admin")}>
+        <ChevronLeft className="w-4 h-4 mr-1" /> Configurações
+      </Button>
       <BlurFade delay={0.05}>
         <div className="mb-8">
           <h1 className="text-2xl font-light tracking-wider">Horários de Funcionamento</h1>
@@ -158,7 +164,7 @@ const BusinessHours = () => {
             <div className="flex justify-end">
               <Button onClick={handleSave} disabled={saving || Object.keys(edits).length === 0}>
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Gravar
+                Salvar
               </Button>
             </div>
           </div>

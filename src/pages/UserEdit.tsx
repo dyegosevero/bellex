@@ -164,7 +164,7 @@ const UserEdit = () => {
         <div className="flex gap-3 pt-4 border-t border-border">
           <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="flex-1">
             {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Gravar
+            Salvar
           </Button>
           <Button variant="outline" onClick={() => navigate("/equipe")}>Cancelar</Button>
         </div>

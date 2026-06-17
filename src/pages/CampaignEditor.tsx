@@ -534,7 +534,7 @@ export default function CampaignEditor() {
               </Button>
               <Button variant="outline" size="sm" onClick={() => saveCampaign()} disabled={saving} className="gap-1.5">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Gravar
+                Salvar
               </Button>
             </>
           )}

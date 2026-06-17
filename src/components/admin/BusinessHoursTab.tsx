@@ -336,7 +336,7 @@ export default function BusinessHoursTab() {
         <div className="flex justify-end pt-2 border-t border-border">
           <Button size="sm" variant="outline" onClick={handleSave} disabled={saving || !dirty}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {saving ? "A gravar..." : "Gravar"}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </Card>

@@ -744,7 +744,7 @@ const EmailProviderCard = () => {
       <div className="flex justify-end pt-2 border-t border-border">
         <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          {saving ? "A gravar..." : "Gravar"}
+          {saving ? "Salvando..." : "Salvar"}
         </Button>
       </div>
     </Card>
@@ -846,7 +846,7 @@ const TemplateEditor = ({
           <div className="flex gap-3">
             <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
               {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {saveMutation.isPending ? "A gravar..." : "Gravar Template"}
+              {saveMutation.isPending ? "Salvando..." : "Salvar Template"}
             </Button>
             <Button variant="outline" onClick={onBack}>Cancelar</Button>
           </div>

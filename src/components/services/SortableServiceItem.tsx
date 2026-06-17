@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Edit, Clock, GripVertical, RotateCcw } from "lucide-react";
 import type { DisplayItem } from "@/pages/Services";
 import { useSortable } from "@dnd-kit/sortable";
@@ -8,12 +9,13 @@ interface Props {
   item: DisplayItem;
   onEdit: (item: DisplayItem) => void;
   onRestore?: (serviceId: string) => void;
+  onToggleActive?: (serviceId: string, active: boolean) => void;
   formatDuration: (mins: number | null) => string;
   formatPrice: (price: number | null, currency: string) => string;
   isDragDisabled?: boolean;
 }
 
-const SortableServiceItem = ({ item, onEdit, onRestore, formatDuration, formatPrice, isDragDisabled }: Props) => {
+const SortableServiceItem = ({ item, onEdit, onRestore, onToggleActive, formatDuration, formatPrice, isDragDisabled }: Props) => {
   const id = item.type === "category" ? `cat-${item.data.id}` : item.data.id;
   const {
     attributes,
@@ -96,8 +98,12 @@ const SortableServiceItem = ({ item, onEdit, onRestore, formatDuration, formatPr
       {s.archived && (
         <span className="text-[9px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Arquivado</span>
       )}
-      {!s.active && !s.archived && (
-        <span className="text-[9px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Inativo</span>
+      {!s.archived && onToggleActive && (
+        <Switch
+          checked={s.active}
+          onCheckedChange={(v) => { onToggleActive(s.id, v); }}
+          onClick={(e) => e.stopPropagation()}
+        />
       )}
       {s.archived && onRestore && (
         <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7" onClick={(e) => { e.stopPropagation(); onRestore(s.id); }}>

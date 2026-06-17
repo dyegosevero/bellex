@@ -116,7 +116,7 @@ export default function SessionDataTab({ client, clientId, onSaved }: Props) {
               <X className="w-3.5 h-3.5" /> Cancelar
             </Button>
             <Button size="sm" className="gap-1.5" onClick={handleSave} disabled={saving}>
-              <Save className="w-3.5 h-3.5" /> {saving ? "A gravar..." : "Gravar"}
+              <Save className="w-3.5 h-3.5" /> {saving ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         ) : (

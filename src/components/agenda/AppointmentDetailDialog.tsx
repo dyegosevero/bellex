@@ -35,7 +35,6 @@ import { toast } from "sonner";
 import FeedbackDialog from "@/components/appointments/FeedbackDialog";
 import { invokeEdgeFunction } from "@/lib/edge-functions";
 import { fireBookingWebhook } from "@/lib/webhook";
-import { usePendingBillings } from "@/hooks/usePendingBillings";
 import { useFeedbackEnabled } from "@/hooks/useFeedbackEnabled";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -132,10 +131,7 @@ export default function AppointmentDetailDialog({
   const queryClient = useQueryClient();
   const { isSpecialist, isReceptionist, isAdmin } = useAuth();
   const canDeleteAppointment = isAdmin || isSpecialist;
-  const { count: pendingBillingsCount } = usePendingBillings();
   const feedbackEnabled = useFeedbackEnabled();
-  const [pendingBlockOpen, setPendingBlockOpen] = useState(false);
-  const [pendingProceed, setPendingProceed] = useState<(() => void) | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
@@ -384,12 +380,6 @@ export default function AppointmentDetailDialog({
   };
 
   const handleStartSession = async () => {
-    // Bloqueia/alerta antes de iniciar novo atendimento se houver cobranças pendentes
-    if (pendingBillingsCount > 0) {
-      setPendingProceed(() => doStartSession);
-      setPendingBlockOpen(true);
-      return;
-    }
     await doStartSession();
   };
 
@@ -1098,31 +1088,6 @@ export default function AppointmentDetailDialog({
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={pendingBlockOpen} onOpenChange={setPendingBlockOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">
-              {pendingBillingsCount} {pendingBillingsCount === 1 ? "cobrança pendente" : "cobranças pendentes"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Existem atendimentos finalizados sem cobrança registada. Resolva antes de iniciar um novo atendimento.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Resolver depois</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                const fn = pendingProceed;
-                setPendingBlockOpen(false);
-                setPendingProceed(null);
-                if (fn) await fn();
-              }}
-            >
-              Continuar mesmo assim
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

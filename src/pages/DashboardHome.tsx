@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useDashboardKPIs, useRevenuePerSpecialist } from "@/hooks/useDashboardData";
+import { useDashboardKPIs, useRevenuePerSpecialist, useInactivityDays } from "@/hooks/useDashboardData";
 import { fmtCurrency } from "@/lib/date";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -229,6 +229,7 @@ export default function DashboardHome() {
 
   const { data: kpis, isLoading: kpisLoading } = useDashboardKPIs();
   const { data: specialists } = useRevenuePerSpecialist();
+  const { data: inactivityDays = 90 } = useInactivityDays();
   const { data: rawCharges = [] } = useRevenueSeries(period);
   const { data: rawAppts = [] } = useAppointmentsByPeriod(period);
   const { data: todayAppts = [] } = useTodayAppointments();
@@ -500,17 +501,31 @@ export default function DashboardHome() {
         )}
       </div>
 
-      {/* Inactive alert */}
+      {/* Inactive clients card */}
       {kpis && kpis.inactive_clients > 0 && (
-        <div
-          className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-center gap-3 cursor-pointer hover:bg-amber-100/60 transition-colors"
-          onClick={() => navigate("/clientes?tab=inativos")}
-        >
-          <AlertCircle size={16} className="text-amber-600 flex-shrink-0" />
-          <p className="text-sm text-amber-800 flex-1">
-            <strong>{kpis.inactive_clients} clientes</strong> sem retorno. Envie uma campanha de reativação.
-          </p>
-          <button className="text-xs text-amber-700 font-medium flex items-center gap-1 hover:underline">
+        <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
+          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <UserX size={16} className="text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              {kpis.inactive_clients}{" "}
+              {kpis.inactive_clients === 1 ? "cliente inativo" : "clientes inativos"} há mais de {inactivityDays} dias
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Envie uma campanha de reativação para trazê-los de volta.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/marketing/nova")}
+            className="text-xs font-medium text-primary hover:underline whitespace-nowrap"
+          >
+            Criar campanha
+          </button>
+          <button
+            onClick={() => navigate("/clientes?tab=inativos")}
+            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-0.5 whitespace-nowrap"
+          >
             Ver clientes <ChevronRight size={11} />
           </button>
         </div>

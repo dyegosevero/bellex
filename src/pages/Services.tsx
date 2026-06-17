@@ -261,6 +261,14 @@ const Services = () => {
     invalidate();
   };
 
+  const handleToggleActive = async (serviceId: string, active: boolean) => {
+    queryClient.setQueryData(["services-page"], (old: ServiceRow[] | undefined) =>
+      old ? old.map(s => s.id === serviceId ? { ...s, active } : s) : old
+    );
+    const { error } = await supabase.from("services").update({ active }).eq("id", serviceId);
+    if (error) { toast.error("Erro ao atualizar serviço"); invalidate(); }
+  };
+
   const sortableIds = filtered.map((item) => item.type === "category" ? `cat-${item.data.id}` : item.data.id);
 
   return (
@@ -319,6 +327,7 @@ const Services = () => {
                     item={item}
                     onEdit={handleEditItem}
                     onRestore={showArchived ? handleRestore : undefined}
+                    onToggleActive={!showArchived ? handleToggleActive : undefined}
                     formatDuration={formatDuration}
                     formatPrice={formatPrice}
                     isDragDisabled={isFiltering}

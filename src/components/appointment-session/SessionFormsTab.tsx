@@ -8,6 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, Loader2 } from "lucide-react";
 import { AnamnesisFaceForm } from "@/components/clients/AnamnesisFaceForm";
 import { AnamnesisBodyForm } from "@/components/clients/AnamnesisBodyForm";
+import { FichaCorporal } from "@/components/clients/FichaCorporal";
+import { FichaFacial } from "@/components/clients/FichaFacial";
+import { FichaEpilacao } from "@/components/clients/FichaEpilacao";
+import { FichaInjetaveis } from "@/components/clients/FichaInjetaveis";
 import { toast } from "sonner";
 
 // Fields that belong to sections 8-9 (Face form) — NOT pre-filled, shown as placeholder
@@ -92,7 +96,10 @@ function SingleFormTab({ appointmentId, clientId, formType }: { appointmentId: s
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
 
-  const planFields = formType === "corpo" ? BODY_PLAN_FIELDS : FACE_PLAN_FIELDS;
+  const planFields =
+    formType === "corpo" ? BODY_PLAN_FIELDS
+    : formType === "rosto" ? FACE_PLAN_FIELDS
+    : [];
 
   // Check if this appointment already has a form saved for this type
   const { data: existingForm } = useQuery({
@@ -191,7 +198,14 @@ function SingleFormTab({ appointmentId, clientId, formType }: { appointmentId: s
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold uppercase tracking-wider">
-          Ficha de Anamnese — {formType === "corpo" ? "Corpo" : "Rosto"}
+          {{
+            corpo: "Anamnese — Corpo",
+            rosto: "Anamnese — Rosto",
+            corporal: "Ficha Corporal",
+            facial: "Ficha Facial",
+            epilacao: "Ficha de Epilação",
+            injetaveis: "Ficha de Injetáveis",
+          }[formType] ?? "Ficha"}
         </h3>
         <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1.5">
           {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
@@ -206,6 +220,20 @@ function SingleFormTab({ appointmentId, clientId, formType }: { appointmentId: s
             placeholderData={placeholderData}
             onChange={handleFormChange}
           />
+        ) : formType === "rosto" ? (
+          <AnamnesisFaceForm
+            defaultValues={defaultValues}
+            placeholderData={placeholderData}
+            onChange={handleFormChange}
+          />
+        ) : formType === "corporal" ? (
+          <FichaCorporal defaultValues={defaultValues} onChange={handleFormChange} />
+        ) : formType === "facial" ? (
+          <FichaFacial defaultValues={defaultValues} onChange={handleFormChange} />
+        ) : formType === "epilacao" ? (
+          <FichaEpilacao defaultValues={defaultValues} onChange={handleFormChange} />
+        ) : formType === "injetaveis" ? (
+          <FichaInjetaveis defaultValues={defaultValues} onChange={handleFormChange} />
         ) : (
           <AnamnesisFaceForm
             defaultValues={defaultValues}

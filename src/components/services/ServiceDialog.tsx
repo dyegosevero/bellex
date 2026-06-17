@@ -55,8 +55,7 @@ const ServiceDialog = ({
   const [reqPhotos, setReqPhotos] = useState(false);
   const [consentPolicy, setConsentPolicy] = useState<"none" | "once" | "always">("none");
   const [reqCompletionSig, setReqCompletionSig] = useState(false);
-  const [reqFichaRosto, setReqFichaRosto] = useState(false);
-  const [reqFichaCorpo, setReqFichaCorpo] = useState(false);
+  const [selectedFicha, setSelectedFicha] = useState<string | null>(null);
   const [multiSession, setMultiSession] = useState(false);
   const [sessionCount, setSessionCount] = useState<number | "">(2);
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -117,14 +116,14 @@ const ServiceDialog = ({
         setMultiSession((editing as any).multi_session ?? false);
         setSessionCount((editing as any).session_count ?? 2);
         const formType = (editing as any).assessment_form_type ?? "";
-        setReqFichaRosto(editing.requires_assessment_form && (formType === "rosto" || formType === "ambos"));
-        setReqFichaCorpo(editing.requires_assessment_form && (formType === "corpo" || formType === "ambos"));
+        const mappedForm = formType === "ambos" ? "rosto" : (formType || null);
+        setSelectedFicha(editing.requires_assessment_form ? mappedForm : null);
       } else {
         setName(""); setDescription(""); setDurationMinutes(30);
         setPrice(""); setCurrency("BRL"); setVatRate(defaultVatRate ?? 23);
         setColor("#3B82F6"); setActive(true); setShowOnBooking(true);
         setShowPriceOnBooking(true); setReqPhotos(false);
-        setConsentPolicy("none"); setReqCompletionSig(false); setReqFichaRosto(false); setReqFichaCorpo(false);
+        setConsentPolicy("none"); setReqCompletionSig(false); setSelectedFicha(null);
         setCategoryId(null); setMultiSession(false); setSessionCount(2);
         setSelectedDocIds([]);
       }
@@ -147,8 +146,8 @@ const ServiceDialog = ({
         requires_before_after_photos: reqPhotos,
         requires_consent_form: consentPolicy !== "none",
         consent_policy: consentPolicy,
-        requires_assessment_form: reqFichaRosto || reqFichaCorpo,
-        assessment_form_type: (reqFichaRosto && reqFichaCorpo) ? "ambos" : reqFichaCorpo ? "corpo" : reqFichaRosto ? "rosto" : null,
+        requires_assessment_form: !!selectedFicha,
+        assessment_form_type: selectedFicha || null,
         category_id: categoryId,
         requires_completion_signature: reqCompletionSig,
         multi_session: multiSession,
@@ -256,7 +255,7 @@ const ServiceDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0" onInteractOutside={(e) => e.preventDefault()}>
           {/* Fixed header */}
           <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogHeader>
@@ -265,10 +264,6 @@ const ServiceDialog = ({
                 {editing ? "Atualize os dados do serviço" : "Preencha os dados do novo serviço"}
               </DialogDescription>
             </DialogHeader>
-            <div className="flex items-center gap-2 mt-3">
-              <Switch checked={active} onCheckedChange={setActive} id="service-active" />
-              <Label htmlFor="service-active" className="text-sm text-muted-foreground">Ativo</Label>
-            </div>
           </div>
 
           <form
@@ -288,7 +283,7 @@ const ServiceDialog = ({
                 <TabsList className="w-full">
                   <TabsTrigger value="geral" className="flex-1">Geral</TabsTrigger>
                   <TabsTrigger value="obrigacoes" className="flex-1 gap-1.5">
-                    Obrigações
+                    Configurações
                     {obligationsCount > 0 && (
                       <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground">
                         {obligationsCount}
@@ -305,9 +300,9 @@ const ServiceDialog = ({
                   </TabsTrigger>
                   <TabsTrigger value="fichas" className="flex-1 gap-1.5">
                     Fichas
-                    {(reqFichaRosto || reqFichaCorpo) && (
+                    {selectedFicha && (
                       <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground">
-                        {[reqFichaRosto, reqFichaCorpo].filter(Boolean).length}
+                        1
                       </span>
                     )}
                   </TabsTrigger>
@@ -316,10 +311,19 @@ const ServiceDialog = ({
 
               {/* ── Tab: Geral ── */}
               <TabsContent value="geral" className="flex-1 overflow-y-auto px-6 py-4 space-y-5 mt-0">
-                {/* Nome */}
+                {/* Nome + Cor */}
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-wider text-muted-foreground">Nome *</Label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Ex: Limpeza de Pele" />
+                  <div className="flex items-center gap-2">
+                    <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Ex: Limpeza de Pele" className="flex-1" />
+                    <input
+                      type="color"
+                      value={color}
+                      onChange={(e) => setColor(e.target.value)}
+                      className="w-9 h-9 rounded-lg border border-border cursor-pointer p-0.5 shrink-0 bg-transparent"
+                      title="Cor do serviço"
+                    />
+                  </div>
                 </div>
 
                 {/* Categoria */}
@@ -372,27 +376,6 @@ const ServiceDialog = ({
                   </div>
                 </div>
 
-                {/* Cor */}
-                <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Cor</Label>
-                  <div className="flex items-center gap-3">
-                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-10 h-10 rounded-full border-2 border-muted cursor-pointer p-0.5" />
-                    <Input value={color} onChange={(e) => setColor(e.target.value)} placeholder="#3B82F6" className="flex-1 font-mono text-sm" maxLength={7} />
-                  </div>
-                </div>
-
-                {/* Visibilidade */}
-                <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/20">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Página de marcações</p>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Disponível para agendamento online</Label>
-                    <Switch checked={showOnBooking} onCheckedChange={setShowOnBooking} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Mostrar preço</Label>
-                    <Switch checked={showPriceOnBooking} onCheckedChange={setShowPriceOnBooking} />
-                  </div>
-                </div>
 
                 {/* Múltiplas sessões */}
                 <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/20">
@@ -416,41 +399,31 @@ const ServiceDialog = ({
                 </div>
               </TabsContent>
 
-              {/* ── Tab: Obrigações ── */}
+              {/* ── Tab: Configurações ── */}
               <TabsContent value="obrigacoes" className="flex-1 overflow-y-auto px-6 py-4 space-y-4 mt-0">
+                {/* Página de marcações */}
+                <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/20">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Página de marcações</p>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Disponível para agendamento online</Label>
+                    <Switch checked={showOnBooking} onCheckedChange={setShowOnBooking} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Mostrar preço</Label>
+                    <Switch checked={showPriceOnBooking} onCheckedChange={setShowPriceOnBooking} />
+                  </div>
+                </div>
+
                 {/* Fotos */}
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-2.5">
                     <Camera className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <Label className="text-sm">Fotos antes/depois</Label>
-                      <p className="text-[11px] text-muted-foreground">Exige registo fotográfico na sessão</p>
+                      <p className="text-[11px] text-muted-foreground">Exige registro fotográfico na sessão</p>
                     </div>
                   </div>
-                  <Switch checked={reqPhotos} onCheckedChange={(v) => { setReqPhotos(v); if (v && consentPolicy === "none") setConsentPolicy("once"); }} />
-                </div>
-
-                <div className="border-t border-border" />
-
-                {/* Consentimento */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                    <Label className="text-sm">Política de consentimento</Label>
-                  </div>
-                  <Select value={consentPolicy} onValueChange={(v) => setConsentPolicy(v as any)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Não pedir consentimento</SelectItem>
-                      <SelectItem value="once">Pedir na 1ª sessão</SelectItem>
-                      <SelectItem value="always">Pedir em todas as sessões</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-[11px] text-muted-foreground pl-6">
-                    {consentPolicy === "once" && "Solicitado apenas se o cliente ainda não assinou para este serviço."}
-                    {consentPolicy === "always" && "Solicitado obrigatoriamente em cada sessão."}
-                    {consentPolicy === "none" && "Nunca solicitado automaticamente ao iniciar a sessão."}
-                  </p>
+                  <Switch checked={reqPhotos} onCheckedChange={setReqPhotos} />
                 </div>
 
                 <div className="border-t border-border" />
@@ -467,11 +440,36 @@ const ServiceDialog = ({
 
               {/* ── Tab: Documentos ── */}
               <TabsContent value="documentos" className="flex-1 overflow-y-auto px-6 py-4 space-y-4 mt-0">
+                {/* Frequência de consentimento */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">Frequência de assinatura</Label>
+                  </div>
+                  <Select value={consentPolicy} onValueChange={(v) => setConsentPolicy(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Não solicitar assinatura</SelectItem>
+                      <SelectItem value="once">Solicitar apenas na 1ª sessão</SelectItem>
+                      <SelectItem value="always">Solicitar em todas as sessões</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {consentPolicy && (
+                    <p className="text-[11px] text-muted-foreground pl-1">
+                      {consentPolicy === "once" && "Os documentos selecionados são solicitados apenas se o cliente ainda não assinou para este serviço."}
+                      {consentPolicy === "always" && "Os documentos selecionados são solicitados em todas as sessões."}
+                      {consentPolicy === "none" && "Nenhum documento será solicitado automaticamente ao iniciar a sessão."}
+                    </p>
+                  )}
+                </div>
+
+                <div className="border-t border-border" />
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <FileSignature className="w-4 h-4 text-muted-foreground" />
-                      <Label className="text-sm">Documentos para assinar</Label>
+                      <Label className="text-sm font-medium">Documentos para assinar</Label>
                     </div>
                     <button
                       type="button"
@@ -482,7 +480,7 @@ const ServiceDialog = ({
                     </button>
                   </div>
                   {allDocs.length === 0 ? (
-                    <p className="text-xs text-muted-foreground pl-6">
+                    <p className="text-xs text-muted-foreground pl-1">
                       Nenhum documento criado.{" "}
                       <button type="button" onClick={() => navigate("/documentos")} className="text-primary hover:underline">
                         Criar documento
@@ -519,31 +517,34 @@ const ServiceDialog = ({
               {/* ── Tab: Fichas ── */}
               <TabsContent value="fichas" className="flex-1 overflow-y-auto px-6 py-4 space-y-4 mt-0">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Fichas clínicas</p>
+                <p className="text-[11px] text-muted-foreground -mt-2">Selecione uma ficha para solicitar ao iniciar sessão deste serviço.</p>
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between py-2 px-3 rounded-lg border border-border hover:bg-muted/20">
-                    <div className="flex items-center gap-2.5">
-                      <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <Label className="text-sm">Ficha de Rosto</Label>
-                        <p className="text-[11px] text-muted-foreground">Anamnese e avaliação facial</p>
-                      </div>
-                    </div>
-                    <Switch checked={reqFichaRosto} onCheckedChange={setReqFichaRosto} />
-                  </div>
-                  <div className="flex items-center justify-between py-2 px-3 rounded-lg border border-border hover:bg-muted/20">
-                    <div className="flex items-center gap-2.5">
-                      <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <Label className="text-sm">Ficha de Corpo</Label>
-                        <p className="text-[11px] text-muted-foreground">Anamnese e avaliação corporal</p>
-                      </div>
-                    </div>
-                    <Switch checked={reqFichaCorpo} onCheckedChange={setReqFichaCorpo} />
-                  </div>
+                  {([
+                    { value: "rosto", label: "Ficha de Rosto", desc: "Anamnese facial básica" },
+                    { value: "corpo", label: "Ficha de Corpo", desc: "Anamnese corporal básica" },
+                    { value: "facial", label: "Ficha Facial", desc: "Avaliação facial completa (Baumann, acne, rosácea)" },
+                    { value: "corporal", label: "Ficha Corporal", desc: "Avaliação corporal completa (IMC, adipometria, perimetria)" },
+                    { value: "epilacao", label: "Ficha de Epilação", desc: "Fitzpatrick, pigmento e espessura do pelo" },
+                    { value: "injetaveis", label: "Ficha de Injetáveis", desc: "Mapa facial, produtos e lotes" },
+                  ] as const).map((f) => {
+                    const selected = selectedFicha === f.value;
+                    return (
+                      <button
+                        key={f.value}
+                        type="button"
+                        onClick={() => setSelectedFicha(selected ? null : f.value)}
+                        className={`w-full flex items-center gap-2.5 py-2 px-3 rounded-lg border text-left transition-colors ${selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/20"}`}
+                      >
+                        <ClipboardList className={`w-4 h-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium ${selected ? "text-primary" : ""}`}>{f.label}</p>
+                          <p className="text-[11px] text-muted-foreground">{f.desc}</p>
+                        </div>
+                        {selected && <div className="w-2 h-2 rounded-full bg-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  As fichas selecionadas serão solicitadas ao iniciar uma sessão deste serviço.
-                </p>
               </TabsContent>
             </Tabs>
 
@@ -567,21 +568,19 @@ const ServiceDialog = ({
                   {editing ? "Salvar" : "Criar Serviço"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              </div>
-
-              {editing && !isArchived && (
-                <div className="flex justify-end">
-                  <button
+                {editing && !isArchived && (
+                  <Button
                     type="button"
-                    className="text-sm text-destructive hover:underline inline-flex items-center gap-1.5 disabled:opacity-50"
+                    variant="outline"
+                    className="gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setArchiveConfirmOpen(true)}
                     disabled={archiving}
                   >
                     {archiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5" />}
                     Arquivar
-                  </button>
-                </div>
-              )}
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </DialogContent>

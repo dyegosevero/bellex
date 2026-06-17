@@ -1,20 +1,18 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { BlurFade } from "@/components/ui/blur-fade";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { CalendarClock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import AgendaTab from "@/components/admin/AgendaTab";
 
 export default function AdminAgenda() {
   const { role } = useAuth();
+  const navigate = useNavigate();
   if (role !== "admin") return <Navigate to="/dashboard" replace />;
   return (
     <div>
-      <BlurFade delay={0.05}>
-        <div className="mb-8">
-          <PageHeader icon={<CalendarClock className="w-5 h-5" />} title="Agenda" subtitle="Configurações da agenda e reservas online" />
-        </div>
-      </BlurFade>
+      <Button variant="ghost" size="sm" className="mb-4 -ml-1 text-muted-foreground" onClick={() => navigate("/admin")}>
+        <ChevronLeft className="w-4 h-4 mr-1" /> Configurações
+      </Button>
       <AgendaTab />
     </div>
   );

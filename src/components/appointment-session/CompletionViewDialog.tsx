@@ -70,69 +70,71 @@ export default function CompletionViewDialog({ open, onOpenChange, document: doc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between gap-4">
-            <span>Documento de Presença</span>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={handleDownloadPdf}>
-              <Download className="w-3.5 h-3.5" /> Baixar PDF
-            </Button>
-          </DialogTitle>
+      <DialogContent className="max-w-2xl flex flex-col max-h-[90vh] p-0 gap-0">
+        {/* Header fixo */}
+        <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+          <DialogTitle>Documento de Presença</DialogTitle>
         </DialogHeader>
 
-        <div ref={printRef} className="space-y-5 p-2">
-          {/* Type */}
-          <div className="py-2">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Tipo</p>
-            <p className="text-sm font-medium">Assinatura de Realização</p>
-          </div>
-
-          {/* Confirmation text */}
-          <div className="py-2">
-            <p className="text-sm leading-relaxed">
-              Confirmo que estive presente e realizei o procedimento descrito abaixo.
-            </p>
-          </div>
-
-          {/* Details */}
-          <div className="grid grid-cols-2 gap-3">
+        {/* Corpo scrollável */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div ref={printRef} className="space-y-5">
             <div className="py-2">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Data</p>
-              <p className="text-sm font-medium">{docDate}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Tipo</p>
+              <p className="text-sm font-medium">Assinatura de Realização</p>
             </div>
-            {timeRange && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Horário</p>
-                <p className="text-sm font-medium">{timeRange}</p>
-              </div>
-            )}
-            {serviceName && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Serviço</p>
-                <p className="text-sm font-medium">{serviceName}</p>
-              </div>
-            )}
-            {specialistName && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Especialista</p>
-                <p className="text-sm font-medium">{specialistName}</p>
-              </div>
-            )}
-          </div>
 
-          {/* Signature */}
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
-              Assinatura do(a) Cliente
-            </p>
-            <div className="border-b border-border pb-2 min-h-[120px] flex items-center justify-center">
-              {signatureUrl ? (
-                <img src={signatureUrl} alt="Assinatura do cliente" className="max-h-[100px] max-w-full object-contain" />
-              ) : (
-                <p className="text-xs text-muted-foreground">Sem assinatura</p>
+            <div className="py-2">
+              <p className="text-sm leading-relaxed">
+                Confirmo que estive presente e realizei o procedimento descrito abaixo.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="py-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Data</p>
+                <p className="text-sm font-medium">{docDate}</p>
+              </div>
+              {timeRange && (
+                <div className="py-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Horário</p>
+                  <p className="text-sm font-medium">{timeRange}</p>
+                </div>
+              )}
+              {serviceName && (
+                <div className="py-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Serviço</p>
+                  <p className="text-sm font-medium">{serviceName}</p>
+                </div>
+              )}
+              {specialistName && (
+                <div className="py-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Especialista</p>
+                  <p className="text-sm font-medium">{specialistName}</p>
+                </div>
               )}
             </div>
+
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                Assinatura do(a) Cliente
+              </p>
+              <div className="border-b border-border pb-2 min-h-[120px] flex items-center justify-center">
+                {signatureUrl ? (
+                  <img src={signatureUrl} alt="Assinatura do cliente" className="max-h-[100px] max-w-full object-contain" />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sem assinatura</p>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Footer fixo com botão */}
+        <div className="px-6 py-4 border-t border-border shrink-0 flex justify-end">
+          <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={handleDownloadPdf}>
+            <Download className="w-3.5 h-3.5" /> Baixar PDF
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

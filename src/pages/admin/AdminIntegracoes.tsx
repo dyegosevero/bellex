@@ -1,20 +1,18 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { BlurFade } from "@/components/ui/blur-fade";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { Plug } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import IntegrationsTab from "@/components/admin/IntegrationsTab";
 
 export default function AdminIntegracoes() {
   const { role } = useAuth();
+  const navigate = useNavigate();
   if (role !== "admin") return <Navigate to="/dashboard" replace />;
   return (
     <div>
-      <BlurFade delay={0.05}>
-        <div className="mb-8">
-          <PageHeader icon={<Plug className="w-5 h-5" />} title="Integrações" subtitle="Conexões com serviços externos e APIs" />
-        </div>
-      </BlurFade>
+      <Button variant="ghost" size="sm" className="mb-4 -ml-1 text-muted-foreground" onClick={() => navigate("/admin")}>
+        <ChevronLeft className="w-4 h-4 mr-1" /> Configurações
+      </Button>
       <IntegrationsTab />
     </div>
   );

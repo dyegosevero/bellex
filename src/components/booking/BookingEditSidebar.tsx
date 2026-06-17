@@ -346,7 +346,7 @@ export function BookingEditSidebar({ open, onOpenChange, settings, onSaved }: Pr
 
           <Button onClick={handleSave} disabled={saving} className="w-full">
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Gravar Alterações
+            Salvar Alterações
           </Button>
         </div>
       </SheetContent>

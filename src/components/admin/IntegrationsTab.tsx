@@ -373,7 +373,7 @@ function WhatsAppCard({
           </div>
           <Button size="sm" variant="outline" onClick={onSave} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {saving ? "A gravar..." : "Gravar"}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </Card>
@@ -1225,7 +1225,7 @@ export default function IntegrationsTab() {
               </div>
               <Button size="sm" variant="outline" onClick={saveSms} disabled={savingSms}>
                 {savingSms ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                {savingSms ? "A gravar..." : "Gravar"}
+                {savingSms ? "Salvando..." : "Salvar"}
               </Button>
             </div>
             {smsLogsOpen && (
@@ -1719,7 +1719,7 @@ export default function IntegrationsTab() {
         <div className="flex justify-end pt-2 border-t border-border">
           <Button size="sm" variant="outline" onClick={saveWebhooks} disabled={savingWebhooks}>
             {savingWebhooks ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {savingWebhooks ? "A gravar..." : "Gravar"}
+            {savingWebhooks ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </Card>

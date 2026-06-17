@@ -665,7 +665,7 @@ export default function GoogleReviewsTab() {
         <div className="flex justify-end pt-2 border-t">
           <Button onClick={handleSave} disabled={saving} className="gap-2">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Gravar
+            Salvar
           </Button>
         </div>
       </Card>

@@ -183,12 +183,12 @@ export default function AgendaTab() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">URL do Sistema</Label>
-              <Input value={(form as any).system_url || ""} onChange={(e) => update("system_url", e.target.value)} placeholder="https://system.bellex.pt" />
+              <Input value={(form as any).system_url || ""} onChange={(e) => update("system_url", e.target.value)} placeholder="https://sistema.suaclinica.com.br" />
               <p className="text-[10px] text-muted-foreground">Usado para links de cancelamento, calendário, etc.</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">URL de Agendamento</Label>
-              <Input value={(form as any).booking_url || ""} onChange={(e) => update("booking_url", e.target.value)} placeholder="https://agendamento.bellex.pt" />
+              <Input value={(form as any).booking_url || ""} onChange={(e) => update("booking_url", e.target.value)} placeholder="https://agendamento.suaclinica.com.br" />
               <p className="text-[10px] text-muted-foreground">Usado para links de compartilhamento e embed.</p>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function AgendaTab() {
         <div className="flex justify-end pt-2 border-t border-border">
           <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {saving ? "A gravar..." : "Gravar"}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </Card>
@@ -266,7 +266,7 @@ export default function AgendaTab() {
         <div className="flex justify-end pt-2 border-t border-border">
           <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {saving ? "A gravar..." : "Gravar"}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </Card>

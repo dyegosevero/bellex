@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SignatureCanvas from "react-signature-canvas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,7 +41,7 @@ export default function ConsentDialog({
   const queryClient = useQueryClient();
   const sigCanvasClient = useRef<SignatureCanvas>(null);
   const sigCanvasPro = useRef<SignatureCanvas>(null);
-  const [consentType, setConsentType] = useState<"treatment_only" | "treatment_internal" | "treatment_social">("treatment_only");
+  const consentType = "treatment_only" as const;
   const [saving, setSaving] = useState(false);
 
   // Citizen card capture state
@@ -262,7 +261,7 @@ export default function ConsentDialog({
             </Button>
             <Button onClick={handleSaveCitizenCard} disabled={savingCard}>
               {savingCard && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
-              Gravar e Continuar
+              Salvar e Continuar
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -276,33 +275,6 @@ export default function ConsentDialog({
           </DialogHeader>
 
           <div className="space-y-5">
-            {/* Consent type selection */}
-            <div>
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground mb-3 block">
-                Tipo de Consentimento
-              </Label>
-              <RadioGroup value={consentType} onValueChange={(v) => setConsentType(v as any)}>
-                <div className="flex items-start gap-2">
-                  <RadioGroupItem value="treatment_only" id="only" />
-                  <Label htmlFor="only" className="text-sm cursor-pointer leading-snug">
-                    Apenas consentimento do serviço (sem fotografias)
-                  </Label>
-                </div>
-                <div className="flex items-start gap-2 mt-2">
-                  <RadioGroupItem value="treatment_internal" id="internal" />
-                  <Label htmlFor="internal" className="text-sm cursor-pointer leading-snug">
-                    Serviço + Imagens apenas para uso interno
-                  </Label>
-                </div>
-                <div className="flex items-start gap-2 mt-2">
-                  <RadioGroupItem value="treatment_social" id="social" />
-                  <Label htmlFor="social" className="text-sm cursor-pointer leading-snug">
-                    Serviço + Autorização de imagem (redes sociais)
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
             {/* Consent document */}
             <div className="bg-muted/30 border border-border rounded-lg p-5">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Documento</p>
@@ -362,7 +334,7 @@ export default function ConsentDialog({
             {/* Confirm button */}
             <div className="flex justify-end pt-2">
               <Button onClick={handleConfirm} disabled={saving} className="gap-1.5">
-                <Check className="w-4 h-4" /> {saving ? "A gravar..." : "Confirmar e Gravar"}
+                <Check className="w-4 h-4" /> {saving ? "Salvando..." : "Confirmar e Salvar"}
               </Button>
             </div>
           </div>
