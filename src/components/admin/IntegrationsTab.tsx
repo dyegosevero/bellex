@@ -65,7 +65,7 @@ const FIELD_META: Record<string, { label: string; placeholder: string }> = {
   n8n_webhook_url_booking: { label: "URL do Webhook — Marcações", placeholder: "https://meu-n8n.com/webhook/..." },
   n8n_webhook_url_stuck_appointments: { label: "URL do Webhook — Atendimentos Esquecidos", placeholder: "https://meu-n8n.com/webhook/..." },
   n8n_marketing_webhook: { label: "URL do Webhook — Campanhas de Marketing", placeholder: "https://meu-n8n.com/webhook/marketing" },
-  
+  openai_api_key: { label: "Chave API OpenAI", placeholder: "sk-..." },
 };
 
 const WEBHOOK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/daily-notifications`;
@@ -822,6 +822,101 @@ function InstancesCard() {
   );
 }
 
+function OpenAICard({
+  local,
+  setLocal,
+  update,
+  queryClient,
+}: {
+  local: IntSetting[];
+  setLocal: React.Dispatch<React.SetStateAction<IntSetting[]>>;
+  update: (key: string, value: string) => void;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const [showKey, setShowKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const openaiSetting = local.find((s) => s.setting_key === "openai_api_key");
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (!openaiSetting || openaiSetting.id.startsWith("temp-")) {
+        await supabase.from("integration_settings").insert({
+          setting_key: "openai_api_key",
+          setting_value: openaiSetting?.setting_value ?? "",
+        } as any);
+        queryClient.invalidateQueries({ queryKey: ["integration-settings"] });
+      } else {
+        await supabase
+          .from("integration_settings")
+          .update({ setting_value: openaiSetting.setting_value, updated_at: new Date().toISOString() } as any)
+          .eq("id", openaiSetting.id);
+      }
+      toast.success("Chave OpenAI salva.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <KeyRound className="w-5 h-5 text-muted-foreground" />
+        <Label className="text-sm font-semibold">Inteligência Artificial (OpenAI)</Label>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Chave usada pelos agentes de atendimento. Configurada uma vez e compartilhada por todos os agentes da clínica — nunca exposta no frontend.
+      </p>
+      <div className="space-y-1.5">
+        <Label className="text-xs uppercase tracking-wider text-muted-foreground">Chave API OpenAI</Label>
+        <div className="flex gap-1">
+          <Input
+            value={openaiSetting?.setting_value || ""}
+            onChange={(e) => {
+              if (openaiSetting) {
+                update("openai_api_key", e.target.value);
+              } else {
+                setLocal((prev) => [
+                  ...prev,
+                  { id: "temp-openai", setting_key: "openai_api_key", setting_value: e.target.value },
+                ]);
+              }
+            }}
+            placeholder="sk-..."
+            type={showKey ? "text" : "password"}
+            autoComplete="new-password"
+            className="flex-1 font-mono"
+          />
+          <Button type="button" size="icon" variant="outline" onClick={() => setShowKey((p) => !p)}>
+            {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            disabled={!openaiSetting?.setting_value}
+            onClick={() => {
+              navigator.clipboard.writeText(openaiSetting?.setting_value || "");
+              toast.success("Chave copiada!");
+            }}
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+      <div className="flex justify-end pt-2 border-t border-border">
+        <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 export default function IntegrationsTab() {
   const queryClient = useQueryClient();
   const [local, setLocal] = useState<IntSetting[]>([]);
@@ -1091,6 +1186,14 @@ export default function IntegrationsTab() {
         queryClient={queryClient}
         onSave={saveWhatsApp}
         saving={savingWhatsApp}
+      />
+
+      {/* IA / OpenAI card */}
+      <OpenAICard
+        local={local}
+        setLocal={setLocal}
+        update={update}
+        queryClient={queryClient}
       />
 
       {/* SMS card */}

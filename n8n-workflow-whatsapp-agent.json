@@ -1,0 +1,550 @@
+{
+  "name": "Bellex — WhatsApp AI Agent v2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bellex-whatsapp",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook EvoAPI",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "bellex-whatsapp-agent"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.body.supabase_url }}/rest/v1/messages?select=text,from_me,created_at&conversation_id=eq.{{ $json.body.conversation_id }}&order=created_at.desc&limit=20",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "headers": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.body.supabase_service_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.body.supabase_service_key }}"
+            }
+          ]
+        }
+      },
+      "id": "node-get-history",
+      "name": "Buscar Histórico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Webhook EvoAPI').item.json.body.supabase_url }}/rest/v1/services?select=name,description,price&active=eq.true&limit=30",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Webhook EvoAPI').item.json.body.supabase_service_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Webhook EvoAPI').item.json.body.supabase_service_key }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-get-services",
+      "name": "Buscar Serviços",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta o payload para OpenAI com histórico + contexto\nconst body = $('Webhook EvoAPI').item.json.body;\nconst history = $('Buscar Histórico').item.json;\nconst services = $('Buscar Serviços').item.json;\n\n// Ordena histórico cronologicamente (veio DESC do banco)\nconst historyMsgs = Array.isArray(history)\n  ? [...history].reverse().map(m => ({\n      role: m.from_me ? 'assistant' : 'user',\n      content: m.text,\n    }))\n  : [];\n\n// Contexto de serviços\nconst servicesCtx = Array.isArray(services) && services.length > 0\n  ? '\\n\\nSERVIÇOS DISPONÍVEIS:\\n' + services.map(s =>\n      `- ${s.name}${s.price ? ` (R$ ${s.price})` : ''}${s.description ? `: ${s.description}` : ''}`\n    ).join('\\n')\n  : '';\n\n// Prompt do sistema com qualificações\nconst quals = (body.qualifications ?? []).map((q, i) =>\n  `${i + 1}. Quando o lead ${q.description} → chame move_lead com status \"${q.status_name}\"`\n).join('\\n');\n\nconst systemPrompt = `${body.agent.system_prompt}${servicesCtx}\n\nREGRAS DE QUALIFICAÇÃO:\n${quals || 'Nenhuma qualificação configurada.'}\n\nFERRAMENTAS DISPONÍVEIS:\n- move_lead(status): Use quando o lead demonstrar a condição de qualificação acima. Passe o status_name correto.\n- request_human: Use quando o lead pedir para falar com um humano, reclamar, ou você não souber responder.`;\n\nconst messages = [\n  { role: 'system', content: systemPrompt },\n  ...historyMsgs,\n  { role: 'user', content: body.message },\n];\n\nconst tools = [\n  {\n    type: 'function',\n    function: {\n      name: 'move_lead',\n      description: 'Muda o status/etapa do lead no pipeline com base na qualificação identificada',\n      parameters: {\n        type: 'object',\n        properties: {\n          status: {\n            type: 'string',\n            description: 'O status_name da qualificação que foi identificada'\n          }\n        },\n        required: ['status']\n      }\n    }\n  },\n  {\n    type: 'function',\n    function: {\n      name: 'request_human',\n      description: 'Transfere o atendimento para um humano',\n      parameters: {\n        type: 'object',\n        properties: {},\n        required: []\n      }\n    }\n  }\n];\n\nreturn [\n  {\n    json: {\n      openai_payload: {\n        model: body.agent.model ?? 'gpt-4o-mini',\n        messages,\n        tools,\n        tool_choice: 'auto',\n      },\n      context: body,\n    }\n  }\n];"
+      },
+      "id": "node-build-prompt",
+      "name": "Montar Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 380]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.context.openai_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.openai_payload) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-openai-1",
+      "name": "OpenAI — 1ª chamada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-tool-call",
+              "leftValue": "={{ $json.choices[0].finish_reason }}",
+              "rightValue": "tool_calls",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-tool",
+      "name": "Tem tool_call?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1200, 380]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai a tool_call da resposta da OpenAI\nconst choice = $json.choices[0];\nconst toolCall = choice.message.tool_calls[0];\nconst toolName = toolCall.function.name;\nconst toolArgs = JSON.parse(toolCall.function.arguments ?? '{}');\nconst context = $('Montar Prompt').item.json.context;\n\nreturn [\n  {\n    json: {\n      tool_name: toolName,\n      tool_args: toolArgs,\n      tool_call_id: toolCall.id,\n      context,\n    }\n  }\n];"
+      },
+      "id": "node-parse-tool",
+      "name": "Parse Tool Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 260]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-move-lead",
+              "leftValue": "={{ $json.tool_name }}",
+              "rightValue": "move_lead",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-move",
+      "name": "move_lead ou request_human?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1680, 260]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resolve target_stage_id para move_lead via agent_qualifications + agent_actions\nconst ctx = $json.context;\nconst status = $json.tool_args.status;\n\n// Busca action configurada para este status\nconst actions = ctx.qualifications ?? [];\n// Verifica se a etapa atual tem move_to_next_id configurado\nconst targetStageId = ctx.stage.move_to_next_id;\n\nreturn [\n  {\n    json: {\n      ...$json,\n      resolved_stage_id: targetStageId,\n      status,\n    }\n  }\n];"
+      },
+      "id": "node-resolve-stage",
+      "name": "Resolver Stage Destino",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1920, 160]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.context.supabase_url }}/rest/v1/leads?id=eq.{{ $json.context.lead.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.context.supabase_service_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.context.supabase_service_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"stage_id\": \"{{ $json.resolved_stage_id }}\", \"updated_at\": \"{{ new Date().toISOString() }}\" }",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-move-lead",
+      "name": "PATCH lead — mover etapa",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2160, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "// request_human — move para move_to_human_id\nconst ctx = $json.context;\nreturn [\n  {\n    json: {\n      ...$json,\n      resolved_stage_id: ctx.stage.move_to_human_id,\n    }\n  }\n];"
+      },
+      "id": "node-resolve-human",
+      "name": "Resolver Stage Humano",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1920, 360]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.context.supabase_url }}/rest/v1/leads?id=eq.{{ $json.context.lead.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.context.supabase_service_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.context.supabase_service_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"stage_id\": \"{{ $json.resolved_stage_id }}\", \"updated_at\": \"{{ new Date().toISOString() }}\" }",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-move-human",
+      "name": "PATCH lead — mover p/ humano",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2160, 360]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta 2ª chamada OpenAI após execução do tool\nconst parseNode = $('Parse Tool Call').item.json;\nconst promptNode = $('Montar Prompt').item.json;\nconst ctx = parseNode.context;\n\n// Reconstrói o array de mensagens adicionando resultado da tool\nconst prevMessages = promptNode.openai_payload.messages;\nconst assistantMsgWithTool = {\n  role: 'assistant',\n  content: null,\n  tool_calls: [\n    {\n      id: parseNode.tool_call_id,\n      type: 'function',\n      function: {\n        name: parseNode.tool_name,\n        arguments: JSON.stringify(parseNode.tool_args),\n      }\n    }\n  ]\n};\nconst toolResultMsg = {\n  role: 'tool',\n  tool_call_id: parseNode.tool_call_id,\n  content: 'ok',\n};\n\nreturn [\n  {\n    json: {\n      openai_payload: {\n        model: ctx.agent.model ?? 'gpt-4o-mini',\n        messages: [...prevMessages, assistantMsgWithTool, toolResultMsg],\n      },\n      context: ctx,\n    }\n  }\n];"
+      },
+      "id": "node-build-2nd-call",
+      "name": "Montar 2ª Chamada OpenAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2400, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.context.openai_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.openai_payload) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-openai-2",
+      "name": "OpenAI — 2ª chamada (pós-tool)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2640, 260]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai texto da resposta (seja da 1ª ou 2ª chamada)\nlet responseText = '';\nconst context = $('Montar Prompt').item.json.context;\n\nif ($json.choices) {\n  responseText = $json.choices[0]?.message?.content ?? '';\n} else {\n  responseText = 'Não foi possível gerar uma resposta no momento.';\n}\n\nreturn [\n  {\n    json: {\n      response_text: responseText,\n      context,\n    }\n  }\n];"
+      },
+      "id": "node-extract-response-after-tool",
+      "name": "Extrair Resposta (pós-tool)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2880, 260]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai texto da resposta direta (sem tool_call)\nconst context = $('Montar Prompt').item.json.context;\nconst responseText = $json.choices[0]?.message?.content ?? 'Olá! Como posso ajudar?';\n\nreturn [\n  {\n    json: {\n      response_text: responseText,\n      context,\n    }\n  }\n];"
+      },
+      "id": "node-extract-response-direct",
+      "name": "Extrair Resposta Direta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.context.evo_api_url }}/message/sendText/{{ $json.context.instance }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.context.evo_api_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"number\": \"{{ $json.context.remote_jid }}\", \"text\": {{ JSON.stringify($json.response_text) }} }",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-send-whatsapp",
+      "name": "Enviar WhatsApp (EvoAPI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3120, 380]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Extrair Resposta Direta').item.json.context.supabase_url ?? $('Extrair Resposta (pós-tool)').item.json.context.supabase_url }}/rest/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headers": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.context.supabase_service_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.context.supabase_service_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"conversation_id\": \"{{ $json.context.conversation_id }}\", \"text\": {{ JSON.stringify($json.response_text) }}, \"from_me\": true }",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-save-response",
+      "name": "Salvar Resposta no Banco",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3360, 380]
+    }
+  ],
+  "connections": {
+    "Webhook EvoAPI": {
+      "main": [
+        [{ "node": "Buscar Histórico", "type": "main", "index": 0 }]
+      ]
+    },
+    "Webhook EvoAPI": {
+      "main": [
+        [
+          { "node": "Buscar Histórico", "type": "main", "index": 0 },
+          { "node": "Buscar Serviços", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Buscar Histórico": {
+      "main": [
+        [{ "node": "Montar Prompt", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Serviços": {
+      "main": [
+        [{ "node": "Montar Prompt", "type": "main", "index": 1 }]
+      ]
+    },
+    "Montar Prompt": {
+      "main": [
+        [{ "node": "OpenAI — 1ª chamada", "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI — 1ª chamada": {
+      "main": [
+        [{ "node": "Tem tool_call?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tem tool_call?": {
+      "main": [
+        [{ "node": "Parse Tool Call", "type": "main", "index": 0 }],
+        [{ "node": "Extrair Resposta Direta", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Tool Call": {
+      "main": [
+        [{ "node": "move_lead ou request_human?", "type": "main", "index": 0 }]
+      ]
+    },
+    "move_lead ou request_human?": {
+      "main": [
+        [{ "node": "Resolver Stage Destino", "type": "main", "index": 0 }],
+        [{ "node": "Resolver Stage Humano", "type": "main", "index": 0 }]
+      ]
+    },
+    "Resolver Stage Destino": {
+      "main": [
+        [{ "node": "PATCH lead — mover etapa", "type": "main", "index": 0 }]
+      ]
+    },
+    "PATCH lead — mover etapa": {
+      "main": [
+        [{ "node": "Montar 2ª Chamada OpenAI", "type": "main", "index": 0 }]
+      ]
+    },
+    "Resolver Stage Humano": {
+      "main": [
+        [{ "node": "PATCH lead — mover p/ humano", "type": "main", "index": 0 }]
+      ]
+    },
+    "PATCH lead — mover p/ humano": {
+      "main": [
+        [{ "node": "Montar 2ª Chamada OpenAI", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar 2ª Chamada OpenAI": {
+      "main": [
+        [{ "node": "OpenAI — 2ª chamada (pós-tool)", "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI — 2ª chamada (pós-tool)": {
+      "main": [
+        [{ "node": "Extrair Resposta (pós-tool)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extrair Resposta (pós-tool)": {
+      "main": [
+        [{ "node": "Enviar WhatsApp (EvoAPI)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extrair Resposta Direta": {
+      "main": [
+        [{ "node": "Enviar WhatsApp (EvoAPI)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar WhatsApp (EvoAPI)": {
+      "main": [
+        [{ "node": "Salvar Resposta no Banco", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["bellex", "whatsapp", "ai-agent"],
+  "pinData": {}
+}
