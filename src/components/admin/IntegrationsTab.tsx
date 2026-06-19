@@ -822,6 +822,317 @@ function InstancesCard() {
   );
 }
 
+// ── SVG Instagram Icon ───────────────────────────────────────────────────────
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+const IG_KEYS = ["instagram_instance_name", "instagram_api_url", "instagram_api_key"];
+
+function InstagramCard({
+  local,
+  setLocal,
+  update,
+  queryClient,
+}: {
+  local: IntSetting[];
+  setLocal: React.Dispatch<React.SetStateAction<IntSetting[]>>;
+  update: (key: string, value: string) => void;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrData, setQrData] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"unknown" | "connected" | "disconnected">("unknown");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const getVal = (key: string) => local.find((s) => s.setting_key === key)?.setting_value || "";
+
+  const ensureField = async (key: string) => {
+    const exists = local.find((s) => s.setting_key === key);
+    if (!exists) {
+      const { data } = await supabase
+        .from("integration_settings")
+        .insert({ setting_key: key, setting_value: "" } as any)
+        .select()
+        .single();
+      if (data) {
+        setLocal((prev) => [...prev, data as IntSetting]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    IG_KEYS.forEach(ensureField);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Checar status de conexão ao carregar
+  useEffect(() => {
+    const apiUrl = getVal("instagram_api_url");
+    const apiKey = getVal("instagram_api_key");
+    const instanceName = getVal("instagram_instance_name");
+    if (!apiUrl || !apiKey || !instanceName) return;
+    (async () => {
+      try {
+        const res = await fetch(
+          `${apiUrl.replace(/\/+$/, "")}/instance/connectionState/${instanceName}`,
+          { headers: { apikey: apiKey } },
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const state = data?.instance?.state || data?.state;
+        setConnectionStatus(state === "open" ? "connected" : "disconnected");
+      } catch {
+        setConnectionStatus("disconnected");
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (const key of IG_KEYS) {
+        const s = local.find((x) => x.setting_key === key);
+        if (!s) continue;
+        if (s.id?.startsWith("temp-")) {
+          await supabase.from("integration_settings").insert({
+            setting_key: s.setting_key,
+            setting_value: s.setting_value,
+          } as any);
+        } else {
+          await supabase
+            .from("integration_settings")
+            .update({ setting_value: s.setting_value, updated_at: new Date().toISOString() } as any)
+            .eq("id", s.id);
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ["integration-settings"] });
+      toast.success("Instagram salvo.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fetchQrCode = async () => {
+    const apiUrl = getVal("instagram_api_url");
+    const apiKey = getVal("instagram_api_key");
+    const instanceName = getVal("instagram_instance_name");
+    if (!apiUrl || !apiKey || !instanceName) {
+      toast.error("Preencha a URL, Chave API e Nome da Instância antes de conectar.");
+      return;
+    }
+    setQrLoading(true);
+    setQrOpen(true);
+    setQrData(null);
+    try {
+      const res = await fetch(
+        `${apiUrl.replace(/\/+$/, "")}/instance/connect/${instanceName}`,
+        { headers: { apikey: apiKey } },
+      );
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      if (data?.base64) setQrData(data.base64);
+      else if (data?.qrcode?.base64) setQrData(data.qrcode.base64);
+      else if (data?.instance?.status === "open") {
+        setConnectionStatus("connected");
+        setQrOpen(false);
+        toast.success("Instância já conectada!");
+      } else throw new Error("QR Code não encontrado.");
+    } catch (err: any) {
+      toast.error(`Erro: ${err.message}`);
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
+  const checkStatus = async () => {
+    const apiUrl = getVal("instagram_api_url");
+    const apiKey = getVal("instagram_api_key");
+    const instanceName = getVal("instagram_instance_name");
+    if (!apiUrl || !apiKey || !instanceName) {
+      toast.error("Preencha os campos primeiro.");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${apiUrl.replace(/\/+$/, "")}/instance/connectionState/${instanceName}`,
+        { headers: { apikey: apiKey } },
+      );
+      const data = await res.json();
+      const state = data?.instance?.state || data?.state;
+      if (state === "open") {
+        setConnectionStatus("connected");
+        toast.success("Instagram conectado!");
+      } else {
+        setConnectionStatus("disconnected");
+        toast.warning(`Estado: ${state || "desconhecido"}`);
+      }
+    } catch (err: any) {
+      setConnectionStatus("disconnected");
+      toast.error(`Erro: ${err.message}`);
+    }
+  };
+
+  const igInstanceName = local.find((s) => s.setting_key === "instagram_instance_name");
+  const igApiUrl = local.find((s) => s.setting_key === "instagram_api_url");
+  const igApiKey = local.find((s) => s.setting_key === "instagram_api_key");
+
+  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-instagram`;
+
+  return (
+    <>
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <InstagramIcon className="w-5 h-5 text-muted-foreground" />
+          <Label className="text-sm font-semibold">Instagram DM</Label>
+          {connectionStatus === "connected" && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] px-2 py-0.5 text-[10px] font-semibold">
+              <Wifi className="w-3 h-3" /> Conectado
+            </span>
+          )}
+          {connectionStatus === "disconnected" && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 text-destructive px-2 py-0.5 text-[10px] font-semibold">
+              <WifiOff className="w-3 h-3" /> Desconectado
+            </span>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Receba DMs do Instagram e crie leads automaticamente no Pipeline. Requer conta Business vinculada à Evolution API v2.
+        </p>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Nome da Instância</Label>
+          <Input
+            value={igInstanceName?.setting_value || ""}
+            onChange={(e) => igInstanceName ? update("instagram_instance_name", e.target.value) : setLocal((p) => [...p, { id: "temp-ig-name", setting_key: "instagram_instance_name", setting_value: e.target.value }])}
+            placeholder="bellex-instagram"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">URL da Evolution API</Label>
+          <Input
+            value={igApiUrl?.setting_value || ""}
+            onChange={(e) => igApiUrl ? update("instagram_api_url", e.target.value) : setLocal((p) => [...p, { id: "temp-ig-url", setting_key: "instagram_api_url", setting_value: e.target.value }])}
+            placeholder="https://api.evolution.com"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Chave API</Label>
+          <div className="flex gap-1">
+            <Input
+              value={igApiKey?.setting_value || ""}
+              onChange={(e) => igApiKey ? update("instagram_api_key", e.target.value) : setLocal((p) => [...p, { id: "temp-ig-key", setting_key: "instagram_api_key", setting_value: e.target.value }])}
+              placeholder="Bearer token ou API key"
+              type={showApiKey ? "text" : "password"}
+              autoComplete="new-password"
+              className="flex-1"
+            />
+            <Button type="button" size="icon" variant="outline" onClick={() => setShowApiKey((p) => !p)}>
+              {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              disabled={!igApiKey?.setting_value}
+              onClick={() => { navigator.clipboard.writeText(igApiKey?.setting_value || ""); toast.success("Chave copiada!"); }}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Webhook URL para configurar na EvoAPI */}
+        <div className="space-y-1.5 pt-2 border-t border-border/60">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Webhook URL — configure na EvoAPI</Label>
+          <div className="flex items-center gap-2">
+            <Input readOnly value={webhookUrl} className="font-mono text-xs flex-1" />
+            <Button
+              size="icon"
+              variant="outline"
+              className="shrink-0"
+              onClick={() => { navigator.clipboard.writeText(webhookUrl); toast.success("URL copiada!"); }}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            Evento: <code className="bg-muted px-1 py-0.5 rounded font-mono">MESSAGES_UPSERT</code>
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={fetchQrCode}>
+              <QrCode className="w-4 h-4 mr-2" /> Gerar QR Code
+            </Button>
+            <Button variant="outline" size="sm" onClick={checkStatus}>
+              <RefreshCw className="w-4 h-4 mr-2" /> Verificar
+            </Button>
+          </div>
+          <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </Card>
+
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <InstagramIcon className="w-5 h-5" /> Conectar Instagram
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 space-y-4">
+            {qrLoading ? (
+              <><Loader2 className="w-12 h-12 animate-spin text-muted-foreground" /><p className="text-sm text-muted-foreground">Gerando QR Code...</p></>
+            ) : connectionStatus === "connected" && !qrData ? (
+              <div className="text-center space-y-3">
+                <Wifi className="w-16 h-16 mx-auto text-[hsl(var(--success))]" />
+                <p className="text-sm font-medium">Instância já está conectada!</p>
+                <p className="text-xs text-muted-foreground">O Instagram DM está ativo e pronto para receber mensagens.</p>
+              </div>
+            ) : qrData ? (
+              <>
+                <div className="bg-white p-4 rounded-lg">
+                  <img
+                    src={qrData.startsWith("data:") ? qrData : `data:image/png;base64,${qrData}`}
+                    alt="QR Code Instagram"
+                    className="w-64 h-64 object-contain"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground text-center max-w-xs">
+                  Escaneie o QR Code no app da Evolution API para vincular a conta Instagram Business.
+                </p>
+                <Button variant="outline" size="sm" onClick={fetchQrCode}>
+                  <RefreshCw className="w-4 h-4 mr-2" /> Gerar novo QR
+                </Button>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhum QR Code disponível.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function OpenAICard({
   local,
   setLocal,
@@ -1186,6 +1497,14 @@ export default function IntegrationsTab() {
         queryClient={queryClient}
         onSave={saveWhatsApp}
         saving={savingWhatsApp}
+      />
+
+      {/* Instagram card */}
+      <InstagramCard
+        local={local}
+        setLocal={setLocal}
+        update={update}
+        queryClient={queryClient}
       />
 
       {/* IA / OpenAI card */}

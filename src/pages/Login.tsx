@@ -11,6 +11,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+function BlurLetters({ word = "BELLEX", delay = 1.8 }: { word?: string; delay?: number }) {
+  return (
+    <div className="flex mt-5">
+      <style>{`@keyframes blurLetterIn{from{filter:blur(10px);transform:scale(2);opacity:0}to{filter:blur(0);transform:scale(1);opacity:1}}`}</style>
+      {word.split("").map((char, i) => (
+        <span
+          key={i}
+          className="text-white/70 text-xs font-light tracking-[0.35em] inline-block"
+          style={{ animation: `blurLetterIn 0.55s ease forwards`, animationDelay: `${delay + i * 0.07}s`, opacity: 0 }}
+        >
+          {char}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 const Login = () => {
   const { user, signIn } = useAuth();
   const [email, setEmail] = useState("");
@@ -63,15 +80,17 @@ const Login = () => {
             zoom={0.9}
           />
         </div>
-        <LogoDraw
-          size={110}
-          strokeColor="rgba(255,255,255,0.95)"
-          fillColor="rgba(255,255,255,1)"
-          drawDuration={1600}
-          fillDuration={500}
-          fillDelay={150}
-          className="relative z-10"
-        />
+        <div className="relative z-10 flex flex-col items-center">
+          <LogoDraw
+            size={110}
+            strokeColor="rgba(255,255,255,0.95)"
+            fillColor="rgba(255,255,255,1)"
+            drawDuration={1600}
+            fillDuration={500}
+            fillDelay={150}
+          />
+          <BlurLetters />
+        </div>
       </div>
 
       {/* Right — Login Form */}

@@ -42,9 +42,27 @@ const Charges = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["charges", debouncedSearch, statusFilter, dateRange, page],
     queryFn: async () => {
-      let query = supabase.from("charges").select("*, clients(full_name)", { count: "exact" }).order("created_at", { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+      // If searching, first resolve matching client IDs
+      let clientIds: string[] | null = null;
+      if (debouncedSearch.trim()) {
+        const { data: matchingClients } = await supabase
+          .from("clients")
+          .select("id")
+          .ilike("full_name", `%${debouncedSearch.trim()}%`);
+        clientIds = (matchingClients ?? []).map((c) => c.id);
+        if (clientIds.length === 0) return { rows: [], total: 0 };
+      }
+
+      let query = supabase
+        .from("charges")
+        .select("*, clients(full_name)", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+      if (clientIds !== null) query = query.in("client_id", clientIds);
       if (statusFilter !== "all") query = query.eq("status", statusFilter);
       if (dateRange) query = query.gte("created_at", dateRange.from.toISOString()).lte("created_at", dateRange.to.toISOString());
+
       const { data, error, count } = await query;
       if (error) throw error;
       return { rows: data ?? [], total: count ?? 0 };

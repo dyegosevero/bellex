@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,16 @@ export function DemoModal({ open, onOpenChange }: DemoModalProps) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", clinic: "", whatsapp: "", specialty: "" });
+
+  // Radix Dialog adds overflow:hidden to body — undo it so page stays scrollable
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => {
+      document.body.style.overflow = "";
+      document.body.style.removeProperty("padding-right");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

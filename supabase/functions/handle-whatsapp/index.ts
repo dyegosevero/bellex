@@ -147,60 +147,30 @@ serve(async (req) => {
     .select("description, status_name")
     .eq("agent_id", agent.id);
 
-  // ── 5. Busca chave OpenAI + credenciais EvoAPI da clínica ────────────────
-  const { data: integrationRows } = await supabase
-    .from("integration_settings")
-    .select("setting_key, setting_value")
-    .in("setting_key", ["openai_api_key", "whatsapp_request_url", "whatsapp_api_key"]);
-
-  const settings: Record<string, string> = {};
-  for (const row of integrationRows ?? []) {
-    settings[row.setting_key] = row.setting_value;
-  }
-
-  const openaiKey = settings["openai_api_key"] ?? "";
-  const evoApiUrl = settings["whatsapp_request_url"] ?? "";
-  const evoApiKey = settings["whatsapp_api_key"] ?? "";
-
-  if (!openaiKey) {
-    console.warn("openai_api_key não configurado em integration_settings");
-    await saveMessage(supabase, lead, instanceName, remoteJid, messageText, false);
-    return new Response("ok", { status: 200 });
-  }
-
-  // ── 6. Salva mensagem recebida ───────────────────────────────────────────
+  // ── 5. Salva mensagem recebida ───────────────────────────────────────────
   const conversation = await saveMessage(supabase, lead, instanceName, remoteJid, messageText, false);
 
-  // ── 7. POST para n8n ─────────────────────────────────────────────────────
+  // ── 5.5. Verifica se agente está parado para esta conversa ──────────────
+  if (conversation) {
+    const { data: convData } = await supabase
+      .from("conversations")
+      .select("agent_stopped")
+      .eq("id", conversation.id)
+      .maybeSingle();
+    if (convData?.agent_stopped) {
+      return new Response("ok", { status: 200 });
+    }
+  }
+
+  // ── 6. POST para n8n — payload mínimo (n8n busca contexto via agent-context) ──
   const n8nPayload = {
-    lead: {
-      id: lead.id,
-      name: lead.name,
-      phone: lead.phone,
-      stage_id: lead.stage_id,
-    },
-    stage: {
-      id: stage.id,
-      label: stage.label,
-      move_to_human_id: stage.move_to_human_id,
-      move_to_next_id: stage.move_to_next_id,
-    },
-    message: messageText,
-    agent: {
-      id: agent.id,
-      name: agent.name,
-      system_prompt: agent.system_prompt,
-      model: agent.model ?? "gpt-4o-mini",
-    },
-    qualifications: qualifications ?? [],
-    conversation_id: conversation?.id ?? null,
-    openai_key: openaiKey,
-    evo_api_url: evoApiUrl,
-    evo_api_key: evoApiKey,
     instance: instanceName,
     remote_jid: remoteJid,
-    supabase_url: SUPABASE_URL,
-    supabase_service_key: SERVICE_ROLE_KEY,
+    phone,
+    message: messageText,
+    lead_id: lead.id,
+    stage_id: lead.stage_id,
+    conversation_id: conversation?.id ?? null,
   };
 
   if (N8N_WEBHOOK_URL) {

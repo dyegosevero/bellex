@@ -416,168 +416,8 @@ const ImportData = () => {
       </BlurFade>
 
       <BlurFade delay={0.07}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-          {/* Export Data Section */}
-          <div className="p-4 rounded-lg border border-border bg-card flex flex-col">
-            <div className="flex items-center gap-3 mb-3">
-              <Database className="w-5 h-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium">Exportar Base de Dados (SQL Dump)</p>
-                <p className="text-xs text-muted-foreground">
-                  Gera um ficheiro .sql com todos os dados, compatível com psql / pg_restore
-                </p>
-              </div>
-            </div>
-            <div className="mt-auto">
-              <DumpButton />
-            </div>
-          </div>
-
-          {/* Clear Data Section */}
-          <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 flex flex-col">
-            <div className="flex items-start gap-3 mb-3">
-              <AlertTriangle className="w-5 h-5 text-destructive mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Limpar Dados</p>
-                <p className="text-xs text-muted-foreground">
-                  Remove todos os serviços, clientes, agendamentos e cobranças. Usuárioes e configurações são
-                  preservados.
-                </p>
-              </div>
-            </div>
-            <div className="mt-auto">
-              <AlertDialog
-                onOpenChange={(open) => {
-                  if (!open) {
-                    setClearConfirmText("");
-                    setBackupDone(false);
-                  }
-                }}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" disabled={loadingClear}>
-                    {loadingClear ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Limpando...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="w-4 h-4 mr-2" /> Limpar Todos os Dados
-                      </>
-                    )}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-destructive" />
-                      Tem certeza?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription asChild>
-                      <div className="space-y-4">
-                        <p>
-                          Esta ação é irreversível. Todos os serviços, clientes, agendamentos, cobranças e dados
-                          relacionados serão permanentemente eliminados.
-                        </p>
-
-                        {/* Step 1: Backup */}
-                        <div className="p-3 rounded-lg border border-border bg-muted/50 space-y-2">
-                          <p className="text-xs font-medium text-foreground flex items-center gap-2">
-                            <Download className="w-4 h-4" />
-                            Passo 1 — Fazer backup antes de excluir
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => handleBackupBeforeClear(e)}
-                            disabled={loadingBackup || backupDone}
-                            type="button"
-                          >
-                            {loadingBackup ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando backup...
-                              </>
-                            ) : backupDone ? (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-2 text-green-600" /> Backup realizado
-                              </>
-                            ) : (
-                              <>
-                                <Download className="w-4 h-4 mr-2" /> Descarregar Backup
-                              </>
-                            )}
-                          </Button>
-                        </div>
-
-                        {/* Step 2: Type EXCLUIR */}
-                        <div className="p-3 rounded-lg border border-border bg-muted/50 space-y-2">
-                          <p className="text-xs font-medium text-foreground">
-                            Passo 2 — Digite <strong className="text-destructive">EXCLUIR</strong> para confirmar
-                          </p>
-                          <input
-                            type="text"
-                            value={clearConfirmText}
-                            onChange={(e) => setClearConfirmText(e.target.value)}
-                            placeholder="Digite EXCLUIR"
-                            className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-destructive/50"
-                            autoComplete="off"
-                            disabled={!backupDone}
-                          />
-                        </div>
-                      </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleClear}
-                      disabled={!backupDone || clearConfirmText !== "EXCLUIR"}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
-                    >
-                      Sim, limpar tudo
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              {clearResults && (
-                <div className="mt-4 p-3 rounded bg-muted text-xs space-y-1">
-                  <p className="font-medium mb-2">Registos eliminados:</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {Object.entries(clearResults).map(([table, count]) => (
-                      <div key={table}>
-                        <span className="text-muted-foreground">{table}:</span> <strong>{count as number}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Bulk Reminders */}
-          <div className="p-4 rounded-lg border border-border bg-card flex flex-col">
-            <div className="flex items-center gap-3 mb-3">
-              <Bell className="w-5 h-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium">Criar Lembretes em Massa</p>
-                <p className="text-xs text-muted-foreground">
-                  Cria lembretes automáticos (24h antes) para todos os agendamentos ativos futuros que ainda não tenham
-                  lembrete. Útil após importação de dados.
-                </p>
-              </div>
-            </div>
-            <div className="mt-auto flex items-center gap-2 flex-wrap">
-              <BulkRemindersButton />
-              <ClearRemindersButton />
-            </div>
-          </div>
-        </div>
-      </BlurFade>
-
-      <BlurFade delay={0.1}>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,480px)_1fr] gap-6">
-          {/* Left: file inputs + import */}
+          {/* Coluna 1: Importação */}
           <div>
             <div className="space-y-3 mb-4">
               <FileInput label="Serviços" file={servicesFile} setFile={setServicesFile} />
@@ -657,31 +497,159 @@ const ImportData = () => {
             </Button>
           </div>
 
-          {/* Right: orientation card */}
-          <div className="rounded-lg border border-border bg-card p-5 h-fit space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-primary/10 p-2.5">
-                <FileJson className="w-5 h-5 text-primary" />
+          {/* Coluna 2: Exportar, Limpar, Lembretes */}
+          <div className="space-y-4">
+            {/* Export Data */}
+            <div className="p-4 rounded-lg border border-border bg-card flex flex-col">
+              <div className="flex items-center gap-3 mb-3">
+                <Database className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Exportar Base de Dados (SQL Dump)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Gera um ficheiro .sql com todos os dados, compatível com psql / pg_restore
+                  </p>
+                </div>
               </div>
-              <h3 className="text-sm font-semibold">Formato de Importação</h3>
+              <div className="mt-auto">
+                <DumpButton />
+              </div>
             </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Esta ferramenta aceita ficheiros <strong className="text-foreground">.json</strong> num formato
-              específico, concebido para migrar dados do <strong className="text-foreground">Buk.pt</strong> para o seu
-              sistema.
-            </p>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Cada ficheiro corresponde a uma entidade — serviços, especialistas, clientes e agenda — e deve conter um
-              array de objetos com os campos esperados pelo sistema.
-            </p>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              A importação respeita a ordem de dependência: primeiro serviços, depois especialistas (com horários e
-              serviços associados), clientes e por fim agendamentos. Registos duplicados são automaticamente ignorados.
-            </p>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Se precisar de um modelo de exemplo, contacte o suporte para obter os ficheiros de referência compatíveis
-              com a sua clínica.
-            </p>
+
+            {/* Clear Data */}
+            <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 flex flex-col">
+              <div className="flex items-start gap-3 mb-3">
+                <AlertTriangle className="w-5 h-5 text-destructive mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Limpar Dados</p>
+                  <p className="text-xs text-muted-foreground">
+                    Remove todos os serviços, clientes, agendamentos e cobranças. Usuários e configurações são
+                    preservados.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-auto">
+                <AlertDialog
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setClearConfirmText("");
+                      setBackupDone(false);
+                    }
+                  }}
+                >
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" disabled={loadingClear}>
+                      {loadingClear ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Limpando...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 mr-2" /> Limpar Todos os Dados
+                        </>
+                      )}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-destructive" />
+                        Tem certeza?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription asChild>
+                        <div className="space-y-4">
+                          <p>
+                            Esta ação é irreversível. Todos os serviços, clientes, agendamentos, cobranças e dados
+                            relacionados serão permanentemente eliminados.
+                          </p>
+                          <div className="p-3 rounded-lg border border-border bg-muted/50 space-y-2">
+                            <p className="text-xs font-medium text-foreground flex items-center gap-2">
+                              <Download className="w-4 h-4" />
+                              Passo 1 — Fazer backup antes de excluir
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => handleBackupBeforeClear(e)}
+                              disabled={loadingBackup || backupDone}
+                              type="button"
+                            >
+                              {loadingBackup ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando backup...
+                                </>
+                              ) : backupDone ? (
+                                <>
+                                  <CheckCircle className="w-4 h-4 mr-2 text-green-600" /> Backup realizado
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-4 h-4 mr-2" /> Descarregar Backup
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          <div className="p-3 rounded-lg border border-border bg-muted/50 space-y-2">
+                            <p className="text-xs font-medium text-foreground">
+                              Passo 2 — Digite <strong className="text-destructive">EXCLUIR</strong> para confirmar
+                            </p>
+                            <input
+                              type="text"
+                              value={clearConfirmText}
+                              onChange={(e) => setClearConfirmText(e.target.value)}
+                              placeholder="Digite EXCLUIR"
+                              className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-destructive/50"
+                              autoComplete="off"
+                              disabled={!backupDone}
+                            />
+                          </div>
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleClear}
+                        disabled={!backupDone || clearConfirmText !== "EXCLUIR"}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+                      >
+                        Sim, limpar tudo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {clearResults && (
+                  <div className="mt-4 p-3 rounded bg-muted text-xs space-y-1">
+                    <p className="font-medium mb-2">Registos eliminados:</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {Object.entries(clearResults).map(([table, count]) => (
+                        <div key={table}>
+                          <span className="text-muted-foreground">{table}:</span> <strong>{count as number}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bulk Reminders */}
+            <div className="p-4 rounded-lg border border-border bg-card flex flex-col">
+              <div className="flex items-center gap-3 mb-3">
+                <Bell className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Criar Lembretes em Massa</p>
+                  <p className="text-xs text-muted-foreground">
+                    Cria lembretes automáticos (24h antes) para todos os agendamentos ativos futuros que ainda não
+                    tenham lembrete. Útil após importação de dados.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-auto flex items-center gap-2 flex-wrap">
+                <BulkRemindersButton />
+                <ClearRemindersButton />
+              </div>
+            </div>
           </div>
         </div>
       </BlurFade>

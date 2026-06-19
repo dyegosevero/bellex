@@ -72,6 +72,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Landing = lazy(() => import("@/pages/Landing"));
 const Pipeline = lazy(() => import("@/pages/Pipeline"));
 const Mensagens = lazy(() => import("@/pages/Mensagens"));
+const Inbox = lazy(() => import("@/pages/Inbox"));
 const Equipe = lazy(() => import("@/pages/Equipe"));
 const RecursoAgenda = lazy(() => import("@/pages/recursos/Agenda"));
 const RecursoClientes = lazy(() => import("@/pages/recursos/Clientes"));
@@ -225,6 +226,7 @@ function AnimatedRoutes() {
                   <Route path="/admin/lembretes" element={<ReminderLogs />} />
                   
                   <Route path="/pipeline" element={<Pipeline />} />
+                  <Route path="/inbox" element={<Inbox />} />
                   <Route path="/mensagens" element={<Mensagens />} />
                   <Route path="/marketing" element={<Marketing />} />
                   <Route path="/marketing/historico" element={<CampaignHistory />} />

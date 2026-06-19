@@ -19,7 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList, Loader2, ExternalLink } from "lucide-react";
+import { Plus, Settings2, GripVertical, Phone, Clock, Bot, X, Check, ChevronDown, ArrowLeft, Send, Paperclip, Smile, MapPin, Tag, Calendar, Mail, UserPlus, LayoutList, Loader2, ExternalLink, BotOff } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import {
   fetchStages, upsertStage, fetchLeads, createLead, moveLead,
@@ -476,22 +476,25 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
   const [convId, setConvId] = useState<string | null>(null);
   const [loadingMsgs, setLoadingMsgs] = useState(true);
   const [sending, setSending] = useState(false);
+  const [agentStopped, setAgentStopped] = useState(false);
+  const [togglingAgent, setTogglingAgent] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function load() {
       setLoadingMsgs(true);
       try {
-        // Fetch conversation for this lead
         const { supabase } = await import("@/integrations/supabase/client");
         const { data: convs } = await supabase
           .from("conversations")
-          .select("id")
+          .select("id, agent_stopped")
           .eq("lead_id", card.id)
           .order("created_at", { ascending: false })
           .limit(1);
-        const cid = convs?.[0]?.id ?? null;
+        const conv = convs?.[0] ?? null;
+        const cid = conv?.id ?? null;
         setConvId(cid);
+        setAgentStopped(conv?.agent_stopped ?? false);
         if (cid) {
           const msgs = await fetchMessages(cid);
           setMessages(msgs);
@@ -504,6 +507,21 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
     }
     load();
   }, [card.id]);
+
+  async function toggleAgent() {
+    if (!convId) return;
+    setTogglingAgent(true);
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const next = !agentStopped;
+      await supabase.from("conversations").update({ agent_stopped: next }).eq("id", convId);
+      setAgentStopped(next);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setTogglingAgent(false);
+    }
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -653,14 +671,38 @@ function LeadDetail({ card, onBack }: { card: CardData; onBack: () => void }) {
         {/* Right: Messages (2/3) */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Chat header */}
-          <div className="h-12 border-b flex items-center px-4 shrink-0">
+          <div className="h-12 border-b flex items-center px-4 shrink-0 gap-2">
             <p className="text-sm font-medium">Conversa com {card.name}</p>
             <span className={cn(
-              "ml-2 text-[10px] px-2 py-0.5 rounded-full",
+              "text-[10px] px-2 py-0.5 rounded-full",
               card.source === "whatsapp" ? "bg-green-100 text-green-700" : card.source === "instagram" ? "bg-pink-100 text-pink-700" : "bg-muted text-muted-foreground"
             )}>
               {card.source === "whatsapp" ? "WhatsApp" : card.source === "instagram" ? "Instagram" : "Manual"}
             </span>
+            <div className="ml-auto flex items-center gap-2">
+              {convId && (
+                <button
+                  onClick={toggleAgent}
+                  disabled={togglingAgent}
+                  title={agentStopped ? "Retomar Agente IA" : "Parar Agente IA"}
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors",
+                    agentStopped
+                      ? "border-green-500/40 text-green-600 bg-green-50 hover:bg-green-100"
+                      : "border-orange-400/40 text-orange-600 bg-orange-50 hover:bg-orange-100"
+                  )}
+                >
+                  {togglingAgent ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : agentStopped ? (
+                    <Bot size={12} />
+                  ) : (
+                    <BotOff size={12} />
+                  )}
+                  {agentStopped ? "Retomar IA" : "Parar IA"}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Messages */}
