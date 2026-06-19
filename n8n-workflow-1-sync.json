@@ -1,0 +1,107 @@
+{
+  "name": "Bellex — Sync Agentes (DataTable)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 5 }] }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 0],
+      "id": "node-cron",
+      "name": "Cron 5min"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bellex-sync-agents",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-800, 160],
+      "id": "node-webhook-sync",
+      "name": "Webhook Sync Manual"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/pipeline_stages?select=id,label,agent_id,move_to_human_id,move_to_next_id,agents!pipeline_stages_agent_id_fkey(id,name,system_prompt,model,active,agent_qualifications(description,status_name))&agent_id=not.is.null&agents.active=eq.true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $vars.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-560, 0],
+      "id": "node-fetch-stages",
+      "name": "Busca Stages com Agentes"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/integration_settings?select=setting_key,setting_value&setting_key=in.(openai_api_key,whatsapp_request_url,whatsapp_api_key,whatsapp_instance)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $vars.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-560, 160],
+      "id": "node-fetch-settings",
+      "name": "Busca Integration Settings"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stages = $('Busca Stages com Agentes').all().map(i => i.json);\nconst settingsRaw = $('Busca Integration Settings').all().map(i => i.json);\n\nconst settings = {};\nfor (const row of settingsRaw) {\n  settings[row.setting_key] = row.setting_value;\n}\n\nconst rows = [];\nfor (const stage of stages) {\n  const agent = stage.agents;\n  if (!agent || !agent.active) continue;\n\n  const qualifications = (agent.agent_qualifications ?? []).map(q => q.description).join('\\n');\n\n  rows.push({\n    json: {\n      instance: settings['whatsapp_instance'] ?? '',\n      stage_id: stage.id,\n      stage_label: stage.label,\n      agent_id: agent.id,\n      agent_name: agent.name,\n      system_prompt: agent.system_prompt ?? '',\n      model: agent.model ?? 'gpt-4o-mini',\n      qualifications,\n      move_to_next_id: stage.move_to_next_id ?? '',\n      move_to_human_id: stage.move_to_human_id ?? '',\n      evo_api_url: settings['whatsapp_request_url'] ?? '',\n      evo_api_key: settings['whatsapp_api_key'] ?? '',\n      supabase_url: $vars.SUPABASE_URL ?? '',\n      supabase_key: $vars.SUPABASE_SERVICE_KEY ?? '',\n      functions_url: $vars.SUPABASE_FUNCTIONS_URL ?? '',\n    }\n  });\n}\n\nreturn rows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-300, 0],
+      "id": "node-format",
+      "name": "Formata Configs"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "tableId": "agent_configs",
+        "dataToSend": "autoMapInputData",
+        "putOrPatch": "PUT"
+      },
+      "type": "n8n-nodes-base.n8nTrainingCustomerDatastore",
+      "typeVersion": 1,
+      "position": [-60, 0],
+      "id": "node-datatable",
+      "name": "DataTable — Salva Config Agente"
+    }
+  ],
+  "connections": {
+    "Cron 5min": {
+      "main": [[{ "node": "Busca Stages com Agentes", "type": "main", "index": 0 }]]
+    },
+    "Webhook Sync Manual": {
+      "main": [[{ "node": "Busca Stages com Agentes", "type": "main", "index": 0 }]]
+    },
+    "Busca Stages com Agentes": {
+      "main": [[{ "node": "Formata Configs", "type": "main", "index": 0 }]]
+    },
+    "Busca Integration Settings": {
+      "main": [[{ "node": "Formata Configs", "type": "main", "index": 0 }]]
+    },
+    "Formata Configs": {
+      "main": [[{ "node": "DataTable — Salva Config Agente", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": ["bellex", "sync", "agentes"]
+}

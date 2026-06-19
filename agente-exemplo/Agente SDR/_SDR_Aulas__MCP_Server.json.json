@@ -1,0 +1,246 @@
+{
+  "name": "[SDR Aulas] MCP Server",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "notion-crm"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5f4db0c1-13b3-47ea-b7dd-b4ef3db19d3c",
+      "name": "MCP Server Trigger",
+      "webhookId": "dde7b098-024b-42a6-8ce1-b81b02a671bc"
+    },
+    {
+      "parameters": {
+        "content": "## CRM Notion",
+        "height": 340,
+        "width": 860,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        180
+      ],
+      "id": "808dc892-8f26-4920-9231-7ea6134af23c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Sempre que houver alguma atualização no notion é necessário executar essa tool para atualizar os dados do lead no supabase.\n\nDepois que executar CRM_Atualizar_Lead_QUALIFICADO ou CRM_Atualizar_Lead_FINALIZADO, execute essa tool para atualizar status do lead no supabase.",
+        "operation": "update",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "condition": "eq",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Field_Value', `IdConversa do Lead que está falando, que é o proprio telefone (sem o + no inicio)`, 'string') }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', `Atualizar Status do Lead se necessário. Pode ser \"Atendimento Humano\" ou \"Finalizado\"`, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "id": "21d4b554-0ca5-49bc-9830-52483460d807",
+      "name": "Atualizar_Status_Lead",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilize essa tool para atualizar dados de um lead que está em atendimento por você e será finalizado. O Atendimento é finalizado quando percebemos que o lead não tem mais interesse no serviço.\n\n#Fluxo passo a passo\n- Ative a tool CRM_Puxar_Todos_Leads para obter dados de todos os leads;\n- Pelo nome ou telefone do lead que você está atendendo, salve o id dela do crm do notion;\n- Execute essa tool, o id do Database Page é id do lead em atendimento;\n- Atualize o campo \"status\" do lead no crm notion para Finalizado;\n- Atualize o campo \"Comentário Agente IA\" do lead no crm com um resumo breve sobre tudo que conversou com este lead durante o primeiro processo de atendimento.\n- Execute a tool Atualiza_status_lead para atualizar o status do lead no supabase para \"Finalizado\". SEMPRE execute esse ultimo passo. ",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Database_Page', `id do lead em atendimento (database page id)`, 'string') }}",
+          "mode": "id"
+        },
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "status|select",
+              "selectValue": "Finalizado"
+            },
+            {
+              "key": "Comentário Agente|rich_text",
+              "textContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues1_Text', `Resumo da conversa para deixar registrado no CRM`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        300
+      ],
+      "id": "fb22333b-04e9-41d0-98a9-e3b30b964b38",
+      "name": "CRM_Atualizar_Lead_FINALIZADO",
+      "credentials": {
+        "notionApi": {
+          "id": "oTEasulFibsvSA7d",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilize essa tool para atualizar dados de um lead que está em atendimento por você e irá repassar para um atendimento humano.\n\n#Fluxo passo a passo:\n- Ative a tool CRM_Puxar_Todos_Leads para obter dados de todos os leads;\n- Pelo nome ou telefone do lead que você está atendendo, salve o id dela do crm do notion;\n- Execute essa tool, o id do Database Page é id do lead em atendimento;\n- Atualize o campo \"status\" do lead no crm notion para Atendimento Humano;\n- Atualize o campo \"Comentário Agente IA\" do lead no crm com um resumo breve sobre tudo que conversou com este lead durante o primeiro processo de atendimento. Esse resumo será muito útil para o Atendente Humano pois será o ponto de partida dele para finalizar a venda.\n- Execute a tool Atualizar_status_lead para atualizar o status do lead no supabase para \"Atendimento Humano\". SEMPRE execute esse ultimo passo. ",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Database_Page', `id do lead em atendimento`, 'string') }}",
+          "mode": "id"
+        },
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "status|select",
+              "selectValue": "Atendimento Humano"
+            },
+            {
+              "key": "Comentário Agente|rich_text",
+              "textContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues1_Text', `Resumo da conversa com o lead para registrar no CRM e ajudar o atendente humano vendedor.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        40,
+        300
+      ],
+      "id": "2e0fb065-8ca3-4de4-8a86-49353f82de9e",
+      "name": "CRM_Atualizar_Lead_QUALIFICADO",
+      "credentials": {
+        "notionApi": {
+          "id": "oTEasulFibsvSA7d",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilize essa Tool para puxar todos os leads do CRM, assim você terá todos os dados dos leads.",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "20e2af81-d404-80b4-97a2-c786e38f9d07",
+          "mode": "list",
+          "cachedResultName": "CRM Leads Aulas",
+          "cachedResultUrl": "https://www.notion.so/20e2af81d40480b497a2c786e38f9d07"
+        },
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        -180,
+        300
+      ],
+      "id": "f5e51a40-e50f-4376-a8b6-d4cc17caf1f5",
+      "name": "CRM_Puxar_todos_Leads",
+      "credentials": {
+        "notionApi": {
+          "id": "oTEasulFibsvSA7d",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Atualizar_Status_Lead": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM_Atualizar_Lead_FINALIZADO": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM_Atualizar_Lead_QUALIFICADO": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM_Puxar_todos_Leads": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "d692b00d-65e4-4ed8-85a6-82e519a7d6fe",
+  "meta": {
+    "instanceId": "107b613a2a1a2b2ec55be12aa4987518e4e956275e1d3b131f347428d37ca35c"
+  },
+  "id": "lOdqDwGRHhqqmGPg",
+  "tags": []
+}

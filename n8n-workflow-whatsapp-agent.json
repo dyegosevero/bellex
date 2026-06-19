@@ -1,0 +1,271 @@
+{
+  "name": "Bellex — WhatsApp AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bellex-whatsapp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-480, 0],
+      "id": "node-webhook",
+      "name": "Webhook Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "a1", "name": "telefone", "value": "={{ $json.body.lead.phone }}", "type": "string" },
+            { "id": "a2", "name": "mensagem", "value": "={{ $json.body.message }}", "type": "string" },
+            { "id": "a3", "name": "lead_id", "value": "={{ $json.body.lead.id }}", "type": "string" },
+            { "id": "a4", "name": "lead_name", "value": "={{ $json.body.lead.name }}", "type": "string" },
+            { "id": "a5", "name": "stage_label", "value": "={{ $json.body.stage.label }}", "type": "string" },
+            { "id": "a6", "name": "move_to_next_id", "value": "={{ $json.body.stage.move_to_next_id }}", "type": "string" },
+            { "id": "a7", "name": "move_to_human_id", "value": "={{ $json.body.stage.move_to_human_id }}", "type": "string" },
+            { "id": "a8", "name": "system_prompt", "value": "={{ $json.body.agent.system_prompt }}", "type": "string" },
+            { "id": "a9", "name": "qualifications_json", "value": "={{ JSON.stringify($json.body.qualifications || []) }}", "type": "string" },
+            { "id": "a10", "name": "conversation_id", "value": "={{ $json.body.conversation_id }}", "type": "string" },
+            { "id": "a11", "name": "evo_api_url", "value": "={{ $json.body.evo_api_url }}", "type": "string" },
+            { "id": "a12", "name": "evo_api_key", "value": "={{ $json.body.evo_api_key }}", "type": "string" },
+            { "id": "a13", "name": "instance", "value": "={{ $json.body.instance }}", "type": "string" },
+            { "id": "a14", "name": "remote_jid", "value": "={{ $json.body.remote_jid }}", "type": "string" },
+            { "id": "a15", "name": "supabase_url", "value": "={{ $json.body.supabase_url }}", "type": "string" },
+            { "id": "a16", "name": "supabase_key", "value": "={{ $json.body.supabase_service_key }}", "type": "string" },
+            { "id": "a17", "name": "human_datetime", "value": "={{ $now.weekdayLong }}, {{ $now.format('dd/MM/yyyy') }} {{ $now.format('HH:mm') }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-240, 0],
+      "id": "node-set",
+      "name": "Captura Campos"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagem }}",
+        "options": {
+          "systemMessage": "=<contexto>\nNome do lead: {{ $json.lead_name }}\nTelefone: {{ $json.telefone }}\nEtapa atual do pipeline: {{ $json.stage_label }}\nData e Hora: {{ $json.human_datetime }}\n</contexto>\n\n<instrucoes>\n{{ $json.system_prompt }}\n</instrucoes>\n\n<qualificacoes>\n{{ $json.qualifications_json }}\n</qualificacoes>\n\nQuando identificar uma qualificação listada acima, use a tool tool_move_lead.\nQuando o lead pedir atendimento humano ou você não souber responder, use tool_request_human.\nPara informações sobre serviços e preços, use tool_buscar_servicos.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [0, 0],
+      "id": "node-agent",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [-80, 240],
+      "id": "node-llm",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "CONFIGURE_NO_N8N",
+          "name": "OpenAI Bellex"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Captura Campos').item.json.telefone }}",
+        "sessionTTL": 999,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [80, 240],
+      "id": "node-memory",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "CONFIGURE_NO_N8N",
+          "name": "Redis Bellex"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Move o lead para a próxima etapa do pipeline quando uma qualificação for identificada na conversa. Use quando o lead demonstrar interesse claro, confirmar dados ou preencher alguma das qualificações configuradas.",
+        "method": "PATCH",
+        "url": "={{ $('Captura Campos').item.json.supabase_url }}/rest/v1/leads?id=eq.{{ $('Captura Campos').item.json.lead_id }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "apikey", "value": "={{ $('Captura Campos').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Captura Campos').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Content-Type", "value": "application/json", "valueProvider": "fieldValue" },
+            { "name": "Prefer", "value": "return=minimal", "valueProvider": "fieldValue" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"stage_id\": \"{{ $('Captura Campos').item.json.move_to_next_id }}\", \"updated_at\": \"{{ $now.toISO() }}\"}",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [240, 240],
+      "id": "tool-move-lead",
+      "name": "tool_move_lead"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Transfere o atendimento para um humano. Use quando o lead pedir explicitamente para falar com uma pessoa, reclamar, ou quando você não souber responder.",
+        "method": "PATCH",
+        "url": "={{ $('Captura Campos').item.json.supabase_url }}/rest/v1/leads?id=eq.{{ $('Captura Campos').item.json.lead_id }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "apikey", "value": "={{ $('Captura Campos').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Captura Campos').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Content-Type", "value": "application/json", "valueProvider": "fieldValue" },
+            { "name": "Prefer", "value": "return=minimal", "valueProvider": "fieldValue" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"stage_id\": \"{{ $('Captura Campos').item.json.move_to_human_id }}\", \"updated_at\": \"{{ $now.toISO() }}\"}",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [400, 240],
+      "id": "tool-human",
+      "name": "tool_request_human"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Busca os serviços disponíveis na clínica com nome, descrição, preço e duração. Use quando o lead perguntar sobre serviços, tratamentos, preços ou o que a clínica oferece.",
+        "method": "GET",
+        "url": "={{ $('Captura Campos').item.json.supabase_url }}/rest/v1/services?select=name,description,price,duration_minutes&active=eq.true&order=name&limit=50",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "apikey", "value": "={{ $('Captura Campos').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Captura Campos').item.json.supabase_key }}", "valueProvider": "fieldValue" }
+          ]
+        },
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [560, 240],
+      "id": "tool-services",
+      "name": "tool_buscar_servicos"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.output || '';\nconst clean = text\n  .replace(/\\*\\*(.*?)\\*\\*/g, '$1')\n  .replace(/\\*(.*?)\\*/g, '$1')\n  .replace(/_{1,2}(.*?)_{1,2}/g, '$1')\n  .trim();\nreturn { json: { output: clean } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0],
+      "id": "node-strip",
+      "name": "Strip Markdown"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Captura Campos').item.json.evo_api_url }}/message/sendText/{{ $('Captura Campos').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $('Captura Campos').item.json.evo_api_key }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Captura Campos').item.json.remote_jid }}\",\n  \"text\": {{ JSON.stringify($json.output) }}\n}",
+        "options": { "onError": "continueErrorOutput" }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [480, 0],
+      "id": "node-send",
+      "name": "Enviar WhatsApp"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Captura Campos').item.json.supabase_url }}/rest/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $('Captura Campos').item.json.supabase_key }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Captura Campos').item.json.supabase_key }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"conversation_id\": \"{{ $('Captura Campos').item.json.conversation_id }}\",\n  \"text\": {{ JSON.stringify($('Strip Markdown').item.json.output) }},\n  \"from_me\": true\n}",
+        "options": { "onError": "continueErrorOutput" }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [720, 0],
+      "id": "node-save",
+      "name": "Salvar Resposta no Banco"
+    }
+  ],
+  "connections": {
+    "Webhook Agent": {
+      "main": [[{ "node": "Captura Campos", "type": "main", "index": 0 }]]
+    },
+    "Captura Campos": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "AI Agent": {
+      "main": [[{ "node": "Strip Markdown", "type": "main", "index": 0 }]]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]]
+    },
+    "tool_move_lead": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "tool_request_human": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "tool_buscar_servicos": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "Strip Markdown": {
+      "main": [[{ "node": "Enviar WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Enviar WhatsApp": {
+      "main": [[{ "node": "Salvar Resposta no Banco", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "tags": ["bellex", "whatsapp", "ai-agent"],
+  "pinData": {}
+}

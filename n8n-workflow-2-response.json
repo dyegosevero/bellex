@@ -1,0 +1,419 @@
+{
+  "name": "Bellex — WhatsApp Agente IA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bellex-whatsapp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-900, 0],
+      "id": "node-webhook",
+      "name": "Mensagem Recebida (EvolutionApi)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "f1", "name": "instance", "value": "={{ $json.body.instance }}", "type": "string" },
+            { "id": "f2", "name": "remote_jid", "value": "={{ $json.body.remote_jid }}", "type": "string" },
+            { "id": "f3", "name": "phone", "value": "={{ $json.body.phone }}", "type": "string" },
+            { "id": "f4", "name": "mensagem", "value": "={{ $json.body.message }}", "type": "string" },
+            { "id": "f5", "name": "lead_id", "value": "={{ $json.body.lead_id }}", "type": "string" },
+            { "id": "f6", "name": "stage_id", "value": "={{ $json.body.stage_id }}", "type": "string" },
+            { "id": "f7", "name": "conversation_id", "value": "={{ $json.body.conversation_id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-660, 0],
+      "id": "node-set",
+      "name": "Captura Campos"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "agent_configs",
+        "filters": {
+          "conditions": [
+            {
+              "field": "instance",
+              "condition": "equals",
+              "value": "={{ $json.instance }}"
+            },
+            {
+              "field": "stage_id",
+              "condition": "equals",
+              "value": "={{ $json.stage_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.n8nTrainingCustomerDatastore",
+      "typeVersion": 1,
+      "position": [-420, 0],
+      "id": "node-get-config",
+      "name": "Get row(s) — Config Agente"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "v1",
+              "leftValue": "={{ $json.agent_id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-180, 0],
+      "id": "node-validado",
+      "name": "Validado?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "c1", "name": "agent_id", "value": "={{ $json.agent_id }}", "type": "string" },
+            { "id": "c2", "name": "system_prompt", "value": "={{ $json.system_prompt }}", "type": "string" },
+            { "id": "c3", "name": "model", "value": "={{ $json.model }}", "type": "string" },
+            { "id": "c4", "name": "qualifications", "value": "={{ $json.qualifications }}", "type": "string" },
+            { "id": "c5", "name": "move_to_next_id", "value": "={{ $json.move_to_next_id }}", "type": "string" },
+            { "id": "c6", "name": "move_to_human_id", "value": "={{ $json.move_to_human_id }}", "type": "string" },
+            { "id": "c7", "name": "evo_api_url", "value": "={{ $json.evo_api_url }}", "type": "string" },
+            { "id": "c8", "name": "evo_api_key", "value": "={{ $json.evo_api_key }}", "type": "string" },
+            { "id": "c9", "name": "supabase_url", "value": "={{ $json.supabase_url }}", "type": "string" },
+            { "id": "c10", "name": "supabase_key", "value": "={{ $json.supabase_key }}", "type": "string" },
+            { "id": "c11", "name": "functions_url", "value": "={{ $json.functions_url }}", "type": "string" },
+            { "id": "c12", "name": "stage_label", "value": "={{ $json.stage_label }}", "type": "string" },
+            { "id": "c13", "name": "phone", "value": "={{ $('Captura Campos').item.json.phone }}", "type": "string" },
+            { "id": "c14", "name": "remote_jid", "value": "={{ $('Captura Campos').item.json.remote_jid }}", "type": "string" },
+            { "id": "c15", "name": "mensagem", "value": "={{ $('Captura Campos').item.json.mensagem }}", "type": "string" },
+            { "id": "c16", "name": "lead_id", "value": "={{ $('Captura Campos').item.json.lead_id }}", "type": "string" },
+            { "id": "c17", "name": "conversation_id", "value": "={{ $('Captura Campos').item.json.conversation_id }}", "type": "string" },
+            { "id": "c18", "name": "instance", "value": "={{ $('Captura Campos').item.json.instance }}", "type": "string" },
+            { "id": "c19", "name": "human_datetime", "value": "={{ $now.setLocale('pt-BR').toFormat('cccc, dd/MM/yyyy HH:mm') }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [60, -80],
+      "id": "node-config",
+      "name": "Configuração do Agente (DataTable)"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagem }}",
+        "options": {
+          "systemMessage": "=<contexto>\nNome do lead: desconhecido\nTelefone: {{ $json.phone }}\nEtapa do pipeline: {{ $json.stage_label }}\nData e hora: {{ $json.human_datetime }}\n</contexto>\n\n<instrucoes>\n{{ $json.system_prompt }}\n</instrucoes>\n\n<qualificacoes>\n{{ $json.qualifications }}\n</qualificacoes>\n\nRegras:\n- Ao identificar uma qualificação, use tool_move_lead\n- Ao lead pedir atendimento humano ou você não souber responder, use tool_request_human\n- Para informações de serviços e preços, use tool_buscar_servicos\n- Para verificar horários disponíveis, use tool_buscar_horarios\n- Para criar agendamento, use tool_criar_agendamento"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [300, -80],
+      "id": "node-agent",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [180, 160],
+      "id": "node-llm",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "CONFIGURE_NO_N8N",
+          "name": "OpenAI Bellex"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Configuração do Agente (DataTable)').item.json.phone }}",
+        "sessionTTL": 999,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [340, 160],
+      "id": "node-memory",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "CONFIGURE_NO_N8N",
+          "name": "Redis Bellex"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Busca os serviços disponíveis na clínica com nome, descrição, preço e duração. Use quando o lead perguntar sobre serviços, tratamentos ou preços.",
+        "method": "GET",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.functions_url }}/agent-services",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" }
+          ]
+        },
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [480, 160],
+      "id": "tool-services",
+      "name": "tool_buscar_servicos"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Busca horários disponíveis para agendamento. Parâmetros obrigatórios: service_id (ID do serviço), date (data no formato YYYY-MM-DD). Parâmetro opcional: specialist_id.",
+        "method": "GET",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.functions_url }}/agent-availability",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" }
+          ]
+        },
+        "sendQuery": true,
+        "specifyQuery": "keypair",
+        "parametersQuery": {
+          "values": [
+            { "name": "service_id", "value": "{service_id}", "valueProvider": "fieldValue" },
+            { "name": "date", "value": "{date}", "valueProvider": "fieldValue" }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "service_id", "description": "ID do serviço retornado por tool_buscar_servicos", "type": "string" },
+            { "name": "date", "description": "Data desejada no formato YYYY-MM-DD", "type": "string" }
+          ]
+        },
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [640, 160],
+      "id": "tool-availability",
+      "name": "tool_buscar_horarios"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cria um agendamento no sistema. Use após confirmar com o lead o serviço, data e horário desejados.",
+        "method": "POST",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.functions_url }}/agent-appointment",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Content-Type", "value": "application/json", "valueProvider": "fieldValue" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"lead_id\": \"{lead_id}\", \"service_id\": \"{service_id}\", \"date\": \"{date}\", \"time\": \"{time}\", \"specialist_id\": \"{specialist_id}\"}",
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "lead_id", "description": "ID do lead", "type": "string" },
+            { "name": "service_id", "description": "ID do serviço escolhido", "type": "string" },
+            { "name": "date", "description": "Data no formato YYYY-MM-DD", "type": "string" },
+            { "name": "time", "description": "Horário no formato HH:MM", "type": "string" },
+            { "name": "specialist_id", "description": "ID do especialista (opcional)", "type": "string" }
+          ]
+        },
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [800, 160],
+      "id": "tool-appointment",
+      "name": "tool_criar_agendamento"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Move o lead para a próxima etapa do pipeline quando uma qualificação for identificada. Use quando o lead demonstrar interesse claro ou confirmar algum dado importante.",
+        "method": "PATCH",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.supabase_url }}/rest/v1/leads?id=eq.{{ $('Configuração do Agente (DataTable)').item.json.lead_id }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "apikey", "value": "={{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Content-Type", "value": "application/json", "valueProvider": "fieldValue" },
+            { "name": "Prefer", "value": "return=minimal", "valueProvider": "fieldValue" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"stage_id\": \"{{ $('Configuração do Agente (DataTable)').item.json.move_to_next_id }}\"}",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [960, 160],
+      "id": "tool-move",
+      "name": "tool_move_lead"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Transfere o atendimento para um humano. Use quando o lead pedir para falar com uma pessoa, reclamar, ou quando você não souber responder.",
+        "method": "PATCH",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.supabase_url }}/rest/v1/leads?id=eq.{{ $('Configuração do Agente (DataTable)').item.json.lead_id }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "parametersHeaders": {
+          "values": [
+            { "name": "apikey", "value": "={{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}", "valueProvider": "fieldValue" },
+            { "name": "Content-Type", "value": "application/json", "valueProvider": "fieldValue" },
+            { "name": "Prefer", "value": "return=minimal", "valueProvider": "fieldValue" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"stage_id\": \"{{ $('Configuração do Agente (DataTable)').item.json.move_to_human_id }}\"}",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [1120, 160],
+      "id": "tool-human",
+      "name": "tool_request_human"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.output || '';\nconst clean = text\n  .replace(/\\*\\*(.*?)\\*\\*/g, '$1')\n  .replace(/\\*(.*?)\\*/g, '$1')\n  .replace(/_{1,2}(.*?)_{1,2}/g, '$1')\n  .trim();\nreturn { json: { output: clean } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [540, -80],
+      "id": "node-strip",
+      "name": "Strip Markdown"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.evo_api_url }}/message/sendText/{{ $('Configuração do Agente (DataTable)').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $('Configuração do Agente (DataTable)').item.json.evo_api_key }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Configuração do Agente (DataTable)').item.json.remote_jid }}\",\n  \"text\": {{ JSON.stringify($json.output) }}\n}",
+        "options": { "onError": "continueErrorOutput" }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [780, -80],
+      "id": "node-send",
+      "name": "HTTP Request — Enviar WhatsApp"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuração do Agente (DataTable)').item.json.supabase_url }}/rest/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $('Configuração do Agente (DataTable)').item.json.supabase_key }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"conversation_id\": \"{{ $('Configuração do Agente (DataTable)').item.json.conversation_id }}\",\n  \"text\": {{ JSON.stringify($('Strip Markdown').item.json.output) }},\n  \"from_me\": true\n}",
+        "options": { "onError": "continueErrorOutput" }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1020, -80],
+      "id": "node-save",
+      "name": "Salvar Resposta no Banco"
+    }
+  ],
+  "connections": {
+    "Mensagem Recebida (EvolutionApi)": {
+      "main": [[{ "node": "Captura Campos", "type": "main", "index": 0 }]]
+    },
+    "Captura Campos": {
+      "main": [[{ "node": "Get row(s) — Config Agente", "type": "main", "index": 0 }]]
+    },
+    "Get row(s) — Config Agente": {
+      "main": [[{ "node": "Validado?", "type": "main", "index": 0 }]]
+    },
+    "Validado?": {
+      "main": [
+        [{ "node": "Configuração do Agente (DataTable)", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Configuração do Agente (DataTable)": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]]
+    },
+    "tool_buscar_servicos": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "tool_buscar_horarios": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "tool_criar_agendamento": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "tool_move_lead": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "tool_request_human": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "AI Agent": {
+      "main": [[{ "node": "Strip Markdown", "type": "main", "index": 0 }]]
+    },
+    "Strip Markdown": {
+      "main": [[{ "node": "HTTP Request — Enviar WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "HTTP Request — Enviar WhatsApp": {
+      "main": [[{ "node": "Salvar Resposta no Banco", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true },
+  "tags": ["bellex", "whatsapp", "ai-agent"]
+}

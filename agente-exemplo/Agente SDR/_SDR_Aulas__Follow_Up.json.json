@@ -1,0 +1,982 @@
+{
+  "name": "[SDR Aulas] Follow Up",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -120,
+        140
+      ],
+      "id": "1d65486d-ea60-46c1-88da-53325fc26408",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4d561a17-a838-4399-a6eb-06602343dcfc",
+              "name": "followUp1",
+              "value": "={{ 30 }}",
+              "type": "number"
+            },
+            {
+              "id": "649565ac-4d17-4ab3-8bb8-22b94bd829b8",
+              "name": "followUp2",
+              "value": "={{ 120 }}",
+              "type": "number"
+            },
+            {
+              "id": "2151d3c3-30e7-4cb4-8545-7348e60f5217",
+              "name": "followUp3",
+              "value": "={{ 60 }}",
+              "type": "number"
+            },
+            {
+              "id": "2618f130-5fc2-468d-803e-2ca0002b3b37",
+              "name": "horario_atual",
+              "value": "={{ $json.timestamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        140
+      ],
+      "id": "b87d0ef4-bc8b-4325-9d26-54f8a4d5bfd1",
+      "name": "Padronizacao"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "Novo Lead"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        140
+      ],
+      "id": "9cebb77f-7a4d-456c-b234-fc4c35fa79d0",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f06ca346-3936-44a1-8a35-e3d42a2f2639",
+              "leftValue": "={{ $json.followUp }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2f5d3727-d077-4c44-8dd3-a91bef489eb8",
+              "leftValue": "={{ $('Padronizacao').item.json.horario_atual.toDateTime() }}",
+              "rightValue": "={{ $json.ultima_msg.toDateTime().plus($('Padronizacao').item.json.followUp1, 'minutes') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -440
+      ],
+      "id": "0487a35b-3c6b-4b48-908c-d73bc9110306",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "1c3738d0-63b0-4317-9acc-919669ad0c10",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        900,
+        -260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## Agente SDR IA - Agência Agent+\nVocê é o Vox IA, um Agente SDR da Agent+, uma agência especializada na criação de Agentes IA.\n\nSeu papel é realizar o atendimento aos leads interessados, conduzindo uma conversa acolhedora e eficiente para entender o perfil do lead, qualificar sua demanda e encaminhá-lo corretamente para o time comercial que fará um atendimento humano.\n\nNeste momento seu objetivo é apenas mandar uma mensagem de reativação da conversa. Já se passaram {{ $('Padronizacao').item.json.followUp1 }} minutos desde que a pessoa não responde. Mande uma mensagem que conecte com o contexto da conversa buscando fazer com que a pessoa volte a responder.",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        960,
+        -440
+      ],
+      "id": "08896900-14b6-4d7e-ad6d-dd12b2c02c69",
+      "name": "AI Agent1",
+      "retryOnFail": true,
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "content": "Faça os ajustes necessários no Prompt do seu agente",
+        "height": 220,
+        "width": 330,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        920,
+        -520
+      ],
+      "id": "98c1377b-630a-47fa-844c-024f4400076e",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.telefone }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1060,
+        -260
+      ],
+      "id": "e7d56cb8-3ced-4fa6-ac39-98a5dcefb3d0",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "DEQLzk33uvjfYEug",
+          "name": "Postgres Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Ajuste sua instância e autenficiação da Z-API",
+        "height": 300,
+        "width": 230,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        -520
+      ],
+      "id": "4cf83a99-d14e-45e0-826c-4ae9df6896d0",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.z-api.io/instances/3E2838ACC1C3C0E17A031664B40E8DC7/token/78231C35B02652099B44DA6F/send-text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Supabase').item.json.telefone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "303644cc-9139-416a-8815-dd63f3eef0f4",
+      "name": "(Z-API) Enviar Mensagem4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1380,
+        -440
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "C04N36rkX4T2N5yl",
+          "name": "Header Auth Whats Z API"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "lead_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Supabase').item.json.lead_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followUp",
+              "fieldValue": "followup1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -440
+      ],
+      "id": "0d547759-ea79-40f1-87b5-f88c1fd91c44",
+      "name": "Atualizar_Lead",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        -440
+      ],
+      "id": "a282bd8f-3360-4f06-b054-59c57fc01f3b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f06ca346-3936-44a1-8a35-e3d42a2f2639",
+              "leftValue": "={{ $json.followUp }}",
+              "rightValue": "followup1",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "2f5d3727-d077-4c44-8dd3-a91bef489eb8",
+              "leftValue": "={{ $('Padronizacao').item.json.horario_atual.toDateTime() }}",
+              "rightValue": "={{ $json.ultima_msg.toDateTime().plus($('Padronizacao').item.json.followUp2, 'minutes') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        140
+      ],
+      "id": "cfa61c61-dcbf-4491-881f-6254b980c516",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "6bf97a77-321e-4631-9d78-2d0a483d6ee4",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        900,
+        320
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## Agente SDR IA - Agência Agent+\nVocê é o Vox IA, um Agente SDR da Agent+, uma agência especializada na criação de Agentes IA.\n\nSeu papel é realizar o atendimento aos leads interessados, conduzindo uma conversa acolhedora e eficiente para entender o perfil do lead, qualificar sua demanda e encaminhá-lo corretamente para o time comercial que fará um atendimento humano.\n\nNeste momento seu objetivo é apenas mandar uma mensagem de reativação da conversa. Já se passaram {{ $('Padronizacao').item.json.followUp2 }} minutos desde que a pessoa não responde. Mande uma mensagem que conecte com o contexto da conversa buscando fazer com que a pessoa volte a responder.\n\nEssa é a ultima chance de conseguir falar com o lead! Capriche na mensagem. se quiser pode ofecer um desconto de 10% se contratar até hoje fim do dia.",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        960,
+        140
+      ],
+      "id": "558af255-f587-4f30-8a5e-89d3a5491ae4",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "content": "Faça os ajustes necessários no Prompt do seu agente",
+        "height": 220,
+        "width": 330,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        920,
+        60
+      ],
+      "id": "ba2687cb-da73-4003-b5ed-0f75c65f9ca7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.telefone }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1060,
+        320
+      ],
+      "id": "c956a661-d5b2-413c-83ef-976b6f5a11ae",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "DEQLzk33uvjfYEug",
+          "name": "Postgres Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Ajuste sua instância e autenficiação da Z-API",
+        "height": 300,
+        "width": 230,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        60
+      ],
+      "id": "66a61bfd-dc31-4630-8d4f-ebc0666a420d",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.z-api.io/instances/3E2838ACC1C3C0E17A031664B40E8DC7/token/78231C35B02652099B44DA6F/send-text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Supabase').item.json.telefone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d46c55ea-c90a-4d4c-89d2-653de0c2246a",
+      "name": "(Z-API) Enviar Mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1380,
+        140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "C04N36rkX4T2N5yl",
+          "name": "Header Auth Whats Z API"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "lead_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Supabase').item.json.lead_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followUp",
+              "fieldValue": "followup2"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        140
+      ],
+      "id": "8954b3d3-5444-4ea7-8e8a-0470a2d05465",
+      "name": "Atualizar_Lead1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        140
+      ],
+      "id": "9fbcd4b0-2518-4a77-93bb-987faf206ef8",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f06ca346-3936-44a1-8a35-e3d42a2f2639",
+              "leftValue": "={{ $json.followUp }}",
+              "rightValue": "followup2",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "2f5d3727-d077-4c44-8dd3-a91bef489eb8",
+              "leftValue": "={{ $('Padronizacao').item.json.horario_atual.toDateTime() }}",
+              "rightValue": "={{ $json.ultima_msg.toDateTime().plus($('Padronizacao').item.json.followUp3, 'minutes') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        720
+      ],
+      "id": "a074ce7c-7586-4570-9c4b-bb43e43669a2",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "lead_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Supabase').item.json.lead_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followUp",
+              "fieldValue": "followup3"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "Finalizado"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        720
+      ],
+      "id": "82fe5f9a-d841-4bd6-ac27-58ebd71e1785",
+      "name": "Atualizar_Lead2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        720
+      ],
+      "id": "cb77c6c6-ac77-423d-8912-08dc6736c7f0",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "content": "## FollowUp1\n",
+        "height": 520,
+        "width": 1500,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        600,
+        -600
+      ],
+      "id": "57fea103-2cd8-4ffa-ac3e-bb34581e8a53",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## FollowUp2\n",
+        "height": 520,
+        "width": 1500,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        600,
+        -20
+      ],
+      "id": "0954add3-4cb3-4609-9d63-05012007c735",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## FollowUp3\n",
+        "height": 520,
+        "width": 1520,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        600,
+        560
+      ],
+      "id": "727c730c-8955-456b-9f12-1b2e0217df4a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "20c2af81-d404-805e-9220-e689d45e2a8d",
+          "mode": "list",
+          "cachedResultName": "CRM Leads",
+          "cachedResultUrl": "https://www.notion.so/20c2af81d404805e9220e689d45e2a8d"
+        },
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Email|email",
+              "condition": "equals",
+              "emailValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        920,
+        720
+      ],
+      "id": "b61e61e5-62b1-4996-866c-562d6c7af201",
+      "name": "Puxar Leads",
+      "credentials": {
+        "notionApi": {
+          "id": "oTEasulFibsvSA7d",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "status|select",
+              "selectValue": "Finalizado"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1140,
+        720
+      ],
+      "id": "6dfe5680-6409-454a-86af-245414c802ba",
+      "name": "Atualizar Lead",
+      "credentials": {
+        "notionApi": {
+          "id": "oTEasulFibsvSA7d",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Padronizacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Padronizacao": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "(Z-API) Enviar Mensagem4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(Z-API) Enviar Mensagem4": {
+      "main": [
+        [
+          {
+            "node": "Atualizar_Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar_Lead": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "(Z-API) Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(Z-API) Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Atualizar_Lead1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar_Lead1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Puxar Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar_Lead2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Puxar Leads": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Lead": {
+      "main": [
+        [
+          {
+            "node": "Atualizar_Lead2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "e7ddfda4-36d3-44e6-8c70-a548c1a40bf5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "107b613a2a1a2b2ec55be12aa4987518e4e956275e1d3b131f347428d37ca35c"
+  },
+  "id": "0Ec8okrvJrludmE8",
+  "tags": []
+}

@@ -1,0 +1,163 @@
+{
+  "name": "AGENTE PRINCIPAL",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        -80
+      ],
+      "id": "30f20052-9b18-4fdf-ba00-f58337619249",
+      "name": "When chat message received",
+      "webhookId": "6b10b5b7-fd2d-4c9a-bb27-b8f7595f8627"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Prompt:\n## Informações Básicas:\n- Seu nome é: Ana\n- Identidade: Assistente virtual da Clínica NOCODE\n- Empresa: Clínica NOCODE\n- Idioma: Português Brasilero\n- Data e Hora atual: {{ $now.weekdayLong }}, {{ $now.format('dd/MM/yyyy') }}, hora: {{ $now.hour.toString().padStart(2, '0') }}:{{ $now.minute.toString().padStart(2, '0') }} timezone: {{ $now.zone}}\n- Conversa_id: {{ $json.sessionId }}\n\n## Contexto:\nVocê otimiza o fluxo interno da clínica, provendo informações e reduzindo a carga administrativa dos profissionais de saúde.\nSeu desempenho impacta diretamente a satisfação do paciente e a eficiência das operações médicas.\n\n## Perfil:\nVocê é a Ana, Atendente da CLINICA NOCODE, conhecida por sua comunicação humanizada e informal é frequentemente elogiada por ser extremamente atenciosa em seus atendimentos além de priorizar a linguagem informal e OBJETIVA criando proximidade com o usuário.\nOutput: Português do Brasil.\n\n\n## Passo a passo do atendimento:\n1 - Início do atendimento e identificação de interesse em agendar:\n2 - Cumprimente de forma acolhedora 😊.\n3 - Explique que é possível agendar direto por aqui mesmo no WhatsApp, seja por texto ou áudio — ou então \n4 - perguntar a especialidade que o usuario procura\n5 - consulte os profissionais e liste os compativeis com a especialidade.\n6 - Peça nome completo e telefone\n7 - Crie ou atualize o usuario no banco de dados\n8 - Pergunte a data que o usuario deseja e consulte a disponibilidade\n09 - Para reagendar consulte agendamento\n10 - para cancelar consulte agendamentos e envie os dados como id da agenda e evento id para cancelar\n\n## HORÁRIOS DE FUNCIONAMENTO:\n- Segunda a Sábado: 08h às 17h\n- Domingo e Feriados: Fechado\n- LOCALIZAÇÃO E CONTATO:\n- Endereço: Av. Paulista 1100, São Paulo - SP\n- Telefone da clinica: (11) 4456-7890\n- WhatsApp da clinica: (11) 99999-9999\n- E-mail da clinica: contato@nocodeclinicamedica.com.br\n- Site da clinica: www.nocodeclinicamedica.com.br\n\n## OBSERVAÇÕES FINAIS:\n- Nunca diga que você é uma assistente virtual.\n- Mantenha atendimento sempre humanizado e acolhedor.\n- Nunca agende fora do horário de funcionamento."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "c2ff4078-f906-4358-a518-6941aaa45398",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        112
+      ],
+      "id": "ecce0793-4301-4826-8b76-30d0f95c3dca",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qK7dAgyvQjeu9VX9",
+          "name": "OpenAi AGENCIA"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        112
+      ],
+      "id": "b0c2b566-bb0e-4b0c-aa30-516e164b44a7",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "MadQ3WRPy77N5xBk",
+          "name": "Postgres NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Faça os ajustes necessários no Prompt do seu agente",
+        "height": 220,
+        "width": 330,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -176
+      ],
+      "id": "a12323c2-6888-4025-9f46-2f61fc7496e4",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://webhook.talkengine.com.br/mcp/86b021dc-160c-4483-b784-37cb65f043ef"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        128
+      ],
+      "id": "b9f624f0-e2a6-4036-ae9c-97fec0ce751e",
+      "name": "MCP"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fc9ca3c1-df59-4035-99d1-1cc2bf993e15",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e88e0bf8a341e29f8b95268b96e335be1d58d1dbc25a197228b6ec3eb6c2e866"
+  },
+  "id": "6SjB3avOpIFePcDa",
+  "tags": []
+}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "n8n": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "n8n-mcp"],
+      "env": {
+        "N8N_API_URL": "https://n8n.axei.link",
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwOWYwNTQ1ZS0yOWI0LTQxNmYtYmU0ZC0yMjYxZDM3MWYwN2MiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMGEyZTIxMjMtMThkZC00MmYxLWI0YTctZDdjODdmNTNkYzdhIiwiaWF0IjoxNzgxNzMzMzkwfQ.4b1-3jgUnGbjuGz3iMxhake10LvTkBCDiNleEymuVmk"
+      }
+    }
+  }
+}

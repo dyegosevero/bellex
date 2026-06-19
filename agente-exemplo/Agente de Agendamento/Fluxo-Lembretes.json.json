@@ -1,0 +1,773 @@
+{
+  "name": "LEMBRETES",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        -16
+      ],
+      "id": "410def6d-d5d5-4336-824d-4ad96b7a7269",
+      "name": "GATILHO"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "38aeb919-74a1-41ff-8643-21ac270ef792",
+              "leftValue": "={{ $now.extract('hours') }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "4760efcc-2742-4f0f-a514-8ddd763a9ead",
+              "leftValue": "={{ $now.extract('hours') }}",
+              "rightValue": 19,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        -16
+      ],
+      "id": "2de8818c-0c1d-4d09-b04f-9981033547a4",
+      "name": "Horário comercial"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "Agendamentos",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "lembrete_1dia",
+              "condition": "eq",
+              "keyValue": "false"
+            },
+            {
+              "keyName": "data_inicio",
+              "condition": "gt",
+              "keyValue": "={{ $now.set({hour:0, minute:0,second:0, millisecond:0}).plus('1','days') }}"
+            },
+            {
+              "keyName": "data_inicio",
+              "condition": "lt",
+              "keyValue": "={{ $now.set({hour:23, minute:59,second:59, millisecond:59}).plus('1','days') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -16
+      ],
+      "id": "319e76ef-7e26-44f2-8100-eccb1d5ce248",
+      "name": "GET CONSULTAS",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "71c0cba2-c327-4ac2-9da2-a2408779bd24",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "clientes",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.cliente_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        384,
+        64
+      ],
+      "id": "68e223f9-eae6-457d-b90a-d0cef2b12515",
+      "name": "GET CLIENTE",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a6aed76-55ff-4ffe-ab50-717c83aacbaf",
+              "name": "texto",
+              "value": "=Olá {{ $json.nome }}, tudo bem?\n\nPassando pra lemmbrar da sua contulsta marcada amanha {{ $('Loop Over Items').item.json.data_inicio.toDateTime().format('dd-MM-yyyy') }} às {{ $('Loop Over Items').item.json.data_inicio.toDateTime().setZone().format('HH:mm') }}\n\nCaso qeuira cancelar basta digitar 'cancealr'.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        64
+      ],
+      "id": "70348d84-dc60-4cfb-a369-742407337f1c",
+      "name": "mensagem"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "afASD",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "TELEFONE",
+              "value": "={{ $('GET CLIENTE').item.json.telefone }}"
+            },
+            {
+              "name": "MENSAGEM",
+              "value": "={{ $json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        64
+      ],
+      "id": "8952607b-7f56-44c4-b67d-8588534246fb",
+      "name": "HTTP Request",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Agendamentos",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Loop Over Items').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "lembrete_1dia",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        848,
+        64
+      ],
+      "id": "c2c77c80-d699-4b27-bb6a-e72f4de7be0d",
+      "name": "FINALIZAR LEMBRETE",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        64
+      ],
+      "id": "be14d33f-d573-40db-83e6-fd1ecc428eef",
+      "name": "Wait",
+      "webhookId": "de8a1ffc-b402-419f-a865-81937ed0eade"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -112
+      ],
+      "id": "1277335a-97d1-4919-95ae-58ea9993c026",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "content": "## 1 DIA ANTES\n### Ajuste como desejar",
+        "height": 624,
+        "width": 1456,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -288
+      ],
+      "id": "cefca6a8-93d4-47ec-828f-c99d58352fb7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        640
+      ],
+      "id": "ad868b77-8cb4-461d-8e1a-ccf37223a2c4",
+      "name": "GATILHO1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "38aeb919-74a1-41ff-8643-21ac270ef792",
+              "leftValue": "={{ $now.extract('hours') }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "4760efcc-2742-4f0f-a514-8ddd763a9ead",
+              "leftValue": "={{ $now.extract('hours') }}",
+              "rightValue": 19,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        640
+      ],
+      "id": "e66a0738-557f-45d3-89f0-993a7be6698f",
+      "name": "Horário comercial1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "Agendamentos",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "lembrete_2hs",
+              "condition": "eq",
+              "keyValue": "false"
+            },
+            {
+              "keyName": "data_inicio",
+              "condition": "gt",
+              "keyValue": "={{ $now.set({minute:0,second:0, millisecond:0}).plus('2','hours') }}"
+            },
+            {
+              "keyName": "data_inicio",
+              "condition": "lt",
+              "keyValue": "={{ $now.set({minute:59,second:59, millisecond:59}).plus('3','hours') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        64,
+        640
+      ],
+      "id": "cc470025-eae0-4512-ab8a-e141639f8f3d",
+      "name": "GET CONSULTAS1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        224,
+        640
+      ],
+      "id": "b7801854-6efd-45f6-b70b-8ce002792887",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "clientes",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.cliente_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        384,
+        720
+      ],
+      "id": "4f650445-ccd8-42fe-9cde-a4bc6911708b",
+      "name": "GET CLIENTE1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a6aed76-55ff-4ffe-ab50-717c83aacbaf",
+              "name": "texto",
+              "value": "=Olá {{ $json.nome }}, tudo bem?\n\nPassando pra lemmbrar da sua contulsta marcada amanha {{ $('Loop Over Items1').item.json.data_inicio.toDateTime().format('dd-MM-yyyy') }} às {{ $('Loop Over Items1').item.json.data_inicio.toDateTime().setZone().format('HH:mm') }}\n\nCaso qeuira cancelar basta digitar 'cancealr'.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        720
+      ],
+      "id": "8fcebe1e-c53d-4be6-a3f5-1e7aeec37e99",
+      "name": "mensagem1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "afASD",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "TELEFONE",
+              "value": "={{ $('GET CLIENTE1').item.json.telefone }}"
+            },
+            {
+              "name": "MENSAGEM",
+              "value": "={{ $json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        720
+      ],
+      "id": "062b0770-0a48-46a4-b869-20bd650eda49",
+      "name": "HTTP Request1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Agendamentos",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Loop Over Items1').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "lembrete_2hs",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        848,
+        720
+      ],
+      "id": "9f20fe72-11e5-4f9d-af78-a483f2ecf9b9",
+      "name": "FINALIZAR LEMBRETE1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        720
+      ],
+      "id": "a46ff3e8-eebc-45da-b20a-ba42a4fea90f",
+      "name": "Wait1",
+      "webhookId": "de8a1ffc-b402-419f-a865-81937ed0eade"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        384,
+        544
+      ],
+      "id": "a89a250f-6b56-4113-925d-3de1122a0aff",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "content": "## 2 HORAS ANTES\n### Ajuste como desejar",
+        "height": 624,
+        "width": 1456,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        368
+      ],
+      "id": "ee5b56b7-05b5-4627-bedf-e53e63bfde15",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GATILHO": {
+      "main": [
+        [
+          {
+            "node": "Horário comercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horário comercial": {
+      "main": [
+        [
+          {
+            "node": "GET CONSULTAS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CONSULTAS": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET CLIENTE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CLIENTE": {
+      "main": [
+        [
+          {
+            "node": "mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagem": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "FINALIZAR LEMBRETE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FINALIZAR LEMBRETE": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GATILHO1": {
+      "main": [
+        [
+          {
+            "node": "Horário comercial1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horário comercial1": {
+      "main": [
+        [
+          {
+            "node": "GET CONSULTAS1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CONSULTAS1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET CLIENTE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CLIENTE1": {
+      "main": [
+        [
+          {
+            "node": "mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagem1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "FINALIZAR LEMBRETE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FINALIZAR LEMBRETE1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a44428f3-3784-40b1-bdf6-b8f0251e817a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e88e0bf8a341e29f8b95268b96e335be1d58d1dbc25a197228b6ec3eb6c2e866"
+  },
+  "id": "0XMU3tWjfVTf083O",
+  "tags": []
+}

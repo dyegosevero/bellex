@@ -8,7 +8,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 export async function validateApiKey(req: Request): Promise<boolean> {
-  const key = req.headers.get("x-api-key");
+  const url = new URL(req.url);
+  const key = req.headers.get("x-api-key") || url.searchParams.get("api_key");
   if (!key) return false;
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);

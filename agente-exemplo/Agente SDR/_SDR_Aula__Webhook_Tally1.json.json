@@ -1,0 +1,383 @@
+{
+  "name": "[SDR Aula] Webhook Tally",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tally-leads",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        0
+      ],
+      "id": "d5536cd3-e9e0-43eb-8a82-b7c152f6af33",
+      "name": "Webhook",
+      "webhookId": "16fb8f64-a042-44c5-90ee-113f8ae8afe1"
+    },
+    {
+      "parameters": {
+        "tableId": "leads",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "nome",
+              "fieldValue": "={{ $json.nome }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldId": "telefone",
+              "fieldValue": "={{ $json.telefone }}"
+            },
+            {
+              "fieldId": "mensagem",
+              "fieldValue": "={{ $json.mensagem }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "Novo Lead"
+            },
+            {
+              "fieldId": "ultima_msg",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        140,
+        0
+      ],
+      "id": "0d915ece-f875-4909-8f4a-8129dc85dfa1",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a41b4f8-e865-40ce-a7d0-8081398e57c6",
+              "name": "nome",
+              "value": "={{ $json.body.data.fields[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "e9c5ad2f-59ad-4c97-86e7-3f64fc9fb7fc",
+              "name": "email",
+              "value": "={{ $json.body.data.fields[2].value }}",
+              "type": "string"
+            },
+            {
+              "id": "93035c01-58f7-4691-957b-e56af4e42b4a",
+              "name": "telefone",
+              "value": "={{ $json.body.data.fields[1].value.replace('+', '') }}",
+              "type": "string"
+            },
+            {
+              "id": "95754f0e-9228-4528-ad85-98715575811a",
+              "name": "mensagem",
+              "value": "={{ $json.body.data.fields[3].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "e119a9e3-678b-4073-a55e-49a9b575f4ed",
+      "name": "Padronizar"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "20e2af81-d404-80b4-97a2-c786e38f9d07",
+          "mode": "list",
+          "cachedResultName": "CRM Leads Aulas",
+          "cachedResultUrl": "https://www.notion.so/20e2af81d40480b497a2c786e38f9d07"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Nome|title",
+              "title": "={{ $('Padronizar').item.json.nome }}"
+            },
+            {
+              "key": "email|email",
+              "emailValue": "={{ $('Padronizar').item.json.email }}"
+            },
+            {
+              "key": "telefone|rich_text",
+              "textContent": "={{ $('Padronizar').item.json.telefone }}"
+            },
+            {
+              "key": "mensagem|rich_text",
+              "textContent": "={{ $('Padronizar').item.json.mensagem }}"
+            },
+            {
+              "key": "status|select",
+              "selectValue": "Novo Lead"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        0
+      ],
+      "id": "fc63b95b-f9d9-4e87-9405-1d7ceeb9b779",
+      "name": "Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "oTEasulFibsvSA7d",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Receber Leads Tally + Salvar BD + Msg Automática\n",
+        "height": 520,
+        "width": 1760,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -140
+      ],
+      "id": "8acf3b37-3dc5-40a7-8de6-4fdd5ea7f638",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.property_mensagem }}",
+        "options": {
+          "systemMessage": "=## Agente SDR IA - Agência Agent+\nVocê é o Vox IA, um Agente SDR Virtual da Agent+, uma agência especializada na criação de Agentes IA voltados para Vendas B2B.\nSeu papel é realizar o primeiro atendimento aos leads interessados, conduzindo uma conversa acolhedora e eficiente para entender o perfil do lead, qualificar sua demanda e encaminhá-lo corretamente para o time comercial.\nSua comunicação deve ser humana, empática, objetiva e consultiva — sempre focando em ajudar o lead a encontrar a melhor solução com IA.\n\n### Serviços Disponíveis da Agent+:\n\n1. Agente de Pré-Vendas Automatizado (SDR IA)\n    Automatiza o primeiro atendimento, qualifica leads e encaminha os prontos para vendas.\n    - Valor (a partir de): R$ 4.000\n    - Tempo de implantação: 7 a 10 dias\n    - Retorno esperado: Redução de até 70% no tempo gasto pelo time comercial com leads desqualificados\n2. Agente de Vendas\n    - Valor (a partir de): R$ 6.000\n    - Tempo de implantação: 10 a 15 dias\n    - Retorno esperado: Aumento de até 30% na conversão de leads em negociação\n    - Observação estratégica:\n        Perfeito para negócios com ofertas de ticket médio ou alto, onde o lead precisa de mais informações e convencimento antes de fechar.\n3. Diagnóstico IA para Funil de Vendas\n    - Valor (a partir de): R$ 2.500\n    - Tempo de entrega: 3 dias\n    - Retorno esperado: Clareza sobre gargalos no processo comercial e plano de ação com IA\n    - Observação estratégica: \n        Recomendado como primeiro passo antes da implementação de qualquer agente. Ajuda a identificar onde a IA pode gerar maior impacto no funil.\n        \n\n---\n\nImportante - Informações que já temos do lead\nnome: {{ $('Padronizar').item.json.nome }}\nmensagem enviada no formulário pelo lead: \n\nOlá [nome] ! Eu sou o Vox, seu assistente virtual aqui na Agent+ — uma agência especializada em criar Agentes de IA para acelerar o processo de vendas.\nRecebemos o seu contato sobre interesse em nossos serviços, posso te fazer algumas perguntas rápidas para entender melhor como podemos te ajudar?\n\nNa mensagem inicial busque utilizar a mensagem enviada no formulário pelo lead para ir direto para a demanda do lead.\n\n---\n\n### Exemplos de perguntas para qualificação:\n1. Qual principal dor da sua empresa?\n2. Você atua em qual setor e qual sua função na empresa?\n3. Você está buscando automatizar qual parte do seu processo de vendas?\n(Pré-venda, atendimento, follow-up, tudo?)\n4. Qual o nível de urgência para começar esse projeto?\n5. Deseja apenas entender mais ou já está pronto para receber uma proposta?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        560,
+        0
+      ],
+      "id": "e604b5bd-86cb-4bf0-92e3-22414824445a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        220
+      ],
+      "id": "6f51711e-eaef-4931-8c6a-ee73c4cc9115",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Padronizar').item.json.telefone }}",
+        "contextWindowLength": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        660,
+        220
+      ],
+      "id": "b84b5405-2ea1-4f08-b88f-39f4a04812ac",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "DEQLzk33uvjfYEug",
+          "name": "Postgres Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Ajuste sua instância e autenficiação da Z-API",
+        "height": 300,
+        "width": 330,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        920,
+        -80
+      ],
+      "id": "04b654d6-6027-4970-bbca-67ecb1909989",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.z-api.io/instances/3E2838ACC1C3C0E17A031664B40E8DC7/token/78231C35B02652099B44DA6F/send-text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Padronizar').item.json.telefone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fea719d4-1ede-4bae-a915-3a832a6c396d",
+      "name": "(Z-API) Enviar Mensagem4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "C04N36rkX4T2N5yl",
+          "name": "Header Auth Whats Z API"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Padronizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Padronizar": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "(Z-API) Enviar Mensagem4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7309ef8a-2993-4a1f-8e69-be9e16f0b32e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "107b613a2a1a2b2ec55be12aa4987518e4e956275e1d3b131f347428d37ca35c"
+  },
+  "id": "jesD40kUlfnpTshn",
+  "tags": []
+}

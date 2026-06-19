@@ -1,0 +1,771 @@
+{
+  "name": "MCP SERVER",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "86b021dc-160c-4483-b784-37cb65f043ef"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        -32
+      ],
+      "id": "8fbca05c-057a-415e-8437-a23718ca0101",
+      "name": "MCP Server Trigger",
+      "webhookId": "86b021dc-160c-4483-b784-37cb65f043ef"
+    },
+    {
+      "parameters": {
+        "description": "# Buscar profissionais\n- Lista dados dos profissionais como nome, id, agenda_id",
+        "workflowId": {
+          "__rl": true,
+          "value": "iA08jpMhSLPj3aOt",
+          "mode": "list",
+          "cachedResultName": "TOOLS MCP"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversa_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conversa_id', `Id da conversa do usuário (conversa_id) `, 'string') }}",
+            "tipo": "Consultar profissionais"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -752,
+        224
+      ],
+      "id": "f3cfd129-ec57-42f8-ac97-c2233123e11b",
+      "name": "Buscar_profissionais"
+    },
+    {
+      "parameters": {
+        "tableId": "clientes",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "conversa_id",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', `id da conversa do usuário (conversa_id) `, 'string') }}"
+            },
+            {
+              "fieldId": "nome",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues1_Field_Value', `nome completo do usuário  `, 'string') }}"
+            },
+            {
+              "fieldId": "telefone",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues2_Field_Value', `Telefone do usuário `, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        160,
+        224
+      ],
+      "id": "65b972a3-fb42-4aab-8e0f-82d6bbf39be6",
+      "name": "Criar_cliente",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "# Consultar disponibilidade do profissional escolhido pelo cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "iA08jpMhSLPj3aOt",
+          "mode": "list",
+          "cachedResultName": "TOOLS MCP"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversa_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conversa_id', `id da conversa do usuário `, 'string') }}",
+            "tipo": "Consultar disponibilidade",
+            "profissional_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('profissional_id', `# id do profissional escolhido pelo cliente`, 'string') }}",
+            "data_inicio": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data_inicio', ``, 'string') }}",
+            "data_fim": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data_fim', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "profissional_id",
+              "displayName": "profissional_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        224
+      ],
+      "id": "65809dcc-c3f3-453a-a52d-8be065eca7b7",
+      "name": "Consultar_disponibilidade"
+    },
+    {
+      "parameters": {
+        "description": "# Agenda, tool para agendar consultas",
+        "workflowId": {
+          "__rl": true,
+          "value": "iA08jpMhSLPj3aOt",
+          "mode": "list",
+          "cachedResultName": "TOOLS MCP"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversa_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conversa_id', `# conversa id do usuário `, 'string') }}",
+            "tipo": "Agendar",
+            "profissional_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('profissional_id', `id do profissional selecionado `, 'string') }}",
+            "data_inicio": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data_inicio', ``, 'string') }}",
+            "data_fim": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data_fim', ``, 'string') }}",
+            "titulo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('titulo', `# titulo da consulta`, 'string') }}",
+            "descrição": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('descri__o', `# descrição detalhada da consulta`, 'string') }}",
+            "agenda_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('agenda_id', `id da agenda do profissional`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "profissional_id",
+              "displayName": "profissional_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "descrição",
+              "displayName": "descrição",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "agenda_id",
+              "displayName": "agenda_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -432,
+        224
+      ],
+      "id": "2709c458-f7ac-4829-8153-719f3f829dcf",
+      "name": "Agendar"
+    },
+    {
+      "parameters": {
+        "description": "# Buscar consultas agendadas do cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "iA08jpMhSLPj3aOt",
+          "mode": "list",
+          "cachedResultName": "TOOLS MCP"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversa_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conversa_id', `id da conversa do usuário `, 'string') }}",
+            "tipo": "Buscar consultas"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "profissional_id",
+              "displayName": "profissional_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "descrição",
+              "displayName": "descrição",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "agenda_id",
+              "displayName": "agenda_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        224
+      ],
+      "id": "2e224ad2-0ed3-4d20-b4e9-7bd945e970c7",
+      "name": "Buscar_consultas"
+    },
+    {
+      "parameters": {
+        "description": "# cancelar eventos agendados",
+        "workflowId": {
+          "__rl": true,
+          "value": "iA08jpMhSLPj3aOt",
+          "mode": "list",
+          "cachedResultName": "TOOLS MCP"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversa_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conversa_id', `id da conversa do usuário`, 'string') }}",
+            "tipo": "Cancelar",
+            "agenda_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('agenda_id', `# id da agenda onde esta agendado o evento`, 'string') }}",
+            "evento_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('evento_id', `# id do evento (id_calendar)`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "profissional_id",
+              "displayName": "profissional_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "descrição",
+              "displayName": "descrição",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "agenda_id",
+              "displayName": "agenda_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "evento_id",
+              "displayName": "evento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        224
+      ],
+      "id": "31bcd856-96c1-450d-93c9-6142e13d0c4d",
+      "name": "cancelar_evento"
+    },
+    {
+      "parameters": {
+        "description": "# Reagendar, tool para Reagendar consultas",
+        "workflowId": {
+          "__rl": true,
+          "value": "iA08jpMhSLPj3aOt",
+          "mode": "list",
+          "cachedResultName": "TOOLS MCP"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversa_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conversa_id', `# conversa id do usuário `, 'string') }}",
+            "tipo": "Reagendar",
+            "profissional_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('profissional_id', `id do profissional`, 'string') }}",
+            "data_inicio": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data_inicio', ``, 'string') }}",
+            "data_fim": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data_fim', ``, 'string') }}",
+            "titulo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('titulo', `# titulo da consulta`, 'string') }}",
+            "descrição": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('descri__o', `# descrição detalhada da consulta`, 'string') }}",
+            "agenda_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('agenda_id', `id da agenda do profissional`, 'string') }}",
+            "evento_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('evento_id', `id do evento para ser reagendado`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "profissional_id",
+              "displayName": "profissional_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "descrição",
+              "displayName": "descrição",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "agenda_id",
+              "displayName": "agenda_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "evento_id",
+              "displayName": "evento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        224
+      ],
+      "id": "81fa6ef0-1c03-4d21-8f7f-420da82dfdef",
+      "name": "Reagendar"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "clientes",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "conversa_id",
+              "condition": "eq",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Field_Value', `id da conversa do usuário (conversa_id) `, 'string') }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "nome",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', `nome completo do usuário `, 'string') }}"
+            },
+            {
+              "fieldId": "telefone",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues1_Field_Value', `telefone do usuário `, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        288,
+        224
+      ],
+      "id": "56948323-7cc0-438f-a7c0-b98a49ba0f69",
+      "name": "Atualizar_cliente",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Hk6uigSVtyd3WYPm",
+          "name": "Supabase  NOCODE"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Buscar_profissionais": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar_cliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar_disponibilidade": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar_consultas": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_evento": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reagendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar_cliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4aa65a70-c7fd-41d1-bcef-ddc46a2cab3b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e88e0bf8a341e29f8b95268b96e335be1d58d1dbc25a197228b6ec3eb6c2e866"
+  },
+  "id": "TWjRvd9I0MB464rW",
+  "tags": []
+}

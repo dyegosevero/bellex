@@ -1,0 +1,2319 @@
+{
+  "name": "[SDR Aulas] Agente SDR Conversacional",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Formatos Base64\nBase64 é uma forma de codificar dados binários como texto. Dependendo do tipo de arquivo, os prefixos variam para indicar o formato do dado. Aqui estão alguns dos formatos mais comuns com os respectivos prefixos base64:\n\n### 1. **Imagem**\n   - **PNG**: `data:image/png;base64,`\n   - **JPEG**: `data:image/jpeg;base64,`\n   - **GIF**: `data:image/gif;base64,`\n   - **SVG**: `data:image/svg+xml;base64,`\n   - **BMP**: `data:image/bmp;base64,`\n   \n### 2. **Áudio**\n   - **MP3**: `data:audio/mp3;base64,`\n   - **WAV**: `data:audio/wav;base64,`\n   - **OGG**: `data:audio/ogg;base64,`\n   - **MPEG**: `data:audio/mpeg;base64,`\n\n### 3. **Vídeo**\n   - **MP4**: `data:video/mp4;base64,`\n   - **OGG**: `data:video/ogg;base64,`\n   - **WebM**: `data:video/webm;base64,`\n\n### 4. **Texto**\n   - **Plain Text**: `data:text/plain;base64,`\n   - **HTML**: `data:text/html;base64,`\n   - **CSS**: `data:text/css;base64,`\n   - **JavaScript**: `data:text/javascript;base64,`\n   - **CSV**: `data:text/csv;base64,`\n\n### 5. **Documentos**\n   - **PDF**: `data:application/pdf;base64,`\n   - **JSON**: `data:application/json;base64,`\n   - **ZIP**: `data:application/zip;base64,`\n   - **XML**: `data:application/xml;base64,`\n\nEsses são exemplos de prefixos que podem ser usados ao incluir dados base64 em documentos ou aplicações.",
+        "height": 1166,
+        "width": 593,
+        "color": 7
+      },
+      "id": "2c1b179c-98bd-49ed-8712-97057914d781",
+      "name": "Sticky Note15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## MimeTypes\nO Mime type é o mecanismo para especificar o tipo de documento.\nA estrutura de um MIME type é muito simples; Consiste de um tipo e um subtipo, separados por um '/', onde nenhum espaço é permitido. \nO tipo representa a categoria. \nO subtipo é específico para cada tipo.\n\n### 1. **image**\nRepresenta qualquer tipo de imagens\n- image/gif\n- image/png\n- image/jpeg\n- image/bmp\n- image/webp\n   \n\n### 2. **audio**\nRepresenta qualquer tipo de arquivo de audio\n- audio/midi\n- audio/mpeg\n- audio/webm\n- audio/ogg\n- audio/wav\n- audio/mp3\n- audio/mp4\n\n### 3. **video**\nRepresenta qualquer tipo de arquivo de video\n- video/webm\n- video/ogg\n- video/mp4\n\n### 4. **text**\nRepresenta qualquer documento que contenha texto\n- text/plain\n- text/csv\n- text/html\n- text/css\n- text/javascript\n\n### 5. **application**\nRepresenta qualquer tipo de dados binários.\n- application/octet-stream\n- application/pkcs12\n- application/vnd.mspowerpoint\n- application/xhtml+xml\n- application/xml\n- application/pdf3",
+        "height": 1166,
+        "width": 593,
+        "color": 7
+      },
+      "id": "0ec3ec99-39cd-4dcc-b228-5777d2730d7c",
+      "name": "Sticky Note16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "bc64f125-d93c-4d1d-97ae-65c0adb08b79",
+                    "leftValue": "={{ $('Webhook').item.json.body.text.message }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "137aec3f-e95e-4d59-b9ba-1140f9fc4fb4",
+                    "leftValue": "={{ $('Webhook').item.json.body.audio.audioUrl }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.image.imageUrl }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "40b284c8-fdf7-49e5-9ac3-8c5051f51521"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "imagem"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "7babc8fd-200c-4cb8-bc63-f999f57d5217",
+                    "leftValue": "={{ $('Webhook').item.json.body.document.mimeType }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Outro"
+        }
+      },
+      "id": "75cc163d-6c8a-4314-980d-429df980fce2",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.1,
+      "position": [
+        2240,
+        800
+      ],
+      "notesInFlow": true,
+      "notes": "Ajustar condições para cada tipo de mensagem a depender da sua entrada de dados\n\nTEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "=data",
+        "options": {
+          "language": "pt"
+        }
+      },
+      "id": "7b83405a-e6aa-4845-950f-838b5e088a04",
+      "name": "Transcrever Áudio1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        2940,
+        660
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "=#Instruções\nO usuário te enviou uma imagem a qual você deve descrever.\n\nA imagem pode vir acompanhada de uma mensagem de texto (<MensagemUsuario>)\n\nCaso venha, utilize a mensagem anexa como contexto extra, tente capturar o sentimento da mensagem e objetivo pelo qual o usuário esteja enviando esta imagem na conversa.\n\nCrie uma resposta descrevendo as informações enviadas para que estas sejam utilizadas por um agente no futuro.\n\nLembre-se:\nEste agente apenas terá as informações que você fornecer, portanto repasse toda informação que julgar importante.\n\n#Dados\n<MensagemUsuario>\n{{ $json.MensagemImagem }}\n</MensagemUsuario>\n",
+        "imageUrls": "={{ $json.Imagem }}",
+        "options": {}
+      },
+      "id": "9ee5ba32-ec48-42f4-a345-d348b93531f8",
+      "name": "OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        2720,
+        840
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": "={{ $('Parametros Fluxo').item.json.ModeloTemperatura }}"
+        }
+      },
+      "id": "b13de6c9-0224-4452-9d22-04f11d207891",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        6160,
+        1000
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $('Parametros Fluxo').item.json.EsperaBuffer }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3740,
+        840
+      ],
+      "id": "de3bca77-f99a-48d9-8d93-83c95a250e4a",
+      "name": "Wait1",
+      "webhookId": "84b05b68-c282-4dfa-a9d0-dfaeb6669d60",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1bd6c365-d077-4284-9dfe-94db1cbe39bd",
+              "leftValue": "={{ $('Buffer 3').item.json.messages.last() }}",
+              "rightValue": "={{ $('Buffer ').item.json.messages.last() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4180,
+        840
+      ],
+      "id": "295ead02-f0c5-4455-ac98-a30e22cf22be",
+      "name": "ComparandoMensagens1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "66a91f66-e755-4120-b22f-44c814f56162",
+              "name": "message",
+              "value": "={{ $('Apagar Buffer1').item.json.messages.join('\\n\\n') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4740,
+        740
+      ],
+      "id": "3f304996-324c-4c67-bdea-17d8a0b1c30d",
+      "name": "Mensagem1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ $('Dados Lead').item.json.IdConversa }}"
+            }
+          ]
+        }
+      },
+      "id": "1b030059-01fe-4ea1-8d08-599b4b8dcb2a",
+      "name": "Encontrar Cliente1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5140,
+        740
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "3419c30f-4400-401b-bf40-db1579507f96",
+              "leftValue": "={{ $json.lead_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9cd0bc94-72a0-409d-bb12-196becb59645",
+      "name": "Cliente Existe?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [
+        5360,
+        740
+      ],
+      "alwaysOutputData": false,
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "tableId": "leads",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "nome",
+              "fieldValue": "={{ $('Dados Lead').item.json.LeadNome }}"
+            },
+            {
+              "fieldId": "telefone",
+              "fieldValue": "={{ $('Dados Lead').item.json.IdConversa }}"
+            },
+            {
+              "fieldId": "ultima_msg",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "id": "8f5c31d9-67c6-46df-a028-ab964316563b",
+      "name": "Criar Cliente1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5580,
+        880
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {},
+      "id": "72d7feef-24d7-4d6f-9fde-a2e154f4aafa",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        5820,
+        740
+      ],
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "messages",
+        "key": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        840
+      ],
+      "id": "bf71f134-8342-454c-a191-ba288d6b990c",
+      "name": "Buffer ",
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "messages",
+        "key": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3960,
+        840
+      ],
+      "id": "a53852b9-57d1-40a0-8231-bcbb00de56c6",
+      "name": "Buffer 3",
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "messageData": "={{ $json.Texto }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        480
+      ],
+      "id": "479c6e83-0d32-4bc3-a0e6-7a83f6edaf73",
+      "name": "Add Texto Buffer1",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Dados Lead').item.json.IdConversa }}_buffer"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4400,
+        740
+      ],
+      "id": "e1b55753-61fd-477e-b3ed-2d4ced549cde",
+      "name": "Apagar Buffer1",
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mensagem1').item.json.message }}",
+        "options": {
+          "systemMessage": "=## Agente SDR IA - Agência Agent+\nVocê é o Vox IA, um Agente SDR da Agent+, uma agência especializada na criação de Agentes IA voltados para SDR e Vendas B2B para pequenas empresas.\nSeu papel é realizar o primeiro atendimento aos leads interessados, conduzindo uma conversa acolhedora e eficiente para entender o perfil do lead, qualificar sua demanda e encaminhá-lo corretamente para o time comercial que fará um atendimento humano.\nSua comunicação deve ser humana, empática, objetiva e consultiva — sempre focando em ajudar o lead a encontrar a melhor solução com IA.\n\n### Etapas do processo de atendimento\n\nPara realizar a gestão dos leads e vendas, é utilizado um CRM no Notion com 4 etapas:\n1. Novo Lead: Aqui é quando o lead chega, você realizará o atendimento de todos novos leads. Seu papel é aquecer o lead e repassar para Atendimento Humano (Vendedor), depois que lead estiver pronto para comprar você utilizar a tool MCP_CRM_Notion fazendo um resumo da conversa com o lead e atualizará o status do lead no CRM para \"Atendimento Humano\". ;\n2. Atendimento Humano: Aqui é onde o Atendente Humano realiza o atendimento, você não precisa fazer nada.\n3. Finalizado: Você deve encaminhar leads para essa etapa quando o lead não tiver mais interesse no serviço. Para isso utilize a tool MCP_CRM_Notion fazendo um resumo da conversa com o lead e atualize o status do lead no CRM para \"Finalizado\". \n4. Venda Realizada: O Atendente Humano coloca os leads aqui, você não precisa fazer nada.\n\n### Serviços Disponíveis da Agência Agent+:\n1. Agente de Pré-Vendas Automatizado (SDR IA)\nAutomatiza o primeiro atendimento, qualifica leads e encaminha os prontos para vendas.\n    - Valor (a partir de): R$ 4.000 - Tempo de implantação: 7 a 10 dias\n    - Retorno esperado: Redução de até 70% no tempo gasto pelo time comercial com leads desqualificados\n2. Agente de Vendas\n    - Valor (a partir de): R$ 6.000 - Tempo de implantação: 10 a 15 dias\n    - Retorno esperado: Aumento de até 30% na conversão de leads em negociação\n3. Diagnóstico IA para Funil de Vendas\n    - Valor (a partir de): R$ 2.500 Tempo de entrega: 3 dias\n    - Retorno esperado: Clareza sobre gargalos no processo comercial e plano de ação com IA\n    - Observação estratégica: Recomendado como primeiro passo antes da implementação de qualquer agente. Ajuda a identificar onde a IA pode gerar maior impacto no funil.\n\n### Exemplos de perguntas para qualificação do lead:\n1. Qual principal dor da sua empresa?\n2. Você atua em qual setor e qual sua função na empresa?\n3. Deseja apenas entender mais ou já está pronto para receber uma proposta?\n\n## Processo de Qualificação e repasse para atendimento humano\nDepois que perceber que o lead está qualificado, quente ou pronto para comprar, você deve:\n- Ativar a tool MCP_CRM_Notion para selecionar o lead no banco de dados do notion e fazer atualização do status dele para “Atendimento Humano” e agregar um resumo da conversa. Assim o atendente humano Vendedor poderá seguir o atendimento e fechar a venda.\n- Diga ao Lead que um Especialista Humano irá prosseguir o atendimento para finalizar a contratação do serviço.\n\nCaso o lead não esteja mais interessado no serviço, você deve:\n- Ativar a tool MCP_CRM_Notion para atualizar o status do lead para “Finalizado” e criar um resumo da conversa.\n- Diga o lead que caso volte a ter interesse no serviço é só chamar!\n\n# Restrições\n- Adapte o fluxo da conversa conforme as necessidades do usuário, porém evite responder perguntas fora do seu papel, atenha-se a suas <instruções> e função;\n- Nunca invente informações, atenha-se apenas as suas informações fornecidas;\n\n# Variáveis\nData atual: {{ $now }}\n\n  <ContextoImagem>\nDados entre os parâmetros <ContextoImagem></ContextoImagem> são imagens enviadas pelo usuário que foram pré processadas e detalhadas por uma IA  para que você as entenda.\n\n  <ContextoPDF>\nDados entre os parâmetros <ContextoPDF></ContextoPDF> são arquivos PDF enviados pelo usuário que foram pré processadas e transcritos por uma IA  para que você as entenda.\n\n  <ErroFormatoMensagem>\nO usuário enviou um formato de mensagem que não podemos processar. \nCaso seja a única mensagem enviada, diga ao usuário que não entende esse tipo de mensagem.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        6260,
+        740
+      ],
+      "id": "23922f3d-ae1b-4d54-b3c1-068408e7e92c",
+      "name": "AI Agent1",
+      "retryOnFail": true,
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "24aa4532-80db-4c1e-977a-0036b82a8e5f",
+              "leftValue": "={{ $('Webhook').item.json.body.isEdit }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "204f54b0-e3ed-4ff4-8302-8c20d3b8aa78",
+              "leftValue": "={{ $('Webhook').item.json.body.isGroup }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "130cc493-a17a-4cc1-955b-816799583076",
+              "leftValue": "={{ $('Webhook').item.json.body.isNewsletter }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c51986d9-f347-4198-89bb-9e4cd0f021c9",
+              "leftValue": "={{ $('Webhook').item.json.body.broadcast }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ac9c4286-34d7-4058-9bbb-985bd9c2b6e7",
+              "leftValue": "={{ $('Webhook').item.json.body.fromApi }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "01504100-a606-4d2c-8bf4-af929978590b",
+      "name": "Filtro Inicial1",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.1,
+      "position": [
+        900,
+        820
+      ],
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1ce011b-bd95-468e-863e-f2076f644cf9",
+              "name": "Texto",
+              "value": "={{ $('Webhook').item.json.body.text.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2460,
+        480
+      ],
+      "id": "b0689d2d-2975-4c70-b535-9704f9152a9c",
+      "name": "Mensagem Texto1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5efc6961-1ff7-4ef2-a772-7e9761592a3e",
+              "name": "Audio",
+              "value": "={{ $('Webhook').item.json.body.audio.audioUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2460,
+        660
+      ],
+      "id": "69583563-34ab-4992-b729-b5db6f9b54c9",
+      "name": "Mensagem Audio1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5efc6961-1ff7-4ef2-a772-7e9761592a3e",
+              "name": "Imagem",
+              "value": "={{ $('Webhook').item.json.body.image.imageUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "f5c70ab5-7671-4bc8-9d23-65b8954ddb08",
+              "name": "MensagemImagem",
+              "value": "={{ $('Webhook').item.json.body.image.caption }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2460,
+        840
+      ],
+      "id": "049ff4ee-68f8-4e17-ac9d-3423ea96005b",
+      "name": "Mensagem Imagem1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "messageData": "={{ $json.text }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        660
+      ],
+      "id": "dcd268d0-76fb-4c32-bdd7-3fb2a2a3615c",
+      "name": "Add Audio Buffer1",
+      "retryOnFail": false,
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "messageData": "={{ $json.Erro }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        1220
+      ],
+      "id": "f2207518-8dc5-42c8-aa37-b92ed215e1f8",
+      "name": "Add Error Buffer1",
+      "retryOnFail": false,
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        2940,
+        1040
+      ],
+      "id": "ba1d090c-a527-4706-b1f0-a04a4cb50c86",
+      "name": "Extract from File",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11dc126a-e72e-431b-8db5-c78168c69439",
+              "name": "Erro",
+              "value": "<ErroFormatoMensagem>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2460,
+        1220
+      ],
+      "id": "3a15e17a-4cd4-4aa4-a074-4c8182031278",
+      "name": "Mensagem Erro1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "messageData": "=<ContextoPDF>\n  <TranscricaoPDF>\n{{ $json.text }}\n  </TranscricaoPDF>\nContexto Extra: O usuário encaminhou a mensagem a seguir junto ao PDF.\n  <MensagemUsuario>\n{{ $('Mensagem Documento PDF').item.json.MensagemDocumento }}\n  </MensagemUsuario>\n</ContextoPDF>",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        1040
+      ],
+      "id": "8f2a52d4-aff5-4923-a112-dda270c04945",
+      "name": "Add PDF Buffer1",
+      "retryOnFail": false,
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Dados Lead').item.json.IdConversa }}_buffer",
+        "messageData": "=<ContextoImagem>\n\n  <DetalheImagem>\n{{ $json.content }}\n  </DetalheImagem>\n\nContexto Extra: O usuário encaminhou a mensagem a seguir junto á imagem.\n  <MensagemUsuario>\n{{ $('Mensagem Imagem1').item.json.MensagemImagem }}\n  </MensagemUsuario>\n\n</ContextoImagem>",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        840
+      ],
+      "id": "ac13419d-876b-41fa-b9e8-76930b454131",
+      "name": "Add Imagem Buffer1",
+      "retryOnFail": false,
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.mensagens",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        7080,
+        740
+      ],
+      "id": "c7f8cc6c-0d2e-47e1-b376-4adeb95af801",
+      "name": "Split Out1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        7400,
+        740
+      ],
+      "id": "f1f86a7b-bcbc-4ead-9132-4353229668b8",
+      "name": "Loop Over Items1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        7980,
+        1020
+      ],
+      "id": "60c50a95-42dc-4005-94cc-bb8f2096d204",
+      "name": "Wait3",
+      "webhookId": "33c5308c-6ef7-4028-8fb7-f0f46b8d615d",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        7700,
+        560
+      ],
+      "id": "eaf26791-9471-44e8-a61a-e3debc6aa9d9",
+      "name": "No Operation, do nothing5",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        6860,
+        920
+      ],
+      "id": "43b6e3f0-6f94-4b26-84c8-5c7627656b94",
+      "name": "Auto-fixing Output Parser1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "AgenteStatus",
+        "key": "={{ $('Dados Lead').item.json.IdConversa }}_status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        820
+      ],
+      "id": "720464ea-fe53-4759-a35b-552d9a601da0",
+      "name": "Redis",
+      "retryOnFail": false,
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4400,
+        940
+      ],
+      "id": "53761481-7fdc-4de8-b574-6fea90638a9f",
+      "name": "No Operation, do nothing6",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "756ab323-31a2-4a59-92e8-c2c695027962",
+              "leftValue": "={{ $json.AgenteStatus }}",
+              "rightValue": "Desativado",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        820
+      ],
+      "id": "38e2c4be-86c9-45d8-9c18-eb82d7050f06",
+      "name": "Bot Desativado?1",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        6760,
+        1100
+      ],
+      "id": "e73ed0a1-f06a-4f95-831e-5b5a7762afcf",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "gHExaNOwW8UfAm3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gatilho\nChat Trigger, WhatsApp, Instagram, Telegram, Messenger, etc..",
+        "height": 540,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        580
+      ],
+      "id": "9649db39-a82f-47b6-9d09-cb7ff96b78ab",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Variáveis do Fluxo\nCentral de controle do workflow",
+        "height": 540,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        580
+      ],
+      "id": "83c9772c-a72c-4b70-99ce-4af1fd425f2c",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Filtros Iniciais\nPara evitar que fluxo seja executado quando não queremos",
+        "height": 540,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        780,
+        580
+      ],
+      "id": "ac47a606-94f4-4073-a88b-bf4fa6c31642",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Dados do Lead\nInformações principais sobre o lead",
+        "height": 540,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        580
+      ],
+      "id": "12eeb24c-e66a-41bd-9095-484837c64ad3",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Gestão de Fluxo Agente Desativado (Humano em Atendimento)\nGestão do fluxo para atendimento humano.\n",
+        "height": 540,
+        "width": 600,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        580
+      ],
+      "id": "868d5eaf-f077-425e-8e88-425ae8ff92cb",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Registro do Lead no banco de dados (Supabase)\nFluxo para adição do lead no banco de dados postgrees supabase.",
+        "height": 540,
+        "width": 1080,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4980,
+        560
+      ],
+      "id": "0b87f4f1-0952-451b-8913-903be9062f12",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Tratamento de Mensagens\nPermitir com que agente entenda texto, áudio, imagem, documentos, etc..",
+        "height": 1220,
+        "width": 1020,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        240
+      ],
+      "id": "ce7b212d-93c7-4e76-aa99-3d6b714ac148",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Buffer de Mensagens\nGarantir que agente compreenda todo o contexto das mensagens enviadas pelo usuário antes de formular uma resposta",
+        "height": 1220,
+        "width": 1440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3160,
+        240
+      ],
+      "id": "3f8b55ae-4e89-4db6-8365-8b816aecef11",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Mensagem para o Agente\nMensagem final do usuário para o agente",
+        "height": 540,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4620,
+        560
+      ],
+      "id": "0d675a5a-65e5-4ecb-8160-577516a64dca",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Agente de IA\nAgente inteligente com memória e prompt pré formatado",
+        "height": 760,
+        "width": 580,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6080,
+        480
+      ],
+      "id": "3633a5bf-6d24-47da-bbb3-5f36e427a17f",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Humanizar Resposta\nQuebra de mensagens em mensagens menores e com contexto.",
+        "height": 760,
+        "width": 580,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6680,
+        480
+      ],
+      "id": "395a61d4-fb57-4b65-b56b-5549682347a4",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Envio das Respostas ao Usuário\nEnvio das mensagens quebradas para o usuário",
+        "height": 760,
+        "width": 900,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7280,
+        480
+      ],
+      "id": "8a5b6a02-13e4-496e-8b30-646fb06b0530",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1340,
+        "width": 8220,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ],
+      "id": "4211f694-0d7a-4910-8a96-97d679df2b72",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "-\n# FLUXO MESTRE AGENTE DE IA\n-",
+        "height": 140,
+        "width": 600,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4000,
+        0
+      ],
+      "id": "f6a06fef-0dcc-4937-9fc0-711d9d7b7a65",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f488c5c-0b3b-48e9-87b1-5a22d513d1ec",
+              "name": "IdConversa",
+              "value": "={{ $('Webhook').item.json.body.phone.slice(0, 4) + '9' + $('Webhook').item.json.body.phone.slice(4) }}",
+              "type": "string"
+            },
+            {
+              "id": "69f6217f-9063-423f-abf4-e94f6b70f94e",
+              "name": "LeadNome",
+              "value": "={{ $('Webhook').item.json.body.senderName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fc6fc681-ce9e-4fda-9dfa-abe9c5ddd803",
+      "name": "Dados Lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1260,
+        820
+      ],
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "content": "Ajuste o Node Set com os campos relevantes fornecidos.\n",
+        "height": 280,
+        "width": 210,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        700
+      ],
+      "id": "fde3f408-cc1b-41ae-a502-ba5da3ada1bf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Ajustes os filtros necessários conforme seu gatilho de entrada",
+        "height": 280,
+        "width": 190,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        860,
+        700
+      ],
+      "id": "348116f3-9cc9-45a5-8350-400fcc850d5a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Ajuste tempos de buffer e inatividade do agente conforme necessidade.\n",
+        "height": 280,
+        "width": 190,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        700
+      ],
+      "id": "6e410d1f-6e87-4888-b5d0-c09cfc5083c0",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "### Tipos de Mensagens\nDefina no node Switch as condicionais para definir cada tipo de mídia de acordo com seu gatilho de entrada de dados.\n\nEm cada Node Set:\nMapeie os campos de cada\ntipo de mensagem corretamente.\n\nObs: Não altere o nome\ndos campos pré existentes\nnos nodes SET",
+        "height": 1040,
+        "width": 450,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2180,
+        380
+      ],
+      "id": "0b90e8c7-bee0-4bd5-a8e0-570dc0719b77",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "Faça os ajustes necessários no Prompt do seu agente",
+        "height": 220,
+        "width": 330,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6220,
+        660
+      ],
+      "id": "48d02202-b0d5-4fc3-a164-b80c81614196",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "Ajuste sua instância e autenficiação da Z-API",
+        "height": 300,
+        "width": 230,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7660,
+        780
+      ],
+      "id": "bca94ac3-b50f-4f38-8486-c9cbebda14ac",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1900,
+        680
+      ],
+      "id": "d620bc35-9574-4815-8068-7d62b4558fe1",
+      "name": "No Operation, do nothing",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"mensagens\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\"mensagens\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        6960,
+        1080
+      ],
+      "id": "b55c647c-7b19-4549-b312-687482f4c1b8",
+      "name": "Structured Output Parser [Schema]",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5efc6961-1ff7-4ef2-a772-7e9761592a3e",
+              "name": "Documento",
+              "value": "={{ $('Webhook').item.json.body.document.documentUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "003323ec-ffbe-4c91-b8b5-623466b5014d",
+              "name": "MensagemDocumento",
+              "value": "={{ $('Webhook').item.json.body.document.caption }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2460,
+        1040
+      ],
+      "id": "9cb967c7-d4ac-497a-aab1-dc5fd97f5283",
+      "name": "Mensagem Documento PDF",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3bdce7b6-d0f1-442c-aafd-8cd123aa21b6",
+              "name": "EsperaBuffer",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "c38e8985-4494-40a4-878e-f25467849842",
+              "name": "TempoInatividadeAgente",
+              "value": 900,
+              "type": "number"
+            },
+            {
+              "id": "ac619a5e-1438-4e19-aaf5-21dfcbc32312",
+              "name": "ModeloTemperatura",
+              "value": 0.4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        540,
+        820
+      ],
+      "id": "4f95d612-f2d3-4dba-a589-5d42e0eeb44d",
+      "name": "Parametros Fluxo",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "content": "## Instruções de Uso\n🔴 Áreas em vermelho você deve realizar alterações de acordo com seu canal de entrada;\n🟢 Áreas em verde já estão pré configuradas para o canal do Template, caso vá utilizar outro canal, também fazer devidas alterações nesses nodes;\n\n⚠️ Atenção: \n1. Não altere nome de parâmetros pré-existentes para para evitar quebra do fluxo;\n2. Fique a vontade para adicionar novos parâmetros caso necessário;",
+        "height": 220,
+        "width": 690,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        260
+      ],
+      "id": "ac02159f-39d8-4af2-a604-e9dfb1163eed",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agente-mestre-sdr",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        820
+      ],
+      "id": "8518c64d-3c0d-4539-b427-9bed7856040b",
+      "name": "Webhook",
+      "webhookId": "c16412c9-6c9c-4c5b-a641-774481449536",
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Audio }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2720,
+        660
+      ],
+      "id": "f0bb6e7f-3c2d-43eb-8426-81713c134d31",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "content": "### Tratamento de Mensagens\nCada canal pode nos enviar as informações de diferentes formas e aqui trataremos elas de acordo.\n",
+        "height": 1040,
+        "width": 450,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2660,
+        380
+      ],
+      "id": "22697a66-407e-428d-be53-52796f5b38af",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Documento }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2720,
+        1040
+      ],
+      "id": "d413dc64-eb33-49c2-aed5-e178af08bba3",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "content": "![Source example](https://raichu-uploads.s3.amazonaws.com/logo_no-code-start-up_gjespp.png#full-width)\n",
+        "width": 160,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7e9b322c-6ca9-4432-b3da-62418d7ec322",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "![Source example](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/800px-WhatsApp.svg.png)\n",
+        "width": 160,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        0
+      ],
+      "id": "2a1309ca-31e4-4a06-9570-9b518248d15b",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "![Source example](https://www.z-api.io/wp-content/uploads/2023/10/LOGOTIPO-PRIMARIA-02.png)\n",
+        "height": 100,
+        "width": 220,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        360,
+        60
+      ],
+      "id": "ac32f272-a84c-4dd2-b3fd-e585a1c3d682",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados Lead').item.json.IdConversa }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        6300,
+        1060
+      ],
+      "id": "8747f2c5-998f-4d85-8ba5-e952341caae8",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "DEQLzk33uvjfYEug",
+          "name": "Postgres Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=<mensagem_do_usuario>\n{{ $json.output }}\n</mensagem_do_usuario>",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Apenas estruture a <mensagem_do_usuario> no formato JSON solicitado no output parser e seguindo as instruções de formatação abaixo. Não altere nada mais na mensagem\n\n# Formatação\n- Divida as mensagens para que fiquem naturais e humanizadas;\n- Divida as mensagens conforme estrutura do output parser para que não fiquem muito longas (maiores que 240 caractéres);\n- Não separe mensagens vazias;\n- Use quebras de linhas (\\n\\n) após pontos finais;\n- Para negrito (bold) use apenas um '' nunca duas '' (exemplo: *negrito).\n\nExemplo de formato JSON:\n{\n\"mensagens\": [\"Mensagem 0\", \"Mensagem 1\", \"Mensagem 2\"]\n}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        6760,
+        740
+      ],
+      "id": "9d96d630-5147-492e-bdeb-d6b02a67f686",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true,
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Essa tool desativa o seu atendimento e passa a conversa para o atendente humano. Após a desativação, você não poderá mais falar com o atentende.\n\nApenas fale sobre a possibilidade de um atendimento humano caso seja explicitamente requisitado esse tipo de atendimento, ou caso o clima da conversa com o usuário ficar muito negativo.\n\nAntes de desativar, reforce para o cliente sobre quais assuntos você pode ajuda-lo e confirme se mesmo assim ele deseja seguir com atendimento humano.\n\nSempre solicite uma dupla confirmação do usuário antes de desativar o seu atendimento.\n\n# Resposta após desativação:\nResponda ao usuário que a conversa foi encaminhada para um atendente especializado que logo irá entrar em contato e dará seguimento ao atendimento.",
+        "operation": "set",
+        "key": "={{ $('Dados Lead').item.json.IdConversa }}_status",
+        "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', `Definir como \"Ativo\" ou \"Desativado\"\n\nSempre manter ativo, \nDesativar apenas após dupla confirmação explicita do usuário.`, 'string') }}",
+        "expire": true,
+        "ttl": "={{ $('Parametros Fluxo').item.json.TempoInatividadeAgente }}"
+      },
+      "type": "n8n-nodes-base.redisTool",
+      "typeVersion": 1,
+      "position": [
+        6540,
+        1060
+      ],
+      "id": "330c5cbf-95cc-474b-b32f-de486f947ee4",
+      "name": "DesativarAgente",
+      "credentials": {
+        "redis": {
+          "id": "3lD0jGrERJ2okqxT",
+          "name": "Redis account 2"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "content": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/?utm_source=template-n8n",
+        "height": 80,
+        "width": 593,
+        "color": 7
+      },
+      "id": "5e18a2a3-51d5-4fb7-b07c-ecc8b92b5522",
+      "name": "Sticky Note23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7520,
+        1800
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.z-api.io/instances/3E2838ACC1C3C0E17A031664B40E8DC7/token/78231C35B02652099B44DA6F/send-text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Dados Lead').item.json.IdConversa }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json['output.mensagens'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0fb3bb9d-0882-4768-8205-abc9424a6b01",
+      "name": "(Z-API) Enviar Mensagem4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7720,
+        860
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "C04N36rkX4T2N5yl",
+          "name": "Header Auth Whats Z API"
+        }
+      },
+      "notes": "TEMPLATE DESENVOLVIDO POR NOCODE STARTUP\nhttps://nocodestartup.io/\n\nFORMAÇÃO GESTOR DE AGENTES DE IA:\nhttps://nocodestartup.io/formacao-gestor-agentes-ia/"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "leads",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "lead_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.lead_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ultima_msg",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5580,
+        660
+      ],
+      "id": "0a10b81e-3fda-432f-b794-047d91b463d8",
+      "name": "Ultima_msg",
+      "credentials": {
+        "supabaseApi": {
+          "id": "oaNAKkK2qXHzd9QY",
+          "name": "Supabase Aulas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://primary-production-ecd5.up.railway.app/mcp/notion-crm/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        6420,
+        980
+      ],
+      "id": "7eb088a1-4093-42da-80c8-9333305762d1",
+      "name": "MCP_CRM_Notion"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Texto1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Audio1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Imagem1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Documento PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Erro1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcrever Áudio1": {
+      "main": [
+        [
+          {
+            "node": "Add Audio Buffer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Add Imagem Buffer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Buffer 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ComparandoMensagens1": {
+      "main": [
+        [
+          {
+            "node": "Apagar Buffer1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem1": {
+      "main": [
+        [
+          {
+            "node": "Encontrar Cliente1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encontrar Cliente1": {
+      "main": [
+        [
+          {
+            "node": "Cliente Existe?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cliente Existe?1": {
+      "main": [
+        [
+          {
+            "node": "Ultima_msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Cliente1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Cliente1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer ": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer 3": {
+      "main": [
+        [
+          {
+            "node": "ComparandoMensagens1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Texto Buffer1": {
+      "main": [
+        [
+          {
+            "node": "Buffer ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apagar Buffer1": {
+      "main": [
+        [
+          {
+            "node": "Mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro Inicial1": {
+      "main": [
+        [
+          {
+            "node": "Dados Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Texto1": {
+      "main": [
+        [
+          {
+            "node": "Add Texto Buffer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Audio1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Imagem1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Audio Buffer1": {
+      "main": [
+        [
+          {
+            "node": "Buffer ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Error Buffer1": {
+      "main": [
+        [
+          {
+            "node": "Buffer ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Add PDF Buffer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Erro1": {
+      "main": [
+        [
+          {
+            "node": "Add Error Buffer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add PDF Buffer1": {
+      "main": [
+        [
+          {
+            "node": "Buffer ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Imagem Buffer1": {
+      "main": [
+        [
+          {
+            "node": "Buffer ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "(Z-API) Enviar Mensagem4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "Bot Desativado?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bot Desativado?1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Auto-fixing Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Lead": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser [Schema]": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Documento PDF": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parametros Fluxo": {
+      "main": [
+        [
+          {
+            "node": "Filtro Inicial1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parametros Fluxo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Transcrever Áudio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DesativarAgente": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(Z-API) Enviar Mensagem4": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ultima_msg": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP_CRM_Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ccb9757c-4b6b-4fac-8ea4-357856015544",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "107b613a2a1a2b2ec55be12aa4987518e4e956275e1d3b131f347428d37ca35c"
+  },
+  "id": "uMxOzBVWRzBjebPT",
+  "tags": [
+    {
+      "createdAt": "2024-11-02T18:04:34.617Z",
+      "updatedAt": "2024-11-02T18:04:34.617Z",
+      "id": "8BqTrgV0hYBRfZeK",
+      "name": "NoCode StartUp"
+    }
+  ]
+}
