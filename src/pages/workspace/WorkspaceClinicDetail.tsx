@@ -57,6 +57,7 @@ export default function WorkspaceClinicDetail() {
   const [verifying, setVerifying] = useState(false);
   const [saving, setSaving] = useState(false);
   const [features, setFeatures] = useState<Record<string, boolean>>({ agenda: true, cobrancas: true, pipeline: false, mensagens: false, marketing: false });
+  const [openaiKey, setOpenaiKey] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -69,13 +70,19 @@ export default function WorkspaceClinicDetail() {
       setColor(clinic.color);
       setName(clinic.name);
       setCustomDomain(clinic.custom_domain ?? "");
+      setOpenaiKey((clinic as Record<string, unknown>).openai_api_key as string ?? "");
     }
   }, [clinic]);
 
   const handleSave = async () => {
     if (!clinic) return;
     setSaving(true);
-    const { error } = await update(clinic.id, { name, color, custom_domain: customDomain || null });
+    const { error } = await update(clinic.id, {
+      name,
+      color,
+      custom_domain: customDomain || null,
+      openai_api_key: openaiKey || null,
+    } as Parameters<typeof update>[1]);
     setSaving(false);
     if (error) toast.error("Erro ao salvar");
     else toast.success("Alterações salvas!");
@@ -232,7 +239,44 @@ export default function WorkspaceClinicDetail() {
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <Button size="sm" className="gap-1.5"><Save className="w-3.5 h-3.5" />Salvar</Button>
+              <Button size="sm" className="gap-1.5" onClick={handleSave} disabled={saving}>
+                <Save className="w-3.5 h-3.5" />{saving ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+
+          {/* OpenAI key por clínica */}
+          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#10a37f] flex items-center justify-center shrink-0">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Chave OpenAI</p>
+                <p className="text-xs text-muted-foreground">
+                  {openaiKey ? "Usando chave própria desta clínica" : "Herdando chave do workspace"}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>API Key (opcional)</Label>
+              <div className="relative">
+                <Input
+                  type="password"
+                  value={openaiKey}
+                  onChange={e => setOpenaiKey(e.target.value)}
+                  placeholder="sk-proj-... (deixe em branco para herdar do workspace)"
+                  className="font-mono text-sm"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Se preenchida, esta clínica usará esta chave. Caso contrário, usa a chave configurada no workspace.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? "Salvando..." : "Salvar chave"}
+              </Button>
             </div>
           </div>
         </TabsContent>

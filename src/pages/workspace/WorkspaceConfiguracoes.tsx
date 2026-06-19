@@ -74,6 +74,7 @@ export default function WorkspaceConfiguracoes() {
   const [agentEnabled, setAgentEnabled] = useState(false);
   const [agentName, setAgentName] = useState("Assistente Bellex");
   const [agentPrompt, setAgentPrompt] = useState("Você é um assistente de suporte para clínicas que usam o sistema Bellex. Seja objetivo e amigável.");
+  const [openaiKey, setOpenaiKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [testingResend, setTestingResend] = useState(false);
 
@@ -90,6 +91,7 @@ export default function WorkspaceConfiguracoes() {
     setAgentEnabled(settings.agent_enabled);
     setAgentName(settings.agent_name);
     if (settings.agent_prompt) setAgentPrompt(settings.agent_prompt);
+    if ((settings as Record<string, unknown>).openai_api_key) setOpenaiKey((settings as Record<string, unknown>).openai_api_key as string);
   }, [settings]);
 
   const save = async () => {
@@ -106,7 +108,8 @@ export default function WorkspaceConfiguracoes() {
       agent_enabled: agentEnabled,
       agent_name: agentName,
       agent_prompt: agentPrompt,
-    });
+      openai_api_key: openaiKey || null,
+    } as Parameters<typeof saveSettings>[0]);
     setSaving(false);
     if (error) toast({ title: "Erro ao salvar", description: error, variant: "destructive" });
     else toast({ title: "Configurações salvas", description: "As alterações foram aplicadas." });
@@ -225,6 +228,34 @@ export default function WorkspaceConfiguracoes() {
             <div className="flex justify-end">
               <Button size="sm" variant="outline" onClick={handleTestResend} disabled={!resendKey || testingResend}>
                 {testingResend ? "Testando..." : "Testar conexão"}
+              </Button>
+            </div>
+          </section>
+
+          {/* OpenAI */}
+          <section className="rounded-xl border border-border/40 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#10a37f] flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">OpenAI</p>
+                  <p className="text-xs text-muted-foreground">Chave padrão do workspace — herdada por todas as clínicas</p>
+                </div>
+              </div>
+              <StatusBadge status={openaiKey ? "connected" : "disconnected"} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>API Key</Label>
+              <SecretInput value={openaiKey} placeholder="sk-proj-..." onChange={setOpenaiKey} />
+              <p className="text-xs text-muted-foreground">
+                Cada clínica pode usar sua própria chave nas configurações do seat.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={save} disabled={saving}>
+                {saving ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </section>
