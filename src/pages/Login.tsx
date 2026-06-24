@@ -14,7 +14,7 @@ import { toast } from "sonner";
 // Subtítulo: letra por letra, stroke → fill
 function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.2 }: { text?: string; delay?: number }) {
   return (
-    <div className="flex flex-wrap justify-center mt-4 gap-0">
+    <div className="flex flex-wrap justify-center mt-2 gap-0">
       <style>{`
         @keyframes strokeFill {
           0%   { opacity: 0; -webkit-text-stroke: 1px rgba(255,255,255,0.9); color: transparent; }
@@ -31,9 +31,9 @@ function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.
             key={i}
             style={{
               display: "inline-block",
-              fontSize: "10px",
+              fontSize: "13px",
               fontWeight: 300,
-              letterSpacing: "0.28em",
+              letterSpacing: "0.26em",
               opacity: 0,
               animation: `strokeFill 0.75s ease forwards`,
               animationDelay: `${delay + i * 0.05}s`,

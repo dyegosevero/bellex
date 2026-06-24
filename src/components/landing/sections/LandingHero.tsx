@@ -7,7 +7,6 @@ import DashboardMock from "@/components/landing/DashboardMock";
 import { FadeUp } from "./utils";
 import { ShimmerButton } from "@/components/landing/ShimmerButton";
 import Grainient from "@/components/Grainient";
-
 export function LandingHero() {
   const { openDemo } = useDemoModal();
   return (

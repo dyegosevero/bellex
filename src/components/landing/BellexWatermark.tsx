@@ -1,0 +1,76 @@
+import { motion, useInView } from "motion/react";
+import { useRef } from "react";
+
+interface BellexWatermarkProps {
+  size?: number;
+  opacity?: number;
+  className?: string;
+  animate?: boolean;
+}
+
+// Paths do logo Bellex — mesmo viewBox 0 0 1876.58 453.51
+const PATHS = [
+  "M83.4,0l.03,157.18c87.42-62.67,247.01-61.83,306.43,38.38,33.98,57.3,29.7,143.63-12.9,195.83-64.43,78.93-216.03,79.59-293.52,19.21l-.02,35.3-83.42-.02V0h83.4ZM178.93,164.5c-135.71,16.31-133.98,228.59,8.61,239.81,73.36,5.77,133.84-25.53,139.77-104.26,7.45-98.87-52.36-147.09-148.38-135.55Z",
+  "M827.62,298.33h-320.78c5.52,31.94,13.88,59.28,40.17,80.12,44.19,35.01,134.17,36.48,174.87-4.62,4.6-4.64,17.88-27.38,20.74-27.38h75.38c-26.96,102.87-169.13,120.5-257.29,98.5-187.73-46.85-183.09-287.8,10.17-324.76,62.24-11.9,143.08-7.2,194.12,33.86,45.77,36.83,58.39,87.49,62.62,144.28ZM737.8,256.63c5.47-130.02-227.88-120.48-227.76,0h227.76Z",
+  "M1475.6,298.33h-320.78c5.52,31.94,13.88,59.28,40.17,80.12,44.19,35.01,134.17,36.48,174.87-4.62,4.6-4.64,17.88-27.38,20.74-27.38h75.38c-26.96,102.87-169.13,120.5-257.29,98.5-187.73-46.85-183.09-287.8,10.17-324.76,62.24-11.9,143.08-7.2,194.12,33.86,45.77,36.83,58.39,87.49,62.62,144.28ZM1385.78,256.63c5.47-130.02-227.88-120.48-227.76,0h227.76Z",
+  "M1854.13,121.9l-144.12,151.93,166.58,172.06h-97.84c-32.86-40.6-71.59-76.29-106.02-115.38-2.45-2.79-4.72-5.8-4.71-9.72-19.65,10.16-114.65,125.11-123.44,125.11h-88.22l163.37-172.06-147.33-151.93h97.84c11.48,12.29,91.55,103.66,99,102.41,13.87-9.52,83.44-102.41,90.27-102.41h94.63Z",
+];
+const RECTS = [
+  { x: 850.08, y: 0, width: 83.4, height: 445.89 },
+  { x: 965.56, y: 0, width: 83.4, height: 445.89 },
+];
+
+export function BellexWatermark({ size = 600, opacity = 0.045, className = "", animate = true }: BellexWatermarkProps) {
+  const ref = useRef<SVGSVGElement>(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -100px 0px" });
+
+  const w = size * 4.14;
+  const h = size;
+
+  const draw = {
+    hidden: { pathLength: 0, opacity: 0 },
+    visible: (i: number) => ({
+      pathLength: 1,
+      opacity: 1,
+      transition: { pathLength: { delay: i * 0.12, duration: 2.2, ease: "easeInOut" }, opacity: { delay: i * 0.12, duration: 0.1 } },
+    }),
+  };
+
+  return (
+    <svg
+      ref={ref}
+      width={w}
+      height={h}
+      viewBox="0 0 1876.58 453.51"
+      fill="none"
+      className={className}
+      style={{ opacity }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {RECTS.map((r, i) => (
+        <motion.rect
+          key={`wr-${i}`}
+          x={r.x} y={r.y} width={r.width} height={r.height}
+          stroke="currentColor" strokeWidth={8} fill="none"
+          pathLength="1"
+          variants={animate ? draw : undefined}
+          initial={animate ? "hidden" : undefined}
+          animate={animate && inView ? "visible" : undefined}
+          custom={i}
+        />
+      ))}
+      {PATHS.map((d, i) => (
+        <motion.path
+          key={`wp-${i}`}
+          d={d}
+          stroke="currentColor" strokeWidth={8} fill="none"
+          pathLength="1"
+          variants={animate ? draw : undefined}
+          initial={animate ? "hidden" : undefined}
+          animate={animate && inView ? "visible" : undefined}
+          custom={RECTS.length + i}
+        />
+      ))}
+    </svg>
+  );
+}

@@ -99,9 +99,6 @@ export function RecursoLayout({ content }: { content: RecursoPageContent }) {
 
       {/* T — Transformation: resultados */}
       <section className="py-20 px-6 relative overflow-hidden" style={{ background: "hsl(10 60% 96%)" }}>
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <Icon strokeWidth={0.3} className="w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] opacity-[0.06]" style={{ color: "hsl(10 75% 67%)" }} />
-        </div>
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           <p className="text-xs text-primary tracking-widest uppercase font-medium mb-4">Resultados reais</p>
           <h2 className="text-3xl md:text-4xl font-light text-foreground mb-14 max-w-xl mx-auto leading-tight">

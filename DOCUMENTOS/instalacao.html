@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bellex — Guia de Instalação</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --border: #e8e3de;
+    --text: #1a1714;
+    --muted: #7a746e;
+    --primary: #c97a60;
+    --primary-light: #f5ede9;
+    --green: #2d6a4f;
+    --green-light: #e8f5ee;
+    --blue: #2c5282;
+    --blue-light: #ebf4ff;
+    --yellow: #7d5a0e;
+    --yellow-light: #fefce8;
+    --red: #9b1c1c;
+    --red-light: #fff5f5;
+    --code-bg: #1e1b18;
+    --code-text: #e8e3de;
+    --radius: 10px;
+    --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+  }
+  .sidebar-logo {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo span {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+  }
+  .sidebar-logo sub { font-size: 10px; color: var(--muted); font-weight: 400; }
+  .sidebar nav { padding: 0 12px; }
+  .nav-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 16px 12px 6px;
+  }
+  .nav-section:first-child { padding-top: 0; }
+  .sidebar a {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover { background: var(--primary-light); color: var(--primary); }
+
+  /* Main content */
+  .main { flex: 1; min-width: 0; }
+  .content { max-width: 820px; padding: 56px 48px; }
+
+  /* Header */
+  .doc-header {
+    margin-bottom: 56px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+  }
+  .doc-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .doc-header p { color: var(--muted); font-size: 16px; max-width: 540px; }
+
+  /* Sections */
+  .section { margin-bottom: 64px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 12px; color: var(--text); }
+  h3 { font-size: 16px; font-weight: 600; margin: 28px 0 10px; color: var(--text); }
+  h4 { font-size: 13px; font-weight: 600; margin: 20px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  p { color: var(--muted); margin-bottom: 12px; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* Stack table */
+  .stack-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .stack-table th, .stack-table td { padding: 11px 14px; text-align: left; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+  .stack-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+  .stack-table td:first-child { color: var(--muted); width: 180px; }
+  .stack-table td:last-child { color: var(--text); font-weight: 500; }
+
+  /* Callouts */
+  .callout {
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { margin: 0; }
+  .callout.info { background: var(--blue-light); color: var(--blue); }
+  .callout.success { background: var(--green-light); color: var(--green); }
+  .callout.warning { background: var(--yellow-light); color: var(--yellow); }
+  .callout.error { background: var(--red-light); color: var(--red); }
+  .callout strong { color: inherit; }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--code-bg);
+    border-radius: var(--radius);
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .code-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.05);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(232,227,222,0.5);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--code-text);
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  /* Comments in code */
+  .cm { color: #6e6560; }
+  .ck { color: #c3a882; }
+  .cs { color: #8fb48f; }
+  .cv { color: #a8c4e0; }
+
+  /* Steps */
+  .steps { counter-reset: step; margin: 20px 0; }
+  .step {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    top: 40px;
+    bottom: -28px;
+    width: 1px;
+    background: var(--border);
+  }
+  .step:last-child::before { display: none; }
+  .step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    counter-increment: step;
+    content: counter(step);
+    position: relative;
+    z-index: 1;
+  }
+  .step-body { flex: 1; padding-top: 6px; }
+  .step-body h4 { margin: 0 0 6px; font-size: 14px; font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; }
+  .step-body p { margin: 0 0 8px; font-size: 14px; }
+
+  /* Checklist */
+  .checklist { list-style: none; margin: 12px 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .checklist li:last-child { border: none; }
+  .check-box {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Clients table */
+  .clients-table { width: 100%; border-collapse: collapse; }
+  .clients-table th, .clients-table td { padding: 12px 16px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .clients-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-normal { background: var(--primary-light); color: var(--primary); }
+  .badge-custom { background: var(--blue-light); color: var(--blue); }
+
+  /* Arch diagram */
+  .arch {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .arch-row:last-child { margin-bottom: 0; }
+  .arch-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .arch-box.primary { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+  .arch-box.neutral { background: var(--bg); color: var(--muted); }
+  .arch-arrow { color: var(--muted); font-size: 18px; }
+  .arch-note { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  @media (max-width: 860px) {
+    .sidebar { display: none; }
+    .content { padding: 32px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span>bellex<sup>®</sup></span><br>
+      <sub style="margin-top:4px;display:block">Guia de Instalação</sub>
+    </div>
+    <nav>
+      <div class="nav-section">Visão geral</div>
+      <a href="#stack">Stack técnica</a>
+      <a href="#arquitetura">Arquitetura</a>
+      <a href="#tipos">Tipos de cliente</a>
+
+      <div class="nav-section">Setup inicial (1x)</div>
+      <a href="#nginx">Nginx wildcard</a>
+      <a href="#dns">DNS wildcard</a>
+      <a href="#ssl">SSL wildcard</a>
+      <a href="#api">API REST</a>
+      <a href="#evoapi-server">EvoAPI — servidor</a>
+
+      <div class="nav-section">Novo cliente</div>
+      <a href="#banco">1. Banco de dados</a>
+      <a href="#usuario">2. Usuário admin</a>
+      <a href="#branding">3. Branding</a>
+      <a href="#whatsapp">4. WhatsApp</a>
+      <a href="#agente">5. Agente de IA</a>
+      <a href="#checklist">6. Checklist entrega</a>
+
+      <div class="nav-section">Extras</div>
+      <a href="#dominio-custom">Domínio customizado</a>
+      <a href="#deploy">Deploy frontend</a>
+      <a href="#clientes-ativos">Clientes ativos</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+  <div class="content">
+
+    <!-- Header -->
+    <div class="doc-header">
+      <div class="doc-badge">📄 Operações</div>
+      <h1>Guia de Instalação</h1>
+      <p>Referência técnica completa para setup inicial da VPS e onboarding de novos clientes.</p>
+    </div>
+
+    <!-- Stack -->
+    <div class="section" id="stack">
+      <div class="section-title">Stack técnica</div>
+      <table class="stack-table">
+        <thead><tr><th>Camada</th><th>Tecnologia</th></tr></thead>
+        <tbody>
+          <tr><td>Frontend</td><td>React + Vite + TypeScript</td></tr>
+          <tr><td>Banco + Auth + Storage</td><td>Supabase — multi-tenant via RLS por <code>clinic_id</code></td></tr>
+          <tr><td>API IA / WhatsApp</td><td>Node.js + Express + PM2 — porta 3001</td></tr>
+          <tr><td>VPS</td><td>Hostinger KVM4 — <code>76.13.225.174</code></td></tr>
+          <tr><td>Proxy</td><td>Nginx — wildcard <code>*.bellex.beauty</code></td></tr>
+          <tr><td>WhatsApp</td><td>EvoAPI — instância por clínica</td></tr>
+          <tr><td>IA</td><td>OpenAI GPT-4o mini</td></tr>
+          <tr><td>Memória de conversa</td><td>Redis — TTL 6h, últimas 10 mensagens</td></tr>
+          <tr><td>Storage</td><td>Supabase Storage — bucket <code>clinic-branding</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Arquitetura -->
+    <div class="section" id="arquitetura">
+      <div class="section-title">Arquitetura</div>
+
+      <div class="callout success">
+        <span class="callout-icon">✓</span>
+        <p><strong>Zero configuração por cliente na VPS.</strong> Adicionar uma nova clínica é apenas um INSERT no banco de dados. Nginx, DNS e SSL cobrem automaticamente qualquer subdomínio <code>*.bellex.beauty</code>.</p>
+      </div>
+
+      <p>Todos os clientes compartilham a mesma infraestrutura:</p>
+
+      <div class="arch">
+        <div class="arch-row">
+          <div class="arch-box primary">studio13.bellex.beauty</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box neutral">Nginx wildcard</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box neutral">/var/www/bellex (dist único)</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box primary">espacovip.bellex.beauty</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box neutral">mesmo Nginx</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box neutral">mesmo dist</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box neutral">React app</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box neutral">lê hostname</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box neutral">Supabase → clinic_id + branding</div>
+        </div>
+      </div>
+
+      <p>O branding (logo, cor primária) é carregado em runtime a partir do banco — não há build por cliente.</p>
+    </div>
+
+    <!-- Tipos -->
+    <div class="section" id="tipos">
+      <div class="section-title">Tipos de cliente</div>
+
+      <h3>Clínica Normal <span class="badge badge-normal">Produto atual</span></h3>
+      <p>Cliente com subdomínio <code>*.bellex.beauty</code>. Sem workspace, sem whitelabel. É o que estamos vendendo agora.</p>
+      <p>Exemplos: <code>studio13.bellex.beauty</code>, <code>espacovip.bellex.beauty</code></p>
+
+      <h3>Clínica com domínio customizado <span class="badge badge-custom">Opcional</span></h3>
+      <p>Mesma clínica normal, mas com domínio próprio da cliente apontando para a VPS. Requer uma única etapa extra de SSL. Ver <a href="#dominio-custom">seção específica</a>.</p>
+    </div>
+
+    <!-- ===== SETUP INICIAL ===== -->
+    <div class="section" id="nginx">
+      <div class="section-title">Setup inicial — Nginx wildcard</div>
+      <h2>Nginx</h2>
+      <p>Configurado <strong>uma única vez</strong>. Cobre qualquer subdomínio presente e futuro sem alterar este arquivo.</p>
+
+      <div class="code-block">
+        <div class="code-label">bash — criar o arquivo de configuração</div>
+        <pre>nano /etc/nginx/sites-available/bellex</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">/etc/nginx/sites-available/bellex</div>
+        <pre><span class="cm"># Redireciona HTTP → HTTPS</span>
+server {
+    listen 80;
+    server_name bellex.beauty *.bellex.beauty;
+    return 301 https://$host$request_uri;
+}
+
+<span class="cm"># HTTPS — wildcard, serve todos os subdomínios</span>
+server {
+    listen 443 ssl;
+    server_name bellex.beauty *.bellex.beauty;
+
+    ssl_certificate     /etc/letsencrypt/live/bellex.beauty/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bellex.beauty/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+
+    root  /var/www/bellex;
+    index index.html;
+
+    <span class="cm"># SPA — todas as rotas caem no index.html</span>
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    <span class="cm"># Proxy da API de IA/WhatsApp</span>
+    location /api/ {
+        proxy_pass         http://localhost:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">bash — ativar e testar</div>
+        <pre>ln -s /etc/nginx/sites-available/bellex /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx</pre>
+      </div>
+    </div>
+
+    <div class="section" id="dns">
+      <div class="section-title">Setup inicial — DNS wildcard</div>
+      <h2>DNS</h2>
+      <p>No painel de DNS do registrador do domínio <code>bellex.beauty</code>, criar <strong>dois registros</strong>:</p>
+
+      <div class="code-block">
+        <div class="code-label">registros DNS</div>
+        <pre><span class="ck">@</span>   <span class="cv">A</span>   76.13.225.174   <span class="cm">(TTL 300)</span>
+<span class="ck">*</span>   <span class="cv">A</span>   76.13.225.174   <span class="cm">(TTL 300)</span></pre>
+      </div>
+
+      <p>O registro <code>*</code> cobre automaticamente <code>studio13.bellex.beauty</code>, <code>espacovip.bellex.beauty</code> e qualquer futuro subdomínio — sem tocar no DNS de novo.</p>
+    </div>
+
+    <div class="section" id="ssl">
+      <div class="section-title">Setup inicial — SSL wildcard</div>
+      <h2>Certificado SSL</h2>
+      <p>Um único certificado wildcard cobre todos os subdomínios. Requer DNS challenge (não HTTP challenge).</p>
+
+      <div class="code-block">
+        <div class="code-label">bash — emitir certificado wildcard</div>
+        <pre>certbot certonly --manual --preferred-challenges dns \
+  -d bellex.beauty -d "*.bellex.beauty"</pre>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠</span>
+        <p>O certbot vai pedir para adicionar um registro TXT <code>_acme-challenge.bellex.beauty</code> no DNS. Adicionar o registro, aguardar propagar (1–2 min) e só então pressionar Enter para continuar.</p>
+      </div>
+
+      <p>Após emitido, o Nginx já usa o certificado via os caminhos configurados acima. Renovação automática via <code>certbot renew</code> (cron do sistema).</p>
+    </div>
+
+    <div class="section" id="api">
+      <div class="section-title">Setup inicial — API REST</div>
+      <h2>API REST (Node.js + PM2)</h2>
+      <p>Roda na porta 3001, compartilhada por todas as clínicas. Cada clínica tem seus próprios prompts e configs no banco — o código é único.</p>
+
+      <h3>Primeiro deploy</h3>
+      <div class="code-block">
+        <div class="code-label">bash — na VPS</div>
+        <pre>ssh root@76.13.225.174
+
+<span class="cm"># dependências globais (só na primeira vez)</span>
+npm install -g pm2 tsx
+
+<span class="cm"># configurar variáveis de ambiente</span>
+cp /var/www/bellex/api/.env.example /var/www/bellex/api/.env
+nano /var/www/bellex/api/.env</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">api/.env</div>
+        <pre><span class="ck">SUPABASE_URL</span>=<span class="cs">https://jrvkdekyupcxzbxtlnwu.supabase.co</span>
+<span class="ck">SUPABASE_SERVICE_ROLE_KEY</span>=<span class="cs">&lt;service_role_key&gt;</span>
+<span class="ck">OPENAI_API_KEY</span>=<span class="cs">&lt;chave_openai&gt;</span>
+<span class="ck">REDIS_URL</span>=<span class="cs">redis://:KBSqDRIl9RjDYGraXBDemRviGXCwwE3y@localhost:6379</span>
+<span class="ck">WEBHOOK_SECRET</span>=<span class="cs">&lt;segredo_para_validar_webhook&gt;</span>
+<span class="ck">API_PORT</span>=<span class="cs">3001</span></pre>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <p><strong>EVOAPI_URL e EVOAPI_KEY não ficam no .env da API.</strong> Cada clínica configura seu servidor EvoAPI pelo painel do Workspace — essas credenciais ficam no banco, não no servidor.</p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">bash — iniciar com PM2</div>
+        <pre>cd /var/www/bellex
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 startup  <span class="cm"># garante reinício automático após reboot</span></pre>
+      </div>
+
+      <h3>Atualizar a API</h3>
+      <div class="code-block">
+        <div class="code-label">bash — máquina local</div>
+        <pre>sshpass -p 'Fg8L?6EpWBYwh5qD7#' rsync -az \
+  -e "ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password" \
+  --exclude='.env' \
+  api/ root@76.13.225.174:/var/www/bellex/api/
+
+ssh root@76.13.225.174 "pm2 restart bellex-api"</pre>
+      </div>
+    </div>
+
+    <div class="section" id="evoapi-server">
+      <div class="section-title">Setup inicial — EvoAPI</div>
+      <h2>EvoAPI — servidor (configurar 1x no Workspace)</h2>
+      <p>A URL e a API key do servidor EvoAPI são configuradas uma única vez pelo admin no painel do Workspace.</p>
+      <p><strong>Caminho:</strong> Workspace → Integrações → WhatsApp / EvoAPI → informar URL do servidor e API key.</p>
+      <p>Essas credenciais ficam salvas no banco e são herdadas por todas as clínicas. A partir daí, cada clínica cria e gerencia sua própria instância diretamente pelo painel — sem nenhum acesso manual ao painel do EvoAPI.</p>
+    </div>
+
+    <!-- ===== NOVO CLIENTE ===== -->
+    <div class="section" id="banco">
+      <div class="section-title">Novo cliente — Passo 1</div>
+      <h2>Criar a clínica</h2>
+
+      <div class="callout success">
+        <span class="callout-icon">✓</span>
+        <p><strong>Feito pelo Workspace — sem SQL, sem VPS.</strong> Acesse <code>ws.bellex.beauty</code> → Clínicas → Nova Clínica. O subdomínio fica acessível imediatamente.</p>
+      </div>
+
+      <table class="stack-table">
+        <thead><tr><th>Campo</th><th>Exemplo</th></tr></thead>
+        <tbody>
+          <tr><td>Nome da clínica</td><td>Studio 13</td></tr>
+          <tr><td>Subdomínio</td><td>studio13 → <code>studio13.bellex.beauty</code></td></tr>
+          <tr><td>Cor primária</td><td>#e8957a</td></tr>
+          <tr><td>Plano</td><td>Pro</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <p>O SQL abaixo é só referência do que o painel executa internamente. Você não precisa rodar nada no Supabase.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SQL — referência técnica</div>
+        <pre><span class="cm">-- executado automaticamente ao salvar pelo painel do Workspace</span>
+INSERT INTO workspace_clinics (name, subdomain, color, plan)
+VALUES (<span class="cs">'Studio 13'</span>, <span class="cs">'studio13'</span>, <span class="cs">'#e8957a'</span>, <span class="cs">'pro'</span>);</pre>
+      </div>
+    </div>
+
+    <div class="section" id="usuario">
+      <div class="section-title">Novo cliente — Passo 2</div>
+      <h2>Usuário admin</h2>
+      <p><strong>Workspace → Clínicas → [clínica] → Usuários → Convidar.</strong> O convite é enviado por e-mail — a cliente define a própria senha.</p>
+      <ul style="margin:10px 0 0 20px;color:var(--muted);font-size:14px;line-height:2">
+        <li>Informar o e-mail da cliente (ex: <code>patricia@studio13.com</code>)</li>
+        <li>Ela recebe um e-mail de convite e define a própria senha</li>
+        <li>Na primeira entrada ela já cai na clínica correta pelo subdomínio</li>
+      </ul>
+    </div>
+
+    <div class="section" id="branding">
+      <div class="section-title">Novo cliente — Passo 3</div>
+      <h2>Branding</h2>
+      <p>Feito pela própria cliente (ou por você) no painel de configurações da clínica. Não requer deploy.</p>
+      <table class="stack-table">
+        <thead><tr><th>O que</th><th>Onde fica no banco</th><th>Efeito</th></tr></thead>
+        <tbody>
+          <tr><td>Cor primária</td><td><code>workspace_clinics.color</code></td><td>Botões, destaques, tela de login</td></tr>
+          <tr><td>Logo</td><td><code>workspace_clinics.logo_url</code></td><td>Tela de login + header do app</td></tr>
+          <tr><td>Nome da clínica</td><td><code>workspace_clinics.name</code></td><td>Título da aba, emails</td></tr>
+        </tbody>
+      </table>
+      <p>O frontend lê esses valores em runtime ao detectar o subdomínio — nenhum rebuild necessário.</p>
+    </div>
+
+    <div class="section" id="whatsapp">
+      <div class="section-title">Novo cliente — Passo 4</div>
+      <h2>WhatsApp</h2>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <p><strong>Zero configuração manual no painel EvoAPI.</strong> Todo o processo acontece dentro do painel da clínica, usando as credenciais do servidor EvoAPI configuradas no Workspace.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Acessar configurações de WhatsApp</h4>
+            <p>No painel da clínica → Configurações → WhatsApp → "Criar instância"</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Criação automática da instância</h4>
+            <p>O sistema cria a instância na EvoAPI usando as credenciais do servidor configuradas no Workspace. O webhook (<code>/api/webhook/whatsapp</code> + <code>x-webhook-secret</code>) é configurado automaticamente na criação.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>QR Code + conexão</h4>
+            <p>O QR Code aparece na tela. A cliente escaneia com o WhatsApp do número da clínica. Instância conectada — pronto.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="agente">
+      <div class="section-title">Novo cliente — Passo 5</div>
+      <h2>Agente de IA</h2>
+      <p>A API usa o mesmo código para todas as clínicas — o comportamento do agente é definido por dados no banco, não por código.</p>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠</span>
+        <p><strong>Este é o único passo ainda manual.</strong> A UI de configuração do agente no painel Admin ainda não está completa. Por enquanto, executar o SQL abaixo diretamente no Supabase.</p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">SQL — Supabase (manual por enquanto)</div>
+        <pre><span class="cm">-- prompt do agente</span>
+INSERT INTO agent_configs (clinica_id, system_prompt, ativo)
+VALUES (
+  <span class="cs">'&lt;clinic_id&gt;'</span>,
+  <span class="cs">'Você é a assistente virtual do Studio 13, clínica de estética da Patricia.
+Seu objetivo é qualificar leads, responder dúvidas e auxiliar no agendamento.
+Seja simpática, objetiva e profissional.'</span>,
+  true
+);
+
+<span class="cm">-- pipeline de atendimento (colunas do CRM + critérios da IA)</span>
+<span class="cm">-- IMPORTANTE: stage sem agent_id = IA para de responder automaticamente</span>
+INSERT INTO pipeline_stages (clinica_id, nome, criterio_movimentacao, agent_id, ordem)
+VALUES
+  (<span class="cs">'&lt;clinic_id&gt;'</span>, <span class="cs">'Novo Lead'</span>,        <span class="cs">'primeiro contato recebido'</span>,         <span class="cs">'&lt;agent_id&gt;'</span>, 1),
+  (<span class="cs">'&lt;clinic_id&gt;'</span>, <span class="cs">'Qualificado'</span>,      <span class="cs">'paciente demonstrou interesse real'</span>,  <span class="cs">'&lt;agent_id&gt;'</span>, 2),
+  (<span class="cs">'&lt;clinic_id&gt;'</span>, <span class="cs">'Aguarda Humano'</span>,   null,                                  null,          3);
+<span class="cm">--                                                                         ↑ sem agent_id → IA silenciosa</span></pre>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠</span>
+        <p><strong>A IA nunca escala para humano por conta própria.</strong> Ela apenas move o lead entre colunas. Quando o lead entra em uma coluna sem <code>agent_id</code>, a IA para de responder. O botão "Pausar IA" no painel é para uso humano — não é uma ação da IA.</p>
+      </div>
+    </div>
+
+    <div class="section" id="checklist">
+      <div class="section-title">Novo cliente — Passo 6</div>
+      <h2>Checklist de entrega</h2>
+      <ul class="checklist">
+        <li><div class="check-box"></div> <span><code>https://studio13.bellex.beauty</code> abre e carrega o login com cor e logo corretos</span></li>
+        <li><div class="check-box"></div> <span>Login funciona com o e-mail de convite</span></li>
+        <li><div class="check-box"></div> <span>Especialistas cadastrados e roles configurados</span></li>
+        <li><div class="check-box"></div> <span>Serviços cadastrados com duração e preço</span></li>
+        <li><div class="check-box"></div> <span>Horários de funcionamento configurados</span></li>
+        <li><div class="check-box"></div> <span>WhatsApp conectado — instância online, QR Code lido</span></li>
+        <li><div class="check-box"></div> <span>Agente de IA responde mensagem de teste no WhatsApp</span></li>
+        <li><div class="check-box"></div> <span>Lead criado no CRM via mensagem do WhatsApp</span></li>
+        <li><div class="check-box"></div> <span>Upload de foto no prontuário funciona (Supabase Storage)</span></li>
+      </ul>
+    </div>
+
+    <!-- ===== EXTRAS ===== -->
+    <div class="section" id="dominio-custom">
+      <div class="section-title">Extra — Domínio customizado</div>
+      <h2>Domínio customizado</h2>
+      <p>Para clientes que querem usar um domínio próprio (ex: <code>app.studio13.pt</code>) em vez do subdomínio padrão.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>DNS (lado da cliente)</h4>
+            <p>No painel de DNS do domínio da cliente, adicionar:</p>
+            <div class="code-block">
+              <pre>app   CNAME   studio13.bellex.beauty   (TTL 300)</pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Certificado SSL (VPS)</h4>
+            <p>Esta é a única etapa que toca a VPS. O certbot adiciona automaticamente o server block necessário.</p>
+            <div class="code-block">
+              <pre>certbot --nginx -d app.studio13.pt</pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Registrar no banco</h4>
+            <div class="code-block">
+              <pre>UPDATE workspace_clinics
+SET custom_domain = <span class="cs">'app.studio13.pt'</span>
+WHERE subdomain = <span class="cs">'studio13'</span>;</pre>
+            </div>
+            <p>O frontend detecta o domínio customizado e carrega o tenant correto via <code>CustomDomainGate</code>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="deploy">
+      <div class="section-title">Extra — Deploy</div>
+      <h2>Deploy do frontend</h2>
+      <p>O mesmo <code>dist/</code> serve todas as clínicas. O branding é aplicado em runtime — não há build por cliente.</p>
+
+      <div class="code-block">
+        <div class="code-label">bash — máquina local</div>
+        <pre><span class="cm"># build</span>
+npm run build
+
+<span class="cm"># enviar para VPS</span>
+sshpass -p <span class="cs">'Fg8L?6EpWBYwh5qD7#'</span> rsync -az --delete \
+  -e <span class="cs">"ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password"</span> \
+  dist/ root@76.13.225.174:/var/www/bellex/</pre>
+      </div>
+    </div>
+
+    <div class="section" id="clientes-ativos">
+      <div class="section-title">Referência</div>
+      <h2>Clientes ativos</h2>
+      <table class="clients-table">
+        <thead>
+          <tr><th>Cliente</th><th>Tipo</th><th>URL</th><th>Responsável</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Studio 13</strong></td>
+            <td><span class="badge badge-normal">Clínica Normal</span></td>
+            <td><code>studio13.bellex.beauty</code></td>
+            <td>Patricia</td>
+          </tr>
+          <tr>
+            <td><strong>Espaço Vip</strong></td>
+            <td><span class="badge badge-normal">Clínica Normal</span></td>
+            <td><code>espacovip.bellex.beauty</code></td>
+            <td>Ana</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  </main>
+</div>
+</body>
+</html>

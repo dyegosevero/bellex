@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { FadeUp } from "./utils";
-import { ShimmerButton } from "@/components/landing/ShimmerButton";
 import { BrandGrain } from "@/components/BrandGrain";
 
 export function LandingCta() {

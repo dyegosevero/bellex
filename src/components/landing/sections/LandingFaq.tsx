@@ -7,7 +7,7 @@ export function LandingFaq() {
   return (
     <section id="faq" className="relative py-16 md:py-28 overflow-hidden" style={{ background: "hsl(30 20% 97%)" }}>
       {/* Logo ultra-thin — bottom-left watermark */}
-      <div className="pointer-events-none absolute -bottom-8 -left-16">
+      <div className="pointer-events-none absolute -bottom-8 -left-16 z-0">
         <LogoDraw
           size={260}
           strokeColor="hsl(10 30% 60% / 0.08)"
@@ -17,7 +17,7 @@ export function LandingFaq() {
           fillDelay={999999}
         />
       </div>
-      <div className="mx-auto max-w-5xl px-6">
+      <div className="relative z-10 mx-auto max-w-5xl px-6">
         <div className="grid md:grid-cols-2 gap-16">
           <div>
             <p className="text-xs text-primary tracking-widest uppercase font-medium mb-3">Dúvidas</p>
