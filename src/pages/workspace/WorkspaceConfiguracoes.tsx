@@ -289,8 +289,8 @@ export default function WorkspaceConfiguracoes() {
               <div className="rounded-lg bg-muted/40 p-3 space-y-1.5">
                 <p className="text-xs font-medium">Webhook URL</p>
                 <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground bg-background rounded-md px-3 py-2 border border-border/40">
-                  <span className="flex-1 truncate">https://jrvkdekyupcxzbxtlnwu.supabase.co/functions/v1/whatsapp-webhook</span>
-                  <CopyButton value="https://jrvkdekyupcxzbxtlnwu.supabase.co/functions/v1/whatsapp-webhook" />
+                  <span className="flex-1 truncate">https://bellex.beauty/api/webhook/whatsapp</span>
+                  <CopyButton value="https://bellex.beauty/api/webhook/whatsapp" />
                 </div>
                 <p className="text-[10px] text-muted-foreground">Configure este endpoint no Meta Developer Console → Webhooks.</p>
               </div>

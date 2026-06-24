@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellex — Pricing Strategy</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; padding: 32px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .meta { font-size: 13px; color: #888; margin-bottom: 32px; }
+  .section-label { font-size: 11px; font-weight: 500; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; margin-top: 28px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .card { background: #fff; border: 0.5px solid #e0e0da; border-radius: 12px; padding: 16px; }
+  .card.featured { border: 2px solid #378ADD; }
+  .plan-name { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .plan-price { font-size: 26px; font-weight: 500; margin: 8px 0 2px; }
+  .plan-price span { font-size: 13px; font-weight: 400; color: #888; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+  .badge-blue { background: #E6F1FB; color: #185FA5; }
+  .badge-amber { background: #FAEEDA; color: #854F0B; }
+  .divider { border: none; border-top: 0.5px solid #e0e0da; margin: 10px 0; }
+  .row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .row .label { color: #888; }
+  .row .value { font-weight: 500; }
+  .row .profit { color: #3B6D11; font-weight: 500; }
+  .seat-pill { font-size: 18px; font-weight: 500; color: #185FA5; margin: 6px 0 2px; }
+  .sub { font-size: 11px; color: #888; margin-bottom: 8px; }
+  .setup-card { background: #f5f5f3; border: 0.5px solid #e0e0da; border-radius: 12px; padding: 14px 16px; }
+  .note { font-size: 12px; color: #666; margin-top: 8px; padding: 8px 12px; background: #fff8e6; border-left: 3px solid #EF9F27; border-radius: 0 6px 6px 0; }
+
+  /* TABELA COMPARATIVA */
+  table.compare { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 10px; overflow: hidden; border: 0.5px solid #e0e0da; margin-top: 10px; }
+  table.compare th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0.05em; text-transform: uppercase; background: #f9f9f7; border-bottom: 0.5px solid #e0e0da; }
+  table.compare td { padding: 8px 12px; border-bottom: 0.5px solid #f0f0ea; color: #333; }
+  table.compare tr:last-child td { border-bottom: none; }
+  .green { color: #3B6D11; font-weight: 500; }
+
+  /* PRE-MORTEM */
+  .pm-card { background: #fff; border: 0.5px solid #e0e0da; border-radius: 0 12px 12px 0; padding: 14px 16px; margin-bottom: 10px; }
+  .pm-danger  { border-left: 3px solid #E24B4A; }
+  .pm-warning { border-left: 3px solid #EF9F27; }
+  .pm-success { border-left: 3px solid #639922; }
+  .pm-info    { border-left: 3px solid #378ADD; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 6px; margin-right: 6px; margin-bottom: 6px; }
+  .tag-danger  { background: #FCEBEB; color: #A32D2D; }
+  .tag-warning { background: #FAEEDA; color: #854F0B; }
+  .tag-success { background: #EAF3DE; color: #3B6D11; }
+  .tag-info    { background: #E6F1FB; color: #185FA5; }
+  .tag-purple  { background: #F0EBF8; color: #6B3FA0; }
+  .pm-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .pm-body  { font-size: 12px; color: #666; line-height: 1.6; }
+  .pm-fix   { font-size: 12px; color: #1a1a1a; margin-top: 8px; padding: 8px 12px; background: #f5f5f3; border-radius: 6px; line-height: 1.6; }
+
+  /* RESUMO */
+  .summary-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; font-size: 12px; align-items: center; }
+</style>
+</head>
+<body>
+
+<h1>Bellex — Pricing & Oferta</h1>
+<p class="meta">Última revisão: 2026-06-20 · Pré-mortem aplicado</p>
+
+<!-- ===================== MODELO 1 ===================== -->
+<p class="section-label">Modelo 1 — SaaS Direto · Setup R$ 7.000</p>
+
+<div class="grid-3">
+  <div class="card">
+    <p class="plan-name">Starter</p>
+    <p class="plan-price">R$ 500 <span>/mês</span></p>
+    <span class="badge badge-blue">1 clínica</span>
+    <hr class="divider">
+    <div class="row"><span class="label">Storage</span><span class="value">10 GB</span></div>
+    <div class="row"><span class="label">IA / mês</span><span class="value">250 atend.</span></div>
+    <div class="row"><span class="label">Custo IA</span><span class="value">~R$ 38</span></div>
+    <hr class="divider">
+    <div class="row"><span class="label">Margem</span><span class="profit">~R$ 461/mês</span></div>
+    <div class="row"><span class="label">Margem %</span><span class="profit">92%</span></div>
+  </div>
+  <div class="card featured">
+    <p class="plan-name">Pro</p>
+    <p class="plan-price">R$ 750 <span>/mês</span></p>
+    <span class="badge badge-blue">Popular</span>
+    <hr class="divider">
+    <div class="row"><span class="label">Storage</span><span class="value">20 GB</span></div>
+    <div class="row"><span class="label">IA / mês</span><span class="value">600 atend.</span></div>
+    <div class="row"><span class="label">Custo IA</span><span class="value">~R$ 90</span></div>
+    <hr class="divider">
+    <div class="row"><span class="label">Margem</span><span class="profit">~R$ 658/mês</span></div>
+    <div class="row"><span class="label">Margem %</span><span class="profit">88%</span></div>
+  </div>
+  <div class="card">
+    <p class="plan-name">Scale</p>
+    <p class="plan-price">R$ 1.000 <span>/mês</span></p>
+    <span class="badge badge-amber">Alto volume</span>
+    <hr class="divider">
+    <div class="row"><span class="label">Storage</span><span class="value">30 GB</span></div>
+    <div class="row"><span class="label">IA / mês</span><span class="value">1.000 atend.</span></div>
+    <div class="row"><span class="label">Custo IA</span><span class="value">~R$ 150</span></div>
+    <hr class="divider">
+    <div class="row"><span class="label">Margem</span><span class="profit">~R$ 847/mês</span></div>
+    <div class="row"><span class="label">Margem %</span><span class="profit">85%</span></div>
+  </div>
+</div>
+
+<!-- ===================== MODELO 2 ===================== -->
+<p class="section-label">Modelo 2 — Workspace White-Label · Setup R$ 12.000</p>
+
+<div class="grid-3">
+  <div class="card">
+    <p class="plan-name">WS Starter</p>
+    <p class="plan-price">R$ 750 <span>/mês</span></p>
+    <div class="seat-pill">5 clínicas</div>
+    <p class="sub">= R$ 150/clínica</p>
+    <hr class="divider">
+    <div class="row"><span class="label">Storage</span><span class="value">25 GB</span></div>
+    <div class="row"><span class="label">IA / mês</span><span class="value">1.000 atend.</span></div>
+    <div class="row"><span class="label">Custo IA</span><span class="value">~R$ 150</span></div>
+    <div class="row"><span class="label">Custo infra</span><span class="value">~R$ 172</span></div>
+    <hr class="divider">
+    <div class="row"><span class="label">Margem</span><span class="profit">~R$ 427/mês</span></div>
+    <div class="row"><span class="label">Margem %</span><span class="profit">57%</span></div>
+  </div>
+  <div class="card featured">
+    <p class="plan-name">WS Pro</p>
+    <p class="plan-price">R$ 1.000 <span>/mês</span></p>
+    <div class="seat-pill">10 clínicas</div>
+    <p class="sub">= R$ 100/clínica</p>
+    <hr class="divider">
+    <div class="row"><span class="label">Storage</span><span class="value">50 GB</span></div>
+    <div class="row"><span class="label">IA / mês</span><span class="value">2.500 atend.</span></div>
+    <div class="row"><span class="label">Custo IA</span><span class="value">~R$ 375</span></div>
+    <div class="row"><span class="label">Custo infra</span><span class="value">~R$ 172</span></div>
+    <hr class="divider">
+    <div class="row"><span class="label">Margem</span><span class="profit">~R$ 448/mês</span></div>
+    <div class="row"><span class="label">Margem %</span><span class="profit">45%</span></div>
+  </div>
+  <div class="card">
+    <p class="plan-name">WS Scale</p>
+    <p class="plan-price">R$ 1.500 <span>/mês</span></p>
+    <div class="seat-pill">20 clínicas</div>
+    <p class="sub">= R$ 75/clínica</p>
+    <hr class="divider">
+    <div class="row"><span class="label">Storage</span><span class="value">100 GB</span></div>
+    <div class="row"><span class="label">IA / mês</span><span class="value">5.000 atend.</span></div>
+    <div class="row"><span class="label">Custo IA</span><span class="value">~R$ 750</span></div>
+    <div class="row"><span class="label">Custo infra</span><span class="value">~R$ 172</span></div>
+    <hr class="divider">
+    <div class="row"><span class="label">Margem</span><span class="profit">~R$ 568/mês</span></div>
+    <div class="row"><span class="label">Margem %</span><span class="profit">38%</span></div>
+  </div>
+</div>
+
+<!-- ===================== SETUP ===================== -->
+<p class="section-label">Setup (pagamento único)</p>
+<div class="grid-2">
+  <div class="setup-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-size:14px; font-weight:500;">Setup Modelo 1</span>
+      <span style="font-size:20px; font-weight:500;">R$ 7.000</span>
+    </div>
+    <div class="row"><span class="label">Break-even setup</span><span class="value">~15 meses</span></div>
+    <div class="row"><span class="label">LTV 12 meses</span><span class="value">R$ 7k setup + R$ 9k rec.</span></div>
+  </div>
+  <div class="setup-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-size:14px; font-weight:500;">Setup Modelo 2</span>
+      <span style="font-size:20px; font-weight:500;">R$ 12.000</span>
+    </div>
+    <div class="row"><span class="label">Break-even setup</span><span class="value">~27 meses (WS Pro)</span></div>
+    <div class="row"><span class="label">LTV 12 meses</span><span class="value">R$ 12k setup + R$ 12k rec.</span></div>
+  </div>
+</div>
+
+<!-- ===================== CUSTO POR CLÍNICA ===================== -->
+<p class="section-label">Custo por clínica para o cliente (Modelo 2 vs Modelo 1)</p>
+<table class="compare">
+  <thead>
+    <tr>
+      <th>Plano WS</th>
+      <th>Clínicas</th>
+      <th>Custo/clínica</th>
+      <th>vs Starter solo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>WS Starter</td>
+      <td>5</td>
+      <td><strong>R$ 150</strong></td>
+      <td class="green">−70% + WS</td>
+    </tr>
+    <tr>
+      <td>WS Pro</td>
+      <td>10</td>
+      <td><strong>R$ 100</strong></td>
+      <td class="green">−80% + WS</td>
+    </tr>
+    <tr>
+      <td>WS Scale</td>
+      <td>20</td>
+      <td><strong>R$ 75</strong></td>
+      <td class="green">−85% + WS</td>
+    </tr>
+  </tbody>
+</table>
+<p class="note">WS Pro e Scale são irresistíveis para quem tem múltiplas unidades — R$ 100/clínica vs R$ 500/clínica solo. O Workspace é o "brinde" que justifica o volume.</p>
+
+<!-- ===================== PRE-MORTEM ===================== -->
+<p class="section-label">Pré-mortem — imaginando o fracasso 12 meses depois</p>
+
+<div class="pm-card pm-danger">
+  <span class="tag tag-danger">Crítico</span><span class="tag tag-amber">Modelo 2</span>
+  <p class="pm-title">WS Starter é uma armadilha de posicionamento</p>
+  <p class="pm-body">2 clínicas por R$ 750/mês + R$ 12k setup. Quem tem 2 unidades não é franqueador — é dono de 2 clínicas. Ele compara: R$ 12k de setup vs R$ 7k × 2 = R$ 14k, economiza R$ 2k no setup mas paga R$ 250 a mais por mês. Break-even do upgrade: nunca. O cliente não vê valor. O WS Starter vai ser descartado na primeira objeção de preço.</p>
+  <p class="pm-fix">💡 Sugestão: WS Starter sobe para 3–5 clínicas OU remove o tier Starter do Modelo 2 e começa em WS Pro (10 clínicas). Franqueador com menos de 5 unidades vai no Modelo 1 mesmo.</p>
+</div>
+
+<div class="pm-card pm-danger">
+  <span class="tag tag-danger">Crítico</span><span class="tag tag-amber">Modelo 2</span>
+  <p class="pm-title">Storage zerado no Pro e Scale — zero margem de erro</p>
+  <p class="pm-body">WS Pro: 50 GB ÷ 10 clínicas = 5 GB exatos. WS Scale: 100 GB ÷ 20 clínicas = 5 GB exatos. Quando a primeira clínica subir fotos de antes/depois em alta resolução, vai estourar. O franqueado vai reclamar, você vai precisar cobrar extra ou absorver o custo. Não há gordura.</p>
+  <p class="pm-fix">💡 Sugestão: WS Pro → 60 GB (6 GB/clínica). WS Scale → 150 GB (7,5 GB/clínica). Custo extra: centavos. Problema resolvido.</p>
+</div>
+
+<div class="pm-card pm-warning">
+  <span class="tag tag-warning">Alto</span><span class="tag tag-info">Modelo 1</span>
+  <p class="pm-title">250 atendimentos/mês no Starter é uma bomba-relógio</p>
+  <p class="pm-body">Uma clínica estética movimentada faz 30–50 atendimentos/dia, ~900/mês. 250 atendimentos = 8/dia. Clínicas reais vão estourar no primeiro mês. Se travar a IA, a clínica perde o principal argumento de compra. Se cobrar excedente sem comunicar antes, viram churn.</p>
+  <p class="pm-fix">💡 Sugestão: Deixar claro no contrato o que conta como "atendimento" (só conversas iniciadas pelo bot, não mensagens individuais). Ou subir Starter para 500/mês e Pro para 1.000 — o custo extra é ~R$ 38 e o risco de churn cai muito.</p>
+</div>
+
+<div class="pm-card pm-danger">
+  <span class="tag tag-danger">Crítico</span><span class="tag tag-info">Ambos</span>
+  <p class="pm-title">Setup de R$ 7k–12k sem SLA definido vira processo</p>
+  <p class="pm-body">O cliente paga R$ 12k esperando ter 10 clínicas operando. Hoje: ativação de usuário admin é manual (Supabase Dashboard). Domínio personalizado é manual (certbot na VPS). Se o onboarding demorar 2 semanas, o cliente começa a questionar o investimento antes de ver valor.</p>
+  <p class="pm-fix">💡 Sugestão: Definir SLA no contrato: "ambiente ativo em até 5 dias úteis". Criar checklist de onboarding para você mesmo. Cobrar 50% do setup na assinatura + 50% quando a primeira clínica estiver no ar.</p>
+</div>
+
+<div class="pm-card pm-warning">
+  <span class="tag tag-warning">Alto</span><span class="tag tag-info">Ambos</span>
+  <p class="pm-title">Vendendo produto que ainda tem partes manuais</p>
+  <p class="pm-body">Hoje, para ativar um usuário admin o cliente precisa que você acesse o Supabase Dashboard. Domínio white-label exige certbot manual na VPS. O Workspace tem funcionalidades que ainda não estão conectadas ao banco. Se o cliente espera autonomia e encontra dependência de você para cada passo, a percepção é de produto inacabado.</p>
+  <p class="pm-fix">💡 Fix curto prazo: Incluir suporte de onboarding no setup (você faz). Fix médio prazo: Automatizar ativação de usuário e SSL dentro do Workspace.</p>
+</div>
+
+<div class="pm-card pm-warning">
+  <span class="tag tag-warning">Alto</span><span class="tag tag-amber">Modelo 2</span>
+  <p class="pm-title">Franqueador que cancela leva 10–20 clínicas junto</p>
+  <p class="pm-body">No Modelo 1, um churn = 1 cliente. No Modelo 2, 1 churn de WS Pro = 10 clínicas, ~R$ 1.000/mês sumindo de vez. A concentração de risco é enorme. Se o franqueador tiver problema financeiro, discutir com você ou migrar para concorrente, você perde em bloco.</p>
+  <p class="pm-fix">💡 Sugestão: Contrato com fidelidade mínima de 12 meses para Modelo 2. Multa rescisória de 3 meses. E diversificar — não depender de 1 ou 2 clientes WS para pagar as contas.</p>
+</div>
+
+<!-- ===================== SUGESTÕES ===================== -->
+<p class="section-label">Sugestões de ajuste</p>
+
+<div class="grid-2">
+  <div class="pm-card pm-success">
+    <span class="tag tag-success">Oportunidade</span>
+    <p class="pm-title">Criar plano "WS Lite" para 5 clínicas</p>
+    <p class="pm-body">R$ 900/mês. Preenche o gap entre quem tem 2 e quem tem 10 unidades. Baixa o ticket de entrada do Modelo 2 e atrai redes menores.</p>
+  </div>
+  <div class="pm-card pm-success">
+    <span class="tag tag-success">Oportunidade</span>
+    <p class="pm-title">Separar IA por clínica no Workspace</p>
+    <p class="pm-body">Em vez de pool global de atendimentos, cada clínica tem sua cota. Franqueado vê em tempo real quem está consumindo mais. Reduz conflito interno entre unidades.</p>
+  </div>
+  <div class="pm-card pm-info">
+    <span class="tag tag-info">Posicionamento</span>
+    <p class="pm-title">Setup não é "implementação" — é "ativação"</p>
+    <p class="pm-body">Reframe: não venda "setup técnico". Venda "Programa de Ativação Bellex" — inclui treinamento da equipe, configuração do bot, primeiro fluxo ativo. Justifica o ticket de R$ 7–12k sem precisar explicar infra.</p>
+  </div>
+  <div class="pm-card pm-success">
+    <span class="tag tag-success">Retenção</span>
+    <p class="pm-title">Relatório mensal automático para o franqueador</p>
+    <p class="pm-body">PDF com: atendimentos por clínica, % de ocupação da IA, storage usado, status de cada unidade. Faz o franqueador sentir que o Workspace trabalha por ele — e não cancela.</p>
+  </div>
+</div>
+
+<!-- ===================== RESUMO ===================== -->
+<p class="section-label">Resumo de prioridade</p>
+<div class="card" style="background:#f5f5f3; border:none;">
+  <div class="summary-grid">
+    <span class="tag tag-danger" style="margin:0;">Crítico</span><span>WS Starter sem valor percebido</span><span style="color:#888;">Redesenhar tier</span>
+    <span class="tag tag-danger" style="margin:0;">Crítico</span><span>Storage no limite no Pro/Scale</span><span style="color:#888;">+10–50 GB</span>
+    <span class="tag tag-danger" style="margin:0;">Crítico</span><span>Setup sem SLA definido</span><span style="color:#888;">Contrato + checklist</span>
+    <span class="tag tag-warning" style="margin:0;">Alto</span><span>250 atend. estoura rápido</span><span style="color:#888;">Subir para 500</span>
+    <span class="tag tag-warning" style="margin:0;">Alto</span><span>Churn em bloco no Modelo 2</span><span style="color:#888;">Fidelidade 12 meses</span>
+    <span class="tag tag-warning" style="margin:0;">Alto</span><span>Produto ainda tem passos manuais</span><span style="color:#888;">SLA + suporte incluso</span>
+  </div>
+</div>
+
+</body>
+</html>

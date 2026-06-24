@@ -1,21 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ChevronRight, Check, ArrowLeft, User, Globe, Palette, CreditCard } from "lucide-react";
+import { Building2, ChevronRight, Check, ArrowLeft, User, Globe, Palette, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
-
-const PLANOS = [
-  { id: "starter", name: "Starter", price: "R$ 297/mês", seats: "1 clínica", features: ["Agenda", "Clientes", "Financeiro básico"] },
-  { id: "pro", name: "Pro", price: "R$ 597/mês", seats: "Até 3 clínicas", features: ["Tudo do Starter", "Pipeline", "Marketing", "Mensagens"] },
-  { id: "enterprise", name: "Enterprise", price: "R$ 1.197/mês", seats: "Ilimitado", features: ["Tudo do Pro", "API access", "Domínio personalizado", "SLA dedicado"] },
-];
+import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
 
 const PRESET_COLORS = ["#e8957a", "#f5c87a", "#a78bfa", "#60a5fa", "#34d399", "#fb923c", "#f472b6", "#818cf8"];
 
@@ -36,11 +30,18 @@ export default function WorkspaceClinicNew() {
     name: "",
     subdomain: "",
     color: "#e8957a",
-    plan: "pro",
+    plan: "",
   });
+
   const { create } = useWorkspaceClinics();
   const { licenses } = useWorkspaceLicenses();
-  const availableLicenses = licenses.filter(l => l.status !== "suspenso" && l.status !== "cancelado" && l.seats_used < l.seats_total);
+  const { plans, loading: plansLoading } = useWorkspacePlans();
+
+  const availableLicenses = licenses.filter(
+    l => l.status !== "suspenso" && l.status !== "cancelado" && l.seats_used < l.seats_total
+  );
+  const activePlans = plans.filter(p => p.active);
+  const selectedPlan = activePlans.find(p => p.name === form.plan);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -53,6 +54,7 @@ export default function WorkspaceClinicNew() {
 
   const handleCreate = async () => {
     setSubmitting(true);
+    const selectedLic = availableLicenses.find(l => l.id === form.license_id);
     const { error } = await create({
       name: form.name,
       client_name: form.client,
@@ -60,7 +62,8 @@ export default function WorkspaceClinicNew() {
       custom_domain: null,
       license_id: form.license_id || null,
       color: form.color,
-      plan: form.plan as "starter" | "pro" | "scale",
+      logo_url: null,
+      plan: form.plan || selectedLic?.plan || "",
       status: "trial",
     });
     setSubmitting(false);
@@ -72,11 +75,8 @@ export default function WorkspaceClinicNew() {
     }
   };
 
-  const selectedPlan = PLANOS.find(p => p.id === form.plan)!;
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="border-b border-border/40 px-6 py-4 flex items-center gap-4">
         <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => navigate("/workspace/clinicas")}>
           <ArrowLeft className="w-4 h-4" /> Clínicas
@@ -86,7 +86,7 @@ export default function WorkspaceClinicNew() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-10 space-y-10">
-        {/* Step indicators */}
+        {/* Steps */}
         <div className="flex items-center justify-between">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
@@ -115,8 +115,8 @@ export default function WorkspaceClinicNew() {
           })}
         </div>
 
-        {/* Step content */}
         <div className="space-y-6">
+          {/* Step 1 — Cliente */}
           {step === 1 && (
             <>
               <div>
@@ -125,25 +125,25 @@ export default function WorkspaceClinicNew() {
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Licença do cliente <span className="text-destructive">*</span></Label>
+                  <Label>Cliente (licença) <span className="text-destructive">*</span></Label>
                   <Select value={form.license_id} onValueChange={v => {
                     const lic = availableLicenses.find(l => l.id === v);
                     set("license_id", v);
                     if (lic) set("client", lic.client_name);
                   }}>
-                    <SelectTrigger><SelectValue placeholder="Selecione a licença" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
                     <SelectContent>
                       {availableLicenses.length === 0 && (
-                        <SelectItem value="__none__" disabled>Nenhuma licença com seats disponíveis</SelectItem>
+                        <SelectItem value="__none__" disabled>Nenhum cliente com seats disponíveis</SelectItem>
                       )}
                       {availableLicenses.map(l => (
                         <SelectItem key={l.id} value={l.id}>
-                          {l.client_name} — {l.plan} ({l.seats_used}/{l.seats_total} seats)
+                          {l.client_name} — {l.seats_used}/{l.seats_total} clínicas usadas
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Apenas licenças ativas com seats disponíveis são exibidas.</p>
+                  <p className="text-xs text-muted-foreground">Apenas clientes com seats disponíveis são listados.</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Nome da clínica <span className="text-destructive">*</span></Label>
@@ -153,7 +153,14 @@ export default function WorkspaceClinicNew() {
                     onChange={e => {
                       set("name", e.target.value);
                       if (!form.subdomain) {
-                        set("subdomain", e.target.value.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "").slice(0, 24));
+                        set("subdomain",
+                          e.target.value
+                            .toLowerCase()
+                            .normalize("NFD").replace(/[̀-ͯ]/g, "")
+                            .replace(/\s+/g, "")
+                            .replace(/[^a-z0-9-]/g, "")
+                            .slice(0, 24)
+                        );
                       }
                     }}
                   />
@@ -162,11 +169,12 @@ export default function WorkspaceClinicNew() {
             </>
           )}
 
+          {/* Step 2 — Identidade */}
           {step === 2 && (
             <>
               <div>
                 <h2 className="text-xl font-semibold">Identidade visual</h2>
-                <p className="text-sm text-muted-foreground mt-1">Configure o subdomínio e a cor principal da clínica.</p>
+                <p className="text-sm text-muted-foreground mt-1">Subdomínio e cor principal da clínica.</p>
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
@@ -178,12 +186,12 @@ export default function WorkspaceClinicNew() {
                       placeholder="minhaclinica"
                       className="rounded-r-none"
                     />
-                    <span className="h-9 px-3 bg-muted border border-l-0 border-input rounded-r-md text-xs text-muted-foreground flex items-center whitespace-nowrap">.bellex.app</span>
+                    <span className="h-9 px-3 bg-muted border border-l-0 border-input rounded-r-md text-xs text-muted-foreground flex items-center whitespace-nowrap">.bellex.beauty</span>
                   </div>
                   {form.subdomain && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Globe className="w-3 h-3" />
-                      <span className="font-mono">{form.subdomain}.bellex.app</span>
+                      <span className="font-mono">{form.subdomain}.bellex.beauty</span>
                     </p>
                   )}
                 </div>
@@ -211,16 +219,16 @@ export default function WorkspaceClinicNew() {
                   </div>
                 </div>
 
-                {/* Preview card */}
+                {/* Preview */}
                 <div className="rounded-2xl border border-border/40 overflow-hidden w-64 shadow-sm">
                   <div className="h-2" style={{ background: form.color }} />
                   <div className="p-3 flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-bold" style={{ background: form.color }}>
-                      {(form.name || "C")[0]}
+                      {(form.name || "C")[0].toUpperCase()}
                     </div>
                     <div>
                       <p className="text-xs font-semibold">{form.name || "Nome da clínica"}</p>
-                      <p className="text-[10px] text-muted-foreground">{form.subdomain ? `${form.subdomain}.bellex.app` : "subdominio.bellex.app"}</p>
+                      <p className="text-[10px] text-muted-foreground">{form.subdomain ? `${form.subdomain}.bellex.beauty` : "subdominio.bellex.beauty"}</p>
                     </div>
                   </div>
                 </div>
@@ -228,104 +236,114 @@ export default function WorkspaceClinicNew() {
             </>
           )}
 
+          {/* Step 3 — Plano */}
           {step === 3 && (
             <>
               <div>
-                <h2 className="text-xl font-semibold">Plano e licença</h2>
-                <p className="text-sm text-muted-foreground mt-1">Escolha o plano da clínica. Isso afeta os módulos disponíveis.</p>
+                <h2 className="text-xl font-semibold">Plano da clínica</h2>
+                <p className="text-sm text-muted-foreground mt-1">Define os módulos disponíveis para esta instalação.</p>
               </div>
-              <div className="space-y-3">
-                {PLANOS.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => set("plan", p.id)}
-                    className={cn(
-                      "w-full text-left rounded-xl border-2 p-4 transition-all",
-                      form.plan === p.id ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm">{p.name}</span>
-                        {p.id === "pro" && <Badge className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary border-primary/20">Popular</Badge>}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">{p.seats}</span>
-                        <span className="text-sm font-semibold">{p.price}</span>
-                        <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", form.plan === p.id ? "border-primary" : "border-muted-foreground/40")}>
-                          {form.plan === p.id && <div className="w-2 h-2 rounded-full bg-primary" />}
+              {plansLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground py-6">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Carregando planos...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {activePlans.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => set("plan", p.name)}
+                      className={cn(
+                        "w-full text-left rounded-xl border-2 p-4 transition-all",
+                        form.plan === p.name ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ background: p.color }} />
+                          <span className="font-semibold text-sm">{p.name}</span>
+                          {p.popular && <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 rounded-full px-1.5 py-0.5 font-semibold">Popular</span>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold">R$ {p.price}/mês</span>
+                          <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", form.plan === p.name ? "border-primary" : "border-muted-foreground/40")}>
+                            {form.plan === p.name && <div className="w-2 h-2 rounded-full bg-primary" />}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <ul className="flex flex-wrap gap-x-3 gap-y-0.5">
-                      {p.features.map(f => (
-                        <li key={f} className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Check className="w-3 h-3 text-green-500" />{f}
-                        </li>
-                      ))}
-                    </ul>
-                  </button>
-                ))}
-              </div>
+                      {p.features.length > 0 && (
+                        <ul className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                          {p.features.map(feat => (
+                            <li key={feat} className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Check className="w-3 h-3 text-green-500" />{feat}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </button>
+                  ))}
+                  {activePlans.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-6">
+                      Nenhum plano ativo. <a href="/workspace/planos" className="underline text-primary">Configure planos primeiro.</a>
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           )}
 
+          {/* Step 4 — Revisão */}
           {step === 4 && (
             <>
               <div>
                 <h2 className="text-xl font-semibold">Revisão</h2>
-                <p className="text-sm text-muted-foreground mt-1">Confirme os dados antes de criar a clínica.</p>
+                <p className="text-sm text-muted-foreground mt-1">Confirme os dados antes de criar.</p>
               </div>
               <div className="rounded-2xl border border-border/40 overflow-hidden">
                 <div className="h-2" style={{ background: form.color }} />
                 <div className="p-5 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold" style={{ background: form.color }}>
-                      {form.name[0]}
+                      {form.name[0]?.toUpperCase()}
                     </div>
                     <div>
                       <p className="font-semibold">{form.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{form.subdomain}.bellex.app</p>
+                      <p className="text-xs text-muted-foreground font-mono">{form.subdomain}.bellex.beauty</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Cliente titular</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Cliente</p>
                       <p className="font-medium">{form.client}</p>
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide">Plano</p>
-                      <p className="font-medium">{selectedPlan.name} — {selectedPlan.price}</p>
+                      <p className="font-medium">{form.plan}</p>
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Subdomínio</p>
-                      <p className="font-medium font-mono text-xs">{form.subdomain}.bellex.app</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">URL</p>
+                      <p className="font-mono text-xs">{form.subdomain}.bellex.beauty</p>
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Cor principal</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Cor</p>
                       <div className="flex items-center gap-1.5">
                         <div className="w-4 h-4 rounded" style={{ background: form.color }} />
-                        <p className="font-medium font-mono text-xs">{form.color}</p>
+                        <p className="font-mono text-xs">{form.color}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="pt-1 border-t border-border/40">
-                    <p className="text-xs text-muted-foreground">
-                      Após criar, a clínica estará disponível em <span className="font-mono font-medium">{form.subdomain}.bellex.app</span> e consumirá 1 seat da licença de {form.client}.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground border-t border-border/40 pt-3">
+                    A clínica ficará disponível em <span className="font-mono font-medium">{form.subdomain}.bellex.beauty</span> e consumirá 1 seat da licença de {form.client}.
+                  </p>
                 </div>
               </div>
             </>
           )}
         </div>
 
-        {/* Footer actions */}
+        {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-border/40">
-          <Button
-            variant="ghost"
-            onClick={() => step === 1 ? navigate("/workspace/clinicas") : setStep(s => s - 1)}
-          >
+          <Button variant="ghost" onClick={() => step === 1 ? navigate("/workspace/clinicas") : setStep(s => s - 1)}>
             {step === 1 ? "Cancelar" : "Voltar"}
           </Button>
           <div className="flex items-center gap-2">
@@ -336,7 +354,8 @@ export default function WorkspaceClinicNew() {
               </Button>
             ) : (
               <Button onClick={handleCreate} disabled={submitting} className="gap-1.5">
-                <Building2 className="w-4 h-4" /> {submitting ? "Criando..." : "Criar clínica"}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
+                {submitting ? "Criando..." : "Criar clínica"}
               </Button>
             )}
           </div>

@@ -10,7 +10,8 @@ export type WorkspaceClinic = {
   custom_domain: string | null;
   license_id: string | null;
   color: string;
-  plan: "starter" | "pro" | "scale";
+  logo_url: string | null;
+  plan: string;
   status: "ativo" | "trial" | "inadimplente" | "suspenso" | "cancelado";
   created_at: string;
   updated_at: string;

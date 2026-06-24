@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellex — Schema: Acervo de Fichas</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; padding: 32px; max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  h2 { font-size: 14px; font-weight: 600; margin-bottom: 8px; margin-top: 32px; }
+  .meta { font-size: 13px; color: #888; margin-bottom: 32px; }
+  .section-label { font-size: 11px; font-weight: 500; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; margin-top: 36px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 10px; overflow: hidden; border: 0.5px solid #e0e0da; margin-bottom: 24px; }
+  th { text-align: left; padding: 9px 14px; font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0.05em; text-transform: uppercase; background: #f9f9f7; border-bottom: 0.5px solid #e0e0da; }
+  td { padding: 9px 14px; border-bottom: 0.5px solid #f0f0ea; vertical-align: top; line-height: 1.5; color: #333; font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; background: #f1f0ec; padding: 1px 5px; border-radius: 3px; color: #c0392b; }
+  .type { font-family: monospace; font-size: 11px; color: #1a56bf; }
+  .note-cell { font-size: 11px; color: #888; }
+  .pk { font-size: 9px; font-weight: 700; background: #EAF3DE; color: #3B6D11; padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
+  .fk { font-size: 9px; font-weight: 700; background: #E8F0FE; color: #1A56BF; padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
+  .null { font-size: 9px; color: #aaa; margin-left: 4px; }
+  .note { background: #fffbe8; border: 0.5px solid #e8d96a; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #5a4a00; margin-bottom: 20px; line-height: 1.7; }
+  .flow { background: #fff; border: 0.5px solid #e0e0da; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; font-size: 12px; line-height: 1.9; }
+  .flow-step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 6px; }
+  .step-num { background: #1a1a1a; color: #fff; font-size: 10px; font-weight: 600; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 4px; }
+  .tag-base { background: #EAF3DE; color: #3B6D11; }
+  .tag-custom { background: #E8F0FE; color: #1A56BF; }
+  .example-block { background: #f9f9f7; border: 0.5px solid #e0e0da; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  .example-block h3 { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .example-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; font-size: 11px; color: #555; margin-bottom: 4px; }
+  .example-row.header { font-weight: 600; color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid #e0e0da; padding-bottom: 6px; margin-bottom: 8px; }
+  .example-val code { background: transparent; color: #333; padding: 0; }
+</style>
+</head>
+<body>
+
+<h1>Bellex — Acervo de Fichas: Schema</h1>
+<p class="meta">Estrutura de tabelas que viabiliza o acervo compartilhado + versões por clínica</p>
+
+<div class="note">
+  <strong>Conceito central:</strong> Existe um acervo global de fichas (fichas padrão Bellex). Cada clínica pode duplicar qualquer ficha padrão, personalizar (reordenar campos, renomear), e ativar essa versão customizada nos seus serviços. A ficha original continua intacta no acervo — a versão da Ana é uma cópia dela com <code>base_ficha_id</code> apontando para a original.
+</div>
+
+<p class="section-label">Tabelas</p>
+
+<h2>fichas <span style="font-weight:400;color:#888;font-size:12px">— catálogo central (acervo)</span></h2>
+<table>
+  <thead>
+    <tr><th style="width:180px">Coluna</th><th style="width:120px">Tipo</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code> <span class="pk">PK</span></td><td class="type">uuid</td><td class="note-cell">Identificador único da ficha</td></tr>
+    <tr><td><code>nome</code></td><td class="type">text</td><td class="note-cell">Ex: "Ficha Nutricional", "Ficha da Ana — Nutricional"</td></tr>
+    <tr><td><code>categoria</code></td><td class="type">text</td><td class="note-cell"><code>estetica</code> | <code>nutricional</code> | <code>corporal</code> | <code>capilar</code> | <code>injetaveis</code> | <code>beleza</code> | <code>odonto</code> | <code>epilacao</code></td></tr>
+    <tr><td><code>tipo</code></td><td class="type">text</td><td class="note-cell"><code>anamnese</code> | <code>avaliacao</code> | <code>plano</code> — define qual componente React renderiza</td></tr>
+    <tr><td><code>componente</code></td><td class="type">text</td><td class="note-cell">Nome do componente React: <code>FichaNutricional</code>, <code>FichaFacial</code> etc.</td></tr>
+    <tr><td><code>campos_config</code></td><td class="type">jsonb</td><td class="note-cell">Array com ordem e visibilidade dos campos (personalizado por versão)</td></tr>
+    <tr><td><code>is_padrao</code></td><td class="type">boolean</td><td class="note-cell"><code>true</code> = ficha padrão Bellex; <code>false</code> = versão customizada de uma clínica</td></tr>
+    <tr><td><code>clinica_id</code> <span class="fk">FK</span> <span class="null">nullable</span></td><td class="type">uuid</td><td class="note-cell">Nulo se for ficha padrão; preenchido se for versão de uma clínica específica</td></tr>
+    <tr><td><code>base_ficha_id</code> <span class="fk">FK</span> <span class="null">nullable</span></td><td class="note-cell type">uuid</td><td class="note-cell">Aponta para a ficha original da qual esta foi duplicada. Nulo nas fichas padrão.</td></tr>
+    <tr><td><code>ativo</code></td><td class="type">boolean</td><td class="note-cell">Soft delete / ocultar do acervo sem excluir</td></tr>
+    <tr><td><code>created_at</code></td><td class="type">timestamptz</td><td class="note-cell"></td></tr>
+  </tbody>
+</table>
+
+<h2>ficha_configs <span style="font-weight:400;color:#888;font-size:12px">— qual ficha está ativa em qual clínica</span></h2>
+<table>
+  <thead>
+    <tr><th style="width:180px">Coluna</th><th style="width:120px">Tipo</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code> <span class="pk">PK</span></td><td class="type">uuid</td><td class="note-cell"></td></tr>
+    <tr><td><code>clinica_id</code> <span class="fk">FK</span></td><td class="type">uuid</td><td class="note-cell">Referência a <code>clinicas</code></td></tr>
+    <tr><td><code>ficha_id</code> <span class="fk">FK</span></td><td class="type">uuid</td><td class="note-cell">Referência a <code>fichas</code> — pode ser padrão ou versão customizada</td></tr>
+    <tr><td><code>ativo</code></td><td class="type">boolean</td><td class="note-cell">Liga/desliga a ficha para esta clínica</td></tr>
+    <tr><td><code>ordem</code></td><td class="type">int</td><td class="note-cell">Ordem de exibição no atendimento</td></tr>
+  </tbody>
+</table>
+
+<h2>servico_fichas <span style="font-weight:400;color:#888;font-size:12px">— quais fichas aparecem em qual serviço</span></h2>
+<table>
+  <thead>
+    <tr><th style="width:180px">Coluna</th><th style="width:120px">Tipo</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>servico_id</code> <span class="fk">FK</span></td><td class="type">uuid</td><td class="note-cell">Referência a <code>servicos</code></td></tr>
+    <tr><td><code>ficha_id</code> <span class="fk">FK</span></td><td class="type">uuid</td><td class="note-cell">Referência a <code>fichas</code></td></tr>
+    <tr><td><code>obrigatoria</code></td><td class="type">boolean</td><td class="note-cell">Se <code>true</code>, a ficha é obrigatória no atendimento deste serviço</td></tr>
+    <tr><td><code>ordem</code></td><td class="type">int</td><td class="note-cell">Ordem de preenchimento</td></tr>
+  </tbody>
+</table>
+
+<p class="section-label">Como funciona na prática</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-num">1</div>
+    <div>Bellex cria as <strong>fichas padrão</strong> (<code>is_padrao = true</code>, <code>clinica_id = null</code>): Ficha Nutricional, Ficha Facial, etc. Ficam disponíveis no acervo para todas as clínicas.</div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">2</div>
+    <div>A Ana acessa o painel e clica em <strong>"Duplicar ficha"</strong> na Ficha Nutricional. O sistema cria uma nova row em <code>fichas</code> com <code>is_padrao = false</code>, <code>clinica_id = id_da_ana</code>, <code>base_ficha_id = id_da_ficha_nutricional_padrao</code>.</div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">3</div>
+    <div>A Ana <strong>personaliza</strong> a cópia: reordena campos, oculta o que não usa, renomeia para "Ficha Nutricional — Protocolo Ana". O JSON de <code>campos_config</code> é atualizado.</div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">4</div>
+    <div><strong>Ativa a versão dela</strong> em <code>ficha_configs</code>: <code>clinica_id = id_da_ana</code>, <code>ficha_id = id_versao_ana</code>, <code>ativo = true</code>. A versão padrão é desativada para a clínica dela.</div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">5</div>
+    <div>No atendimento, o sistema busca fichas ativas da clínica: usa a <strong>versão da Ana</strong>, não a padrão. A Patricia usa a versão dela, outras clínicas usam a padrão Bellex.</div>
+  </div>
+</div>
+
+<p class="section-label">Exemplo de dados</p>
+
+<div class="example-block">
+  <h3>Tabela fichas</h3>
+  <div class="example-row header">
+    <span>nome</span><span>is_padrao</span><span>clinica_id</span><span>base_ficha_id</span>
+  </div>
+  <div class="example-row">
+    <span>Ficha Nutricional</span>
+    <span><span class="tag tag-base">padrão</span></span>
+    <span style="color:#bbb">null</span>
+    <span style="color:#bbb">null</span>
+  </div>
+  <div class="example-row">
+    <span>Ficha Facial</span>
+    <span><span class="tag tag-base">padrão</span></span>
+    <span style="color:#bbb">null</span>
+    <span style="color:#bbb">null</span>
+  </div>
+  <div class="example-row">
+    <span>Ficha Nutr. — Ana</span>
+    <span><span class="tag tag-custom">versão</span></span>
+    <span>clínica_ana</span>
+    <span>→ Ficha Nutricional</span>
+  </div>
+  <div class="example-row">
+    <span>Ficha Facial — Patricia</span>
+    <span><span class="tag tag-custom">versão</span></span>
+    <span>clínica_patricia</span>
+    <span>→ Ficha Facial</span>
+  </div>
+</div>
+
+<p class="section-label">Itens do backlog (FICHAS-0)</p>
+<table>
+  <thead>
+    <tr><th style="width:60px">ID</th><th>Item</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>F-00</code></td><td>Criar <code>src/fichas/registry.ts</code> — metadados de todas as fichas padrão</td></tr>
+    <tr><td><code>F-01</code></td><td>Tabela <code>fichas</code> com suporte a versões (<code>base_ficha_id</code>, <code>campos_config</code> jsonb, <code>is_padrao</code>, <code>clinica_id</code>)</td></tr>
+    <tr><td><code>F-02</code></td><td>Tabela <code>ficha_configs</code> — clinica_id + ficha_id + ativo + ordem</td></tr>
+    <tr><td><code>F-03</code></td><td>Tabela <code>servico_fichas</code> — many-to-many serviço ↔ ficha com campo <code>obrigatoria</code></td></tr>
+    <tr><td><code>F-04</code></td><td>UI Admin — acervo: listar fichas disponíveis (padrão Bellex + versões da clínica), ativar/desativar por serviço</td></tr>
+    <tr><td><code>F-05</code></td><td>UI Admin — duplicar ficha: clonar, renomear, reordenar campos e salvar como versão da clínica</td></tr>
+    <tr><td><code>F-06</code></td><td>Super Admin — acervo global: ver todas as fichas por clínica, promover versão a ficha padrão</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>

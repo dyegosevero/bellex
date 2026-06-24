@@ -5,17 +5,40 @@ export type WorkspaceLicense = {
   id: string;
   owner_id: string;
   client_name: string;
-  plan: "starter" | "pro" | "scale";
+  plan: string;
   seats_total: number;
   seats_used: number;
   license_key: string;
+  license_type: "anual" | "vitalicia";
   valid_until: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  document: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  notes: string | null;
   status: "ativo" | "trial" | "expirando" | "suspenso" | "cancelado";
   created_at: string;
   updated_at: string;
 };
 
-export type NewWorkspaceLicense = Pick<WorkspaceLicense, "client_name" | "plan" | "seats_total" | "valid_until">;
+export type NewWorkspaceLicense = {
+  client_name: string;
+  plan: string;
+  seats_total: number;
+  license_type: "anual" | "vitalicia";
+  valid_until: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  document?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  notes?: string | null;
+};
 
 export function useWorkspaceLicenses() {
   const [licenses, setLicenses] = useState<WorkspaceLicense[]>([]);
@@ -51,7 +74,7 @@ export function useWorkspaceLicenses() {
   const update = async (id: string, patch: Partial<WorkspaceLicense>) => {
     const { data, error: err } = await supabase
       .from("workspace_licenses")
-      .update(patch)
+      .update({ ...patch, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single();

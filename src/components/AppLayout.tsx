@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,7 @@ import {
   DollarSign, BarChart3, Settings, LogOut, Menu, X,
   Sparkles, ExternalLink, Share2, Link, Megaphone,
   ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen, UserCog,
-  LayoutDashboard, Kanban, MessageCircle, Wallet, Inbox,
+  LayoutDashboard, Kanban, MessageCircle, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "motion/react";
@@ -35,7 +35,6 @@ const navItems = [
   { to: "/equipe",      icon: UserCog,          label: "Equipe",       adminOnly: true },
   { to: "/marketing",   icon: Megaphone,        label: "Marketing",    adminOnly: true },
   { to: "/pipeline",    icon: Kanban,           label: "Pipeline" },
-  { to: "/inbox",       icon: Inbox,            label: "Inbox" },
   { to: "/mensagens",   icon: MessageCircle,    label: "Mensagens" },
   { to: "/relatorios",  icon: BarChart3,        label: "Relatórios" },
   { to: "/admin",       icon: Settings,         label: "Configurações" },
@@ -73,6 +72,7 @@ const AppLayout = () => {
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuOpenRef = useRef(false);
 
   useEffect(() => {
     if (!user) return;
@@ -128,7 +128,7 @@ const AppLayout = () => {
           boxShadow: !expanded && hovered ? "4px 0 24px hsl(var(--foreground) / 0.08)" : "none",
         }}
         onMouseEnter={() => { if (!expanded) setHovered(true); }}
-        onMouseLeave={() => { if (!userMenuOpen) setHovered(false); }}
+        onMouseLeave={() => { if (!userMenuOpenRef.current) setHovered(false); }}
       >
         {/* Header: logo only */}
         <div className="flex items-center h-14 px-3 flex-shrink-0 gap-2">
@@ -218,7 +218,7 @@ const AppLayout = () => {
 
           {/* Profile */}
           <div style={{ borderTop: "1px solid hsl(var(--border) / 0.3)", marginTop: 6, paddingTop: 6 }}>
-            <DropdownMenu onOpenChange={(open) => { setUserMenuOpen(open); if (!open) setHovered(false); }}>
+            <DropdownMenu onOpenChange={(open) => { userMenuOpenRef.current = open; setUserMenuOpen(open); if (!open) setHovered(false); }}>
               <DropdownMenuTrigger asChild>
                 <button
                   title={!show ? (profileName || user?.email || "") : undefined}

@@ -64,6 +64,8 @@ export default function WorkspaceClinicDetail() {
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     if (clinic) {
@@ -71,6 +73,7 @@ export default function WorkspaceClinicDetail() {
       setName(clinic.name);
       setCustomDomain(clinic.custom_domain ?? "");
       setOpenaiKey((clinic as Record<string, unknown>).openai_api_key as string ?? "");
+      setLogoUrl((clinic as Record<string, unknown>).logo_url as string ?? null);
     }
   }, [clinic]);
 
@@ -80,6 +83,7 @@ export default function WorkspaceClinicDetail() {
     const { error } = await update(clinic.id, {
       name,
       color,
+      logo_url: logoUrl,
       custom_domain: customDomain || null,
       openai_api_key: openaiKey || null,
     } as Parameters<typeof update>[1]);
@@ -104,14 +108,19 @@ export default function WorkspaceClinicDetail() {
 
   const handleLogoUpload = async (file: File) => {
     if (!file) return;
+    if (!file.name.endsWith(".svg") && file.type !== "image/svg+xml") {
+      toast.error("Apenas arquivos SVG são aceitos para o logo.");
+      return;
+    }
     setUploadingLogo(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `workspaces/${clinic.subdomain}/logo.${ext}`;
-      const { error } = await storage.from("clinic-branding").upload(path, file);
-      if (error) throw error;
+      const path = `workspaces/${clinic.subdomain}/logo.svg`;
+      const { error: upErr } = await storage.from("clinic-branding").upload(path, file, { upsert: true, contentType: "image/svg+xml" });
+      if (upErr) throw upErr;
       const { data } = storage.from("clinic-branding").getPublicUrl(path);
-      setLogoUrl(data.publicUrl);
+      const url = data.publicUrl;
+      setLogoUrl(url);
+      await update(clinic.id, { logo_url: url } as Parameters<typeof update>[1]);
       toast.success("Logo atualizado!");
     } catch {
       toast.error("Erro ao enviar logo.");
@@ -138,8 +147,27 @@ export default function WorkspaceClinicDetail() {
     }
   };
 
+  const handleInviteClinic = async () => {
+    if (!clinic || !inviteEmail.includes("@")) return;
+    setInviting(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await supabase.functions.invoke("invite-workspace-user", {
+      body: {
+        email: inviteEmail,
+        role: "admin",
+        workspace_url: `https://${clinic.subdomain}.bellex.beauty`,
+      },
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
+    setInviting(false);
+    if (res.error) { toast.error("Erro ao enviar convite"); return; }
+    await update(clinic.id, { contact_email: inviteEmail } as any);
+    setInviteEmail("");
+    toast.success(`Convite enviado para ${inviteEmail}`);
+  };
+
   const verifyToken = `bellex-verify=${clinic.subdomain}-a4f8c2e1b7d3`;
-  const planSupportsCustomDomain = clinic.plan === "pro" || clinic.plan === "scale";
+  const planSupportsCustomDomain = true;
 
   const handleVerify = async () => {
     if (!customDomain) { toast.error("Configure um domínio primeiro."); return; }
@@ -181,7 +209,7 @@ export default function WorkspaceClinicDetail() {
             <p className="text-xs text-muted-foreground">{clinic.client_name} · {clinic.plan} · <span className="text-green-600">{clinic.status}</span></p>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="ml-auto gap-1.5" onClick={() => window.open(`https://${clinic.subdomain + ".bellex.app"}`, "_blank")}>
+        <Button variant="outline" size="sm" className="ml-auto gap-1.5" onClick={() => window.open(`https://${clinic.subdomain + ".bellex.beauty"}`, "_blank")}>
           <ExternalLink className="w-3.5 h-3.5" /> Abrir painel
         </Button>
       </div>
@@ -218,7 +246,7 @@ export default function WorkspaceClinicDetail() {
                 <Label>Slug / subdomínio</Label>
                 <div className="flex items-center">
                   <Input value={clinic.subdomain} readOnly className="rounded-r-none bg-muted/40" />
-                  <span className="h-9 px-3 bg-muted border border-l-0 border-input rounded-r-md text-xs text-muted-foreground flex items-center">.bellex.app</span>
+                  <span className="h-9 px-3 bg-muted border border-l-0 border-input rounded-r-md text-xs text-muted-foreground flex items-center">.bellex.beauty</span>
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -231,7 +259,7 @@ export default function WorkspaceClinicDetail() {
               </div>
               <div className="space-y-1.5">
                 <Label>Data de criação</Label>
-                <Input value={clinic.created} readOnly className="bg-muted/40" />
+                <Input value={new Date(clinic.created_at).toLocaleDateString("pt-BR")} readOnly className="bg-muted/40" />
               </div>
               <div className="space-y-1.5">
                 <Label>Status</Label>
@@ -289,9 +317,9 @@ export default function WorkspaceClinicDetail() {
             <p className="text-sm font-medium">Domínio padrão Bellex</p>
             <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/30">
               <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span className="text-sm font-mono flex-1">{clinic.subdomain + ".bellex.app"}</span>
-              <CopyButton text={`https://${clinic.subdomain + ".bellex.app"}`} />
-              <a href={`https://${clinic.subdomain + ".bellex.app"}`} target="_blank" rel="noreferrer">
+              <span className="text-sm font-mono flex-1">{clinic.subdomain + ".bellex.beauty"}</span>
+              <CopyButton text={`https://${clinic.subdomain + ".bellex.beauty"}`} />
+              <a href={`https://${clinic.subdomain + ".bellex.beauty"}`} target="_blank" rel="noreferrer">
                 <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
               </a>
             </div>
@@ -397,7 +425,7 @@ export default function WorkspaceClinicDetail() {
                 <DnsRow
                   type="CNAME"
                   name="www"
-                  value="proxy.bellex.app"
+                  value="proxy.bellex.beauty"
                   ttl="3600"
                 />
                 <p className="text-xs text-muted-foreground pl-7">
@@ -411,7 +439,7 @@ export default function WorkspaceClinicDetail() {
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">3</span>
                   Redirect de domínio raiz — opcional (A Record)
                 </p>
-                <DnsRow type="A" name="@" value="76.76.21.21" ttl="3600" />
+                <DnsRow type="A" name="@" value="76.13.225.174" ttl="3600" />
                 <p className="text-xs text-muted-foreground pl-7">
                   Redireciona <code className="bg-muted px-1 rounded">seudominio.com.br</code> (sem www) para o www. Alguns provedores não suportam CNAME no apex — use este A Record.
                 </p>
@@ -472,31 +500,47 @@ export default function WorkspaceClinicDetail() {
 
         {/* ── USUÁRIOS ── */}
         <TabsContent value="usuarios" className="mt-6 space-y-4">
-          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Usuários desta clínica</p>
-              <span className="text-xs text-muted-foreground">{0} usuários</span>
+          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+            <div>
+              <p className="text-sm font-medium">Convidar administrador desta clínica</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                O cliente receberá um e-mail com link de acesso ao painel em{" "}
+                <span className="font-mono">{clinic.subdomain}.bellex.beauty</span>
+              </p>
             </div>
-            {[
-              { name: "Carla Mendonça", email: "carla@estelabeauty.com.br", role: "admin", last: "hoje" },
-              { name: "Julia Santos", email: "julia@estelabeauty.com.br", role: "especialista", last: "ontem" },
-              { name: "Beatriz Ramos", email: "beatriz@estelabeauty.com.br", role: "atendimento", last: "hoje" },
-            ].map(u => (
-              <div key={u.email} className="flex items-center gap-3 p-3 rounded-lg border border-border/30 hover:bg-muted/20 transition-colors">
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/30 font-mono text-xs">
+              <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="flex-1">{clinic.subdomain}.bellex.beauty</span>
+              <CopyButton text={`https://${clinic.subdomain}.bellex.beauty`} />
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="e-mail do administrador da clínica"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleInviteClinic()}
+                className="flex-1"
+              />
+              <Button
+                onClick={handleInviteClinic}
+                disabled={inviting || !inviteEmail.includes("@")}
+                size="sm"
+              >
+                {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Convidar"}
+              </Button>
+            </div>
+            {clinic.client_name && (
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-border/30 bg-muted/10">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                  {u.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                  {clinic.client_name[0]}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{u.name}</p>
-                  <p className="text-xs text-muted-foreground">{u.email}</p>
+                <div>
+                  <p className="text-sm font-medium">{clinic.client_name}</p>
+                  <p className="text-xs text-muted-foreground">Titular da licença</p>
                 </div>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{u.role}</span>
-                <span className="text-xs text-muted-foreground hidden sm:block">{u.last}</span>
               </div>
-            ))}
-            <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => navigate("/workspace/usuarios")}>
-              Ver todos os usuários →
-            </Button>
+            )}
           </div>
         </TabsContent>
 
@@ -517,7 +561,7 @@ export default function WorkspaceClinicDetail() {
               <input
                 ref={logoInputRef}
                 type="file"
-                accept="image/png,image/svg+xml,image/jpeg"
+                accept=".svg,image/svg+xml"
                 className="hidden"
                 onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }}
               />
@@ -535,7 +579,7 @@ export default function WorkspaceClinicDetail() {
                 <p className="text-sm text-muted-foreground">
                   {uploadingLogo ? "Enviando..." : "Clique para fazer upload ou arraste a imagem"}
                 </p>
-                <p className="text-xs text-muted-foreground/60 mt-1">PNG, SVG · máx. 2MB · recomendado 400×120px</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">SVG obrigatório · máx. 2MB · recomendado 400×120px</p>
               </div>
             </div>
             <div className="space-y-1.5">

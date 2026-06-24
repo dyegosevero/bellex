@@ -3,9 +3,9 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
 import { useMemo } from "react";
 
-const planPrice: Record<string, number> = { starter: 197, pro: 397, scale: 897 };
 const planColor: Record<string, string> = { starter: "#60a5fa", pro: "#e8957a", scale: "#a78bfa" };
 
 const statusStyle: Record<string, string> = {
@@ -33,6 +33,11 @@ function KpiCard({ label, value, sub, trend, color }: { label: string; value: st
 
 export default function WorkspaceFinanceiro() {
   const { licenses, loading } = useWorkspaceLicenses();
+  const { plans } = useWorkspacePlans();
+
+  const planPrice = useMemo(() =>
+    Object.fromEntries(plans.map(p => [p.name.toLowerCase(), p.price])),
+  [plans]);
 
   const stats = useMemo(() => {
     const active = licenses.filter(l => l.status === "ativo");

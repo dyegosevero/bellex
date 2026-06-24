@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellex — Backlog</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; padding: 32px; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .meta { font-size: 12px; color: #888; margin-bottom: 32px; }
+
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 13px; font-weight: 500; color: #888; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 0.5px solid #e0e0da; }
+
+  .sprint { margin-bottom: 16px; }
+  .sprint-title { font-size: 12px; font-weight: 500; color: #444; margin-bottom: 6px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 10px; overflow: hidden; border: 0.5px solid #e0e0da; margin-bottom: 10px; }
+  th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0.05em; text-transform: uppercase; background: #f9f9f7; border-bottom: 0.5px solid #e0e0da; }
+  td { padding: 8px 12px; border-bottom: 0.5px solid #f0f0ea; vertical-align: top; color: #333; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf8; }
+
+  .tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+  .tag-red    { background: #FCEBEB; color: #A32D2D; }
+  .tag-orange { background: #FAEEDA; color: #854F0B; }
+  .tag-green  { background: #EAF3DE; color: #3B6D11; }
+  .tag-blue   { background: #E6F1FB; color: #185FA5; }
+  .tag-gray   { background: #F1EFE8; color: #5F5E5A; }
+  .tag-done   { background: #EAF3DE; color: #3B6D11; }
+
+  .check { color: #3B6D11; font-weight: 500; }
+  .id { font-size: 10px; color: #aaa; font-family: monospace; }
+
+  .note { background: #fff8e6; border-left: 3px solid #EF9F27; border-radius: 0 6px 6px 0; padding: 8px 12px; font-size: 12px; color: #666; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Bellex — Backlog</h1>
+<p class="meta">Última revisão: 2026-06-20 · Fonte única de verdade · BACKLOG.md descartado</p>
+
+<!-- ============================================================ -->
+<!-- INFRA & API -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🔧 Infra & API Node</p>
+
+  <div class="note">API REST em Node.js (Express/Fastify) na mesma repo, servida pelo Nginx via proxy. Substitui N8N e Edge Functions para lógica de IA. N8N descartado definitivamente.</div>
+
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">API-01</td><td>Criar estrutura <code>api/</code> na repo — Express + TypeScript + ts-node</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-02</td><td>Configurar PM2 na VPS para rodar o servidor Node (porta 3001)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-03</td><td>Nginx: proxy <code>/api/</code> → <code>localhost:3001</code></td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-04</td><td>Webhook EvoAPI → <code>POST /api/webhook/whatsapp</code> — valida assinatura, identifica clínica</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-05</td><td>Service OpenAI — monta prompt, chama GPT-4o mini, parseia JSON de resposta + action</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-06</td><td>Service Redis — lê/escreve histórico das últimas 10 mensagens por paciente</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-07</td><td>Service Supabase — busca contexto da clínica (serviços, horários, paciente) para compor prompt</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-08</td><td>Action handler — executa ações do JSON: agendar, cadastrar paciente, escalar para humano</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">API-09</td><td>Deploy script — incluir <code>api/</code> no rsync + restart PM2 pós-deploy</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">API-10</td><td>Remover Edge Functions do Supabase que fazem lógica de IA (migrar para API)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- WORKSPACE -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🏢 Workspace — Backend & Automação</p>
+
+  <div class="note">Frontend entregue. Pendente: conectar dados reais, automatizar passos que hoje são manuais (ativação de usuário, SSL de domínio).</div>
+
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">WS-01</td><td>Conectar clínicas ao Supabase real (CRUD workspace_clinics)</td><td><span class="tag tag-done">✅ feito</span></td><td>—</td></tr>
+    <tr><td class="id">WS-02</td><td>Cadastro de cliente com CPF/CNPJ, endereço, email, telefone (workspace_licenses)</td><td><span class="tag tag-done">✅ feito</span></td><td>—</td></tr>
+    <tr><td class="id">WS-03</td><td>Planos configuráveis no Workspace (workspace_plans real, sem hardcode)</td><td><span class="tag tag-done">✅ feito</span></td><td>—</td></tr>
+    <tr><td class="id">WS-04</td><td>Automatizar ativação de usuário admin da clínica (hoje é manual no Supabase Dashboard)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">WS-05</td><td>Verificação DNS real para domínio personalizado via API (hoje é manual)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">WS-06</td><td>SSL automático via certbot na VPS ao confirmar domínio (hoje é manual)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">WS-07</td><td>Integração Resend real nas configurações do Workspace</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">WS-08</td><td>Webhook WhatsApp Business API funcional pelo Workspace</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">WS-09</td><td>Múltiplos usuários por Workspace (dono + operadores da franquia)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">WS-10</td><td>Relatório mensal automático para o franqueador — PDF com atendimentos por clínica, % de ocupação da IA, storage usado e status de cada unidade. Enviado por e-mail automaticamente todo mês.</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">WS-11</td><td>Limites por clínica no Workspace — cada clínica tem cota própria de storage (GB) e conversas IA/mês. Por padrão distribuído em partes iguais entre as clínicas do plano; franqueado pode ajustar manualmente por clínica no painel do Workspace.</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- PRICING & CONTRATO -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">💰 Pricing & Contrato</p>
+
+  <div class="note">Revisão pré-mortem aplicada em 2026-06-20. Ajustes identificados antes de ir ao mercado.</div>
+
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">PRC-01</td><td>WS Starter ajustado para 5 clínicas (era 2 — sem valor percebido)</td><td><span class="tag tag-done">✅ corrigido</span></td><td>—</td></tr>
+    <tr><td class="id">PRC-02</td><td>Storage WS Pro → 60 GB, WS Scale → 150 GB (era 50/100 — zero margem)</td><td><span class="tag tag-done">✅ corrigido</span></td><td>—</td></tr>
+    <tr><td class="id">PRC-03</td><td>Starter Modelo 1 → 500 atend./mês (era 250 — estoura clínicas reais)</td><td><span class="tag tag-done">✅ corrigido</span></td><td>—</td></tr>
+    <tr><td class="id">PRC-04</td><td>Definir SLA de entrega no contrato: "ambiente ativo em 5 dias úteis"</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">PRC-05</td><td>Cobrança do setup 50% na assinatura + 50% na entrega do ambiente</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">PRC-06</td><td>Contrato Modelo 2 com fidelidade mínima 12 meses + multa de 3 meses</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">PRC-07</td><td>Atualizar pricing-strategy.html com valores finais pós-revisão</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">PRC-08</td><td>Reframe de "Setup" para "Programa de Ativação Bellex" nos materiais de venda</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- INFRA NEGÓCIO / MULTI-TENANT -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🏗️ Infra de Negócio — Multi-tenant & Cobrança</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">I-01</td><td>Tabelas tenants / licenses / seats com RLS isolado por tenant</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">I-02</td><td>installation_type: saas | whitelabel</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">I-03</td><td>Branding dinâmico carregado por domínio/subdomínio</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">I-04</td><td>Middleware de resolução de tenant no Supabase</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">I-05</td><td>Integração Asaas — checkout assinatura SaaS no signup</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">I-06</td><td>Webhook Asaas: cria tenant, define plano, ativa acesso</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">I-07</td><td>Webhook inadimplência: suspende tenant / reativa no pagamento</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">I-08</td><td>Cobrança manual licenças WL: boleto/Pix Asaas, ativação via Super Admin</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SUPER ADMIN -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">👑 Super Admin — admin.bellex.beauty</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">SA-01</td><td>Lista de instalações com status (ativo, trial, inadimplente, cancelado)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">SA-02</td><td>Ativar / desativar / expirar manualmente</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">SA-03</td><td>Uso de seats por licença</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">SA-04</td><td>Impersonar tenant</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">SA-05</td><td>Métricas globais: MRR, churn, seats ativos</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">SA-20</td><td>Cadastrar custo por conversa IA (modelo, preço/token, tokens médios)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">SA-21</td><td>Cadastrar custo de storage por GB excedente</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">SA-22</td><td>Cadastrar custo fixo de infra por Workspace</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">SA-30</td><td>Dashboard: MRR por tipo/plano, custo total, lucro líquido, churn, LTV, CAC, uso de IA e storage por tenant</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- LANDING PAGE -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🌐 Landing Page & Conversão</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">LP-01</td><td>Instalar GA4 + Clarity + eventos no CTA "Agendar Demo"</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">LP-02</td><td>Reescrever headline do hero — dor da dona de clínica solo</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">LP-03</td><td>Badge de garantia no hero: "7 dias grátis · sem cartão · cancela quando quiser"</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">LP-05</td><td>Coletar depoimentos reais de clientes beta (e-mail + foto)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">LP-06</td><td>Substituir depoimentos fictícios por reais com foto + cidade</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-red">Crítico</span></td></tr>
+    <tr><td class="id">LP-09</td><td>Seção "Como é a demo" + embed Calendly inline</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">LP-10</td><td>CTA segmentado: clínica solo vs múltiplas unidades</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">LP-13</td><td>Vídeos de depoimento — 3 clientes reais, 60s vertical</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- UX GLOBAL -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🔵 UX Global</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Prioridade</th></tr>
+    <tr><td class="id">UX-01</td><td>Header superior global — busca global, botão Ajuda, botão Assistente IA</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">UX-04</td><td>Assistente IA flutuante — chat lateral com contexto da clínica</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">UX-05</td><td>Filtros da Agenda — botão Filtros + barra expansível (paciente, especialista, status, serviço)</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">UX-11b</td><td>Alerta de cobrança não registrada — mover para topo absoluto do layout</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">UX-12</td><td>Barra de atendimento ativa — cronômetro + status + Cancelar/Finalizar</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-orange">Alto</span></td></tr>
+    <tr><td class="id">UX-13</td><td>Auto-save de rascunho do atendimento com timestamp</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+    <tr><td class="id">UX-14</td><td>Alerta ao sair sem finalizar atendimento</td><td><span class="tag tag-orange">pendente</span></td><td><span class="tag tag-gray">Médio</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- TELA DE CLIENTE -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">👤 Tela de Cliente</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Aba</th><th>Conteúdo</th><th style="width:80px">Status</th></tr>
+    <tr><td class="id">CLI-01</td><td>Dados Pessoais</td><td>Nome, foto, contato, endereço, data de nascimento, observações, tags</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">CLI-02</td><td>Linha do Tempo</td><td>Feed cronológico: agendamentos, atendimentos, cobranças, documentos, mensagens</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">CLI-03</td><td>Prontuários</td><td>Atendimentos realizados com fichas, notas e fotos por sessão</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">CLI-04</td><td>Agendamentos Futuros</td><td>Próximos agendamentos com status, especialista, serviço — reagendar/cancelar</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">CLI-05</td><td>Financeiro</td><td>Histórico de cobranças, saldo devedor, total gasto no período</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">CLI-06</td><td>Documentos</td><td>Termos assinados, laudos, anexos — preview e download</td><td><span class="tag tag-orange">pendente</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- FICHAS CLÍNICAS -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">📋 Fichas Clínicas</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th><th style="width:80px">Sprint</th></tr>
+    <tr><td class="id">F-00</td><td>Criar <code>src/fichas/registry.ts</code> — metadados de todas as fichas</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-01</td><td>Tabela <code>fichas</code> — catálogo de todas as fichas do acervo (id, nome, categoria, tipo_base, clinica_id nullable, base_ficha_id para versões duplicadas)</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-02</td><td>Tabela <code>ficha_configs</code> — clinica_id + ficha_id + ativo (qual ficha do acervo está ativa nesta clínica)</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-03</td><td>Tabela <code>servico_fichas</code> — many-to-many serviço↔ficha</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-04</td><td>UI Admin — acervo de fichas: listar fichas disponíveis (Bellex padrão + versões da clínica), ativar/desativar por serviço</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-05</td><td>UI Admin — duplicar ficha: clonar uma ficha do acervo, renomear, reordenar campos e salvar como versão da clínica</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-06</td><td>Super Admin — acervo global: visualizar todas as fichas (padrão Bellex + versões por clínica), publicar uma versão como nova ficha padrão</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-0</td></tr>
+    <tr><td class="id">F-10–16</td><td>Ficha Nutricional — silhuetas SVG, IMC, TMB, VET, PDF</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-1</td></tr>
+    <tr><td class="id">F-20–26</td><td>Ficha Facial — face SVG, Baumann, Fitzpatrick, Glogau, acne, rosácea</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-2</td></tr>
+    <tr><td class="id">F-30–38</td><td>Ficha Corporal — corpo SVG, adipometria, perimetria, estrias, somatotipo</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-3</td></tr>
+    <tr><td class="id">F-40–44</td><td>Ficha Injetáveis — SVG 3 ângulos, pontos clicáveis por produto</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-4</td></tr>
+    <tr><td class="id">F-50–53</td><td>Odontograma — 32 dentes SVG, status por face, exclusivo dentistas</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-5</td></tr>
+    <tr><td class="id">F-60–62</td><td>Ficha Beleza — rosto/sobrancelha/unhas SVG</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-6</td></tr>
+    <tr><td class="id">F-70–75</td><td>Ficha Capilar — couro cabeludo SVG, Ludwig/Hamilton, PDF</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-7</td></tr>
+    <tr><td class="id">F-80–85</td><td>Ficha Epilação — corpo SVG, Fitzpatrick, contraindicações, histórico</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-8</td></tr>
+    <tr><td class="id">F-90–94</td><td>Fotos & Anexos — upload antes/depois, comparativo lado a lado, URLs assinadas</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-9</td></tr>
+    <tr><td class="id">F-100–104</td><td>Plano de Tratamento — sessões previstas, progresso, export PDF</td><td><span class="tag tag-orange">pendente</span></td><td>FICHAS-10</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- DOCUMENTOS DIGITAIS -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">📄 Documentos & Assinatura Digital</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Item</th><th style="width:80px">Status</th></tr>
+    <tr><td class="id">DOC-01</td><td>Integrar signature_pad — canvas de assinatura na tela de atendimento</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">DOC-02</td><td>Salvar PNG da assinatura no Supabase Storage</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">DOC-03</td><td>Trilha de auditoria: timestamp + IP + device fingerprint + hash SHA-256</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">DOC-04</td><td>Embedar assinatura + metadados no rodapé do PDF gerado</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">DOC-05</td><td>Guardar hash do PDF final no banco (detecção de adulteração)</td><td><span class="tag tag-orange">pendente</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- FEATURES PRODUTO -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🔴 Alta Prioridade — Produto</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Feature</th><th>Descrição</th><th style="width:80px">Status</th></tr>
+    <tr><td class="id">PROD-01</td><td>Pagamento no Agendamento Online</td><td>Cobrança Pix/cartão no último passo do /agendamento público. Reduz no-shows.</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">PROD-02</td><td>WhatsApp Próprio Número</td><td>Conectar número da clínica via EvoAPI + QR Code no painel</td><td><span class="tag tag-orange">pendente</span></td></tr>
+    <tr><td class="id">PROD-03</td><td>Comandas</td><td>Abertura por cliente, adição de itens em tempo real, fechamento no atendimento</td><td><span class="tag tag-orange">pendente</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- PRIORIDADE BAIXA -->
+<!-- ============================================================ -->
+<div class="section">
+  <p class="section-title">🟢 Baixa Prioridade</p>
+  <table>
+    <tr><th style="width:60px">ID</th><th>Feature</th><th>Descrição</th></tr>
+    <tr><td class="id">LOW-01</td><td>Fila de Espera</td><td>Cliente entra na lista quando não há horário; notificado ao abrir vaga</td></tr>
+    <tr><td class="id">LOW-02</td><td>Google Reserve</td><td>Agendamento direto pelo Google Search / Maps</td></tr>
+    <tr><td class="id">LOW-03</td><td>Programa de Fidelidade</td><td>Pontos por atendimento, painel de resgate</td></tr>
+    <tr><td class="id">LOW-04</td><td>NFe — Nota Fiscal Eletrônica</td><td>Focus NFe ou NFe.io, disparada ao marcar cobrança como paga</td></tr>
+    <tr><td class="id">LOW-05</td><td>App Whitelabel Mobile</td><td>React Native + Expo com branding por tenant</td></tr>
+    <tr><td class="id">LOW-06</td><td>Assistente IA para clínicas</td><td>Insights: clientes rentáveis, horários de falta, tendências</td></tr>
+  </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,145 @@
+<svg viewBox="0 0 820 620" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, sans-serif">
+  <title>Arquitetura Bellex — Superadmin, Workspace, Clínicas e Usuários</title>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8" opacity="0.6"/>
+    </marker>
+  </defs>
+
+  <!-- ══ LAYER 0 — SUPERADMIN ══ -->
+  <rect x="10" y="10" width="800" height="90" rx="14" fill="#e8957a" opacity="0.12"/>
+  <rect x="10" y="10" width="800" height="90" rx="14" fill="none" stroke="#e8957a" stroke-width="1.5"/>
+  <text x="30" y="38" font-size="10" font-weight="700" fill="#e8957a" letter-spacing="1.5" opacity="0.8">CAMADA 0 — SUPERADMIN</text>
+  <rect x="30" y="48" width="180" height="40" rx="8" fill="#e8957a" opacity="0.15"/>
+  <text x="120" y="64" font-size="11" font-weight="700" text-anchor="middle" fill="#1a1a1a">ws.bellex.beauty</text>
+  <text x="120" y="78" font-size="9" text-anchor="middle" fill="#64748b">você · vê tudo · superadmin</text>
+
+  <rect x="230" y="48" width="160" height="40" rx="8" fill="#f1f5f9"/>
+  <text x="310" y="64" font-size="10" font-weight="600" text-anchor="middle" fill="#1a1a1a">👤 Dyego (owner)</text>
+  <text x="310" y="78" font-size="9" text-anchor="middle" fill="#64748b">role: owner</text>
+
+  <rect x="400" y="48" width="160" height="40" rx="8" fill="#f1f5f9"/>
+  <text x="480" y="64" font-size="10" font-weight="600" text-anchor="middle" fill="#1a1a1a">👤 Equipe Bellex</text>
+  <text x="480" y="78" font-size="9" text-anchor="middle" fill="#64748b">role: admin / suporte</text>
+
+  <rect x="570" y="48" width="220" height="40" rx="8" fill="#f1f5f9"/>
+  <text x="680" y="62" font-size="9" text-anchor="middle" fill="#64748b">gerencia → todos os clientes</text>
+  <text x="680" y="74" font-size="9" text-anchor="middle" fill="#64748b">todas as clínicas · todos os planos</text>
+
+  <!-- ══ LAYER 1 — WORKSPACE TENANT ══ -->
+  <text x="30" y="130" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1.5">CAMADA 1 — WORKSPACE TENANT  (workspace_licenses)</text>
+
+  <!-- Tenant A -->
+  <rect x="10" y="142" width="385" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="10" y="142" width="385" height="30" rx="12" fill="#e2e8f0"/>
+  <rect x="10" y="160" width="385" height="12" rx="0" fill="#e2e8f0"/>
+  <text x="202" y="163" font-size="11" font-weight="700" text-anchor="middle" fill="#1a1a1a">Clínica Silva Franquias  ·  ws.clinicasilva.com.br</text>
+
+  <text x="28" y="196" font-size="9" font-weight="700" fill="#64748b" letter-spacing="1">USUÁRIOS DO WORKSPACE</text>
+  <rect x="25" y="202" width="120" height="38" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="85" y="217" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">👤 João Silva</text>
+  <text x="85" y="229" font-size="8" text-anchor="middle" fill="#64748b">role: owner</text>
+  <text x="85" y="239" font-size="8" text-anchor="middle" fill="#64748b">dono da franquia</text>
+
+  <rect x="155" y="202" width="120" height="38" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="215" y="217" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">👤 Ana Costa</text>
+  <text x="215" y="229" font-size="8" text-anchor="middle" fill="#64748b">role: admin</text>
+  <text x="215" y="239" font-size="8" text-anchor="middle" fill="#64748b">cuida das instalações</text>
+
+  <rect x="285" y="202" width="98" height="38" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="334" y="220" font-size="8" text-anchor="middle" fill="#94a3b8">+ convidar</text>
+  <text x="334" y="232" font-size="8" text-anchor="middle" fill="#94a3b8">usuário</text>
+
+  <text x="28" y="258" font-size="9" font-weight="700" fill="#64748b" letter-spacing="1">CLÍNICAS (SEATS = 3)</text>
+  <rect x="25" y="264" width="100" height="66" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="75" y="279" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">Unidade SP</text>
+  <text x="75" y="291" font-size="8" text-anchor="middle" fill="#64748b">silva-sp.bellex.beauty</text>
+  <text x="75" y="305" font-size="8" text-anchor="middle" fill="#64748b">👤 Carla (admin)</text>
+  <text x="75" y="317" font-size="8" text-anchor="middle" fill="#64748b">👤 Bia (atendimento)</text>
+  <text x="75" y="327" font-size="8" text-anchor="middle" fill="#64748b">👤 Lu (especialista)</text>
+
+  <rect x="135" y="264" width="100" height="66" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="185" y="279" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">Unidade RJ</text>
+  <text x="185" y="291" font-size="8" text-anchor="middle" fill="#64748b">silva-rj.bellex.beauty</text>
+  <text x="185" y="305" font-size="8" text-anchor="middle" fill="#64748b">👤 Pedro (admin)</text>
+  <text x="185" y="317" font-size="8" text-anchor="middle" fill="#64748b">👤 Tais (atendimento)</text>
+
+  <rect x="245" y="264" width="100" height="66" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="295" y="279" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">Unidade BH</text>
+  <text x="295" y="291" font-size="8" text-anchor="middle" fill="#64748b">silva-bh.bellex.beauty</text>
+  <text x="295" y="305" font-size="8" text-anchor="middle" fill="#64748b">👤 Marcos (admin)</text>
+  <text x="295" y="317" font-size="8" text-anchor="middle" fill="#64748b">👤 Sol (especialista)</text>
+
+  <!-- Tenant B -->
+  <rect x="415" y="142" width="395" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="415" y="142" width="395" height="30" rx="12" fill="#e2e8f0"/>
+  <rect x="415" y="160" width="395" height="12" rx="0" fill="#e2e8f0"/>
+  <text x="612" y="163" font-size="11" font-weight="700" text-anchor="middle" fill="#1a1a1a">Estética Glow  ·  ws.glow.com.br</text>
+
+  <text x="433" y="196" font-size="9" font-weight="700" fill="#64748b" letter-spacing="1">USUÁRIOS DO WORKSPACE</text>
+  <rect x="430" y="202" width="120" height="38" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="490" y="217" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">👤 Maria Glow</text>
+  <text x="490" y="229" font-size="8" text-anchor="middle" fill="#64748b">role: owner</text>
+  <text x="490" y="239" font-size="8" text-anchor="middle" fill="#64748b">sócia fundadora</text>
+
+  <text x="433" y="258" font-size="9" font-weight="700" fill="#64748b" letter-spacing="1">CLÍNICAS (SEATS = 1)</text>
+  <rect x="430" y="264" width="120" height="66" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="490" y="279" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">Glow Centro</text>
+  <text x="490" y="291" font-size="8" text-anchor="middle" fill="#64748b">glow.bellex.beauty</text>
+  <text x="490" y="305" font-size="8" text-anchor="middle" fill="#64748b">👤 Tina (admin)</text>
+  <text x="490" y="317" font-size="8" text-anchor="middle" fill="#64748b">👤 Rafa (especialista)</text>
+
+  <rect x="562" y="264" width="230" height="66" rx="7" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="677" y="290" font-size="9" text-anchor="middle" fill="#94a3b8">+ adicionar clínica</text>
+  <text x="677" y="304" font-size="8" text-anchor="middle" fill="#94a3b8">(quando contratar mais seats)</text>
+
+  <!-- ══ LAYER 2 — CLÍNICA (SAAS TENANT) ══ -->
+  <text x="30" y="368" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1.5">CAMADA 2 — CLÍNICA / SAAS TENANT  (workspace_clinics + RLS por clinic_id)</text>
+
+  <rect x="10" y="378" width="800" height="110" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <rect x="30" y="394" width="155" height="82" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="107" y="409" font-size="9" font-weight="700" text-anchor="middle" fill="#1a1a1a">👤 Admin (role: admin)</text>
+  <text x="107" y="421" font-size="8" text-anchor="middle" fill="#64748b">gerencia tudo na clínica</text>
+  <text x="107" y="433" font-size="8" text-anchor="middle" fill="#64748b">agenda · cobranças · equipe</text>
+  <text x="107" y="446" font-size="8" text-anchor="middle" fill="#64748b">configurações · relatórios</text>
+  <text x="107" y="460" font-size="8" text-anchor="middle" fill="#64748b">cria/remove usuários</text>
+  <text x="107" y="472" font-size="8" text-anchor="middle" fill="#64748b">acessa: clinica.bellex.beauty</text>
+
+  <rect x="198" y="394" width="155" height="82" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="275" y="409" font-size="9" font-weight="700" text-anchor="middle" fill="#1a1a1a">👤 Especialista</text>
+  <text x="275" y="421" font-size="8" text-anchor="middle" fill="#64748b">agenda própria</text>
+  <text x="275" y="433" font-size="8" text-anchor="middle" fill="#64748b">fichas clínicas</text>
+  <text x="275" y="445" font-size="8" text-anchor="middle" fill="#64748b">anamnese · evolução</text>
+
+  <rect x="366" y="394" width="155" height="82" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="443" y="409" font-size="9" font-weight="700" text-anchor="middle" fill="#1a1a1a">👤 Atendimento</text>
+  <text x="443" y="421" font-size="8" text-anchor="middle" fill="#64748b">agenda clientes</text>
+  <text x="443" y="433" font-size="8" text-anchor="middle" fill="#64748b">caixa · cobranças</text>
+  <text x="443" y="445" font-size="8" text-anchor="middle" fill="#64748b">sem acesso clínico</text>
+
+  <rect x="534" y="394" width="258" height="82" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="663" y="412" font-size="9" font-weight="600" text-anchor="middle" fill="#1a1a1a">Isolamento por RLS</text>
+  <text x="663" y="425" font-size="8" text-anchor="middle" fill="#64748b">cada clínica só vê seus dados</text>
+  <text x="663" y="438" font-size="8" text-anchor="middle" fill="#64748b">Unidade SP ≠ Unidade RJ</text>
+  <text x="663" y="451" font-size="8" text-anchor="middle" fill="#64748b">mesmo que do mesmo dono</text>
+  <text x="663" y="467" font-size="8" font-weight="600" text-anchor="middle" fill="#e8957a">user_roles + clinic_id</text>
+
+  <!-- ══ LEGEND ══ -->
+  <rect x="10" y="504" width="800" height="106" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="522" font-size="9" font-weight="700" fill="#64748b" letter-spacing="1.5">RESUMO DE PERMISSÕES</text>
+
+  <text x="30" y="541" font-size="9" font-weight="700" fill="#e8957a">Superadmin (Bellex)</text>
+  <text x="30" y="553" font-size="8" fill="#64748b">Vê tudo. Cria clientes, workspaces, clínicas, planos. Define domínios custom.</text>
+
+  <text x="30" y="570" font-size="9" font-weight="700" fill="#1a1a1a">Owner / Admin do Workspace</text>
+  <text x="30" y="582" font-size="8" fill="#64748b">Vê só as clínicas da licença dele. Gerencia equipe do workspace. Convida usuários para o workspace.</text>
+
+  <text x="30" y="599" font-size="9" font-weight="700" fill="#1a1a1a">Admin da Clínica</text>
+  <text x="30" y="611" font-size="8" fill="#64748b">Vê só a clínica dele. Gerencia agenda, equipe, cobranças. Não vê outras unidades do mesmo grupo.</text>
+
+  <!-- Arrows superadmin → tenants -->
+  <line x1="120" y1="100" x2="202" y2="142" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+  <line x1="120" y1="100" x2="612" y2="142" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+</svg>

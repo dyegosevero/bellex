@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .from("clinic_settings")
           .select("timezone")
           .limit(1)
-          .single();
+          .maybeSingle();
         if (data?.timezone) setTimezone(data.timezone);
       } catch {}
     })();

@@ -399,63 +399,6 @@ export default function NotificationsTab() {
         </div>
       </Card>
 
-      {/* Automações */}
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-          <Label className="text-sm font-semibold">Automações</Label>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-            <div>
-              <p className="text-sm font-medium">🎂 Aniversariantes</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Enviar mensagem automática no dia do aniversário</p>
-            </div>
-            <Switch checked={birthdayEnabled} onCheckedChange={(v) => toggleWebhook("n8n_webhook_enabled_birthday", v, setBirthdayEnabled)} />
-          </div>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-            <div>
-              <p className="text-sm font-medium">💤 Clientes Inativos</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Enviar mensagem para clientes sem visita há mais de {inactivityDays ?? 90} dias</p>
-            </div>
-            <Switch checked={inactiveEnabled} onCheckedChange={(v) => toggleWebhook("n8n_webhook_enabled_inactive", v, setInactiveEnabled)} />
-          </div>
-        </div>
-      </Card>
-
-      {/* Controle de Clientes Inativos */}
-      <Card className="p-5 space-y-5">
-        <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-muted-foreground" />
-          <Label className="text-sm font-semibold">Clientes Inativos — Controle de Reenvio</Label>
-        </div>
-
-        {/* Intervalo de reenvio */}
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">
-            Intervalo mínimo entre reenvios de notificações de inatividade para o mesmo cliente
-          </Label>
-          <div className="flex items-center gap-3">
-            <Input
-              type="number"
-              min={1}
-              max={365}
-              value={intervalDays}
-              onChange={(e) => setIntervalDays(Number(e.target.value))}
-              className="w-24"
-            />
-            <span className="text-sm text-muted-foreground">dias</span>
-            <Button size="sm" variant="outline" onClick={saveIntervalDays} disabled={savingInterval}>
-              {savingInterval ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-              Salvar
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Após enviar uma notificação de inatividade, o sistema aguardará este intervalo antes de reenviar para o mesmo cliente. Padrão: 30 dias.
-          </p>
-        </div>
-      </Card>
-
       {/* Registros de Lembretes */}
       <Card className="p-5">
         <div className="flex items-center justify-between">
@@ -463,7 +406,7 @@ export default function NotificationsTab() {
             <Clock className="w-5 h-5 text-muted-foreground" />
             <div>
               <Label className="text-sm font-semibold">Registros de Lembretes</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Visualize e gerencie os lembretes agendados no sistema de automação.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Visualize os lembretes agendados e enviados.</p>
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate("/admin/lembretes")} className="gap-1.5">

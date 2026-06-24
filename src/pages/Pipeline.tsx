@@ -3,6 +3,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -162,15 +163,17 @@ function PipelineCard({ card, isDragging, onOpen }: { card: CardData; isDragging
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       className={cn(
-        "bg-background rounded-xl border border-border/50 select-none group",
+        "bg-background rounded-xl border border-border/50 select-none",
         "shadow-sm hover:shadow-md hover:border-border transition-all duration-150",
+        "cursor-grab active:cursor-grabbing",
         isDragging && "shadow-xl rotate-1 scale-105 border-primary/30",
       )}
     >
-      {/* Clickable body */}
       <div
-        className="p-3.5 cursor-pointer"
+        className="p-3.5"
         onClick={() => onOpen?.(card)}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -187,14 +190,6 @@ function PipelineCard({ card, isDragging, onOpen }: { card: CardData; isDragging
           <span className="flex items-center gap-1"><Phone size={10} />{card.phone}</span>
           <span className="flex items-center gap-1 ml-auto"><Clock size={10} />{card.createdAt}</span>
         </div>
-      </div>
-      {/* Drag handle */}
-      <div
-        className="flex items-center justify-center h-5 border-t border-border/30 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical size={12} className="text-muted-foreground/40" />
       </div>
     </div>
   );
@@ -849,7 +844,8 @@ export default function Pipeline() {
   }, []);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } })
   );
 
   // Find which stage a card belongs to

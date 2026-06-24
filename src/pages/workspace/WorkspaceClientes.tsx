@@ -35,7 +35,7 @@ export default function WorkspaceClientes() {
 
   // Form state
   const [clientName, setClientName] = useState("");
-  const [plan, setPlan] = useState<"starter" | "pro" | "scale">("starter");
+  const [plan, setPlan] = useState<string>("starter");
   const [seatsTotal, setSeatsTotal] = useState(1);
 
   // Count clinics per license
@@ -50,12 +50,14 @@ export default function WorkspaceClientes() {
     if (!clientName.trim()) { toast.error("Nome do cliente obrigatório"); return; }
     setSaving(true);
     try {
-      await create({
+      const { error } = await create({
         client_name: clientName,
         plan,
         seats_total: seatsTotal,
-        status: "trial",
+        license_type: "anual",
+        valid_until: null,
       });
+      if (error) { toast.error(error); return; }
       toast.success("Licença criada com sucesso.");
       setOpen(false);
       setClientName(""); setPlan("starter"); setSeatsTotal(1);

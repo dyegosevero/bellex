@@ -29,7 +29,8 @@
 | | Starter | Pro | Scale |
 |--|---------|-----|-------|
 | **Mensalidade** | R$ 750/mês | R$ 1.000/mês | R$ 1.500/mês |
-| **Armazenamento** | 10 GB | 30 GB | 50 GB |
+| **Clínicas** | 5 | 10 | 20 |
+| **Armazenamento** | 25 GB (5 GB/clínica) | 50 GB (5 GB/clínica) | 100 GB (5 GB/clínica) |
 | **Atendimentos IA/mês** | 1.000 | 2.500 | 5.000 |
 | **Custo Infra** | R$ 172 | R$ 172 | R$ 172 |
 | **Custo Storage — R2** | ~R$ 0 | ~R$ 1,65 | ~R$ 3,30 |

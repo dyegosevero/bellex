@@ -4,15 +4,20 @@ import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
 import { useMemo } from "react";
 
-const planPrice: Record<string, number> = { starter: 197, pro: 397, scale: 897 };
 const planColor: Record<string, string> = { starter: "#60a5fa", pro: "#e8957a", scale: "#a78bfa" };
 
 export default function WorkspaceRelatorios() {
   const { clinics, loading: loadingClin } = useWorkspaceClinics();
   const { licenses, loading: loadingLic } = useWorkspaceLicenses();
+  const { plans } = useWorkspacePlans();
   const loading = loadingClin || loadingLic;
+
+  const planPrice = useMemo(() =>
+    Object.fromEntries(plans.map(p => [p.name.toLowerCase(), p.price])),
+  [plans]);
 
   const stats = useMemo(() => {
     const activeClinics = clinics.filter(c => c.status === "ativo" || c.status === "trial");
@@ -146,7 +151,7 @@ export default function WorkspaceRelatorios() {
                         <span className="text-sm font-medium">{c.name}</span>
                       </div>
                     </td>
-                    <td className="p-4 hidden md:table-cell text-xs text-muted-foreground">{c.subdomain}.bellex.app</td>
+                    <td className="p-4 hidden md:table-cell text-xs text-muted-foreground">{c.subdomain}.bellex.beauty</td>
                     <td className="p-4">
                       <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border capitalize
                         ${c.status === "ativo" ? "bg-green-50 text-green-700 border-green-200"

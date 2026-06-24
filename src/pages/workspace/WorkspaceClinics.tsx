@@ -81,7 +81,7 @@ export default function WorkspaceClinics() {
       {!loading && filtered.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(c => (
-            <div key={c.id} className="rounded-2xl border border-border/40 bg-card overflow-hidden hover:shadow-md transition-shadow group">
+            <div key={c.id} className="rounded-2xl border border-border/40 bg-card overflow-hidden hover:shadow-md transition-shadow group cursor-pointer" onClick={() => navigate(`/workspace/clinicas/${c.id}`)}>
               <div className="h-2" style={{ background: c.color }} />
               <div className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
@@ -126,7 +126,7 @@ export default function WorkspaceClinics() {
 
                 <div className="space-y-1.5">
                   <p className="text-xs flex items-center gap-1.5 text-muted-foreground">
-                    <Globe className="w-3 h-3" />{c.custom_domain ?? `${c.subdomain}.bellex.app`}
+                    <Globe className="w-3 h-3" />{c.custom_domain ?? `${c.subdomain}.bellex.beauty`}
                   </p>
                   <p className="text-xs flex items-center gap-1.5 text-muted-foreground">
                     <Palette className="w-3 h-3" />{c.plan.charAt(0).toUpperCase() + c.plan.slice(1)}

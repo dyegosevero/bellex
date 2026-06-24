@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
+import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
 import { useMemo } from "react";
 
 const statusColor: Record<string, string> = {
@@ -12,8 +13,6 @@ const statusColor: Record<string, string> = {
   suspenso: "text-orange-600 bg-orange-50",
   cancelado: "text-muted-foreground bg-muted",
 };
-
-const planPrice: Record<string, number> = { starter: 197, pro: 397, scale: 897 };
 
 function KpiCard({ icon: Icon, label, value, sub, color, trend }: {
   icon: React.ElementType; label: string; value: string; sub: string; color: string; trend?: "up" | "down";
@@ -42,7 +41,12 @@ function KpiCard({ icon: Icon, label, value, sub, color, trend }: {
 export default function WorkspaceDashboard() {
   const { licenses, loading: loadingLic } = useWorkspaceLicenses();
   const { clinics, loading: loadingClin } = useWorkspaceClinics();
+  const { plans } = useWorkspacePlans();
   const loading = loadingLic || loadingClin;
+
+  const planPrice = useMemo(() =>
+    Object.fromEntries(plans.map(p => [p.name.toLowerCase(), p.price])),
+  [plans]);
 
   const stats = useMemo(() => {
     const activeLicenses = licenses.filter(l => l.status === "ativo" || l.status === "trial");
@@ -139,7 +143,7 @@ export default function WorkspaceDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{c.name}</p>
-                    <p className="text-xs text-muted-foreground">{c.subdomain}.bellex.app</p>
+                    <p className="text-xs text-muted-foreground">{c.subdomain}.bellex.beauty</p>
                   </div>
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColor[c.status] ?? ""}`}>
                     {c.status}

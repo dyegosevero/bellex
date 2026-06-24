@@ -1,6 +1,5 @@
-import documentacaoRaw from "../../DOCUMENTACAO.md?raw";
-import funcionalidadesRaw from "../../FUNCIONALIDADES.md?raw";
-import n8nRaw from "../../N8N_WORKFLOWS.md?raw";
+import documentacaoRaw from "../../DOCUMENTOS/DOCUMENTACAO.md?raw";
+import funcionalidadesRaw from "../../DOCUMENTOS/FUNCIONALIDADES.md?raw";
 import readmeRaw from "../../README.md?raw";
 
 export type DocSection = {
@@ -135,13 +134,7 @@ const features: DocGroup = {
   sections: splitByH2(funcionalidadesRaw, "Funcionalidades", "funcionalidades", "Geral"),
 };
 
-const integrations: DocGroup = {
-  slug: "integracoes",
-  label: "API & Integrações",
-  sections: splitByH2(n8nRaw, "API & Integrações", "integracoes", "Visão geral"),
-};
-
-export const docGroups: DocGroup[] = [intro, manual, features, integrations];
+export const docGroups: DocGroup[] = [intro, manual, features];
 
 export const allSections: DocSection[] = docGroups.flatMap((g) => g.sections);
 

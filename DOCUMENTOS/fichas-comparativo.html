@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellex — Fichas Clínicas</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; padding: 32px; max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .meta { font-size: 13px; color: #888; margin-bottom: 32px; }
+  .section-label { font-size: 11px; font-weight: 500; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; margin-top: 28px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 10px; overflow: hidden; border: 0.5px solid #e0e0da; margin-bottom: 24px; }
+  th { text-align: left; padding: 10px 14px; font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0.05em; text-transform: uppercase; background: #f9f9f7; border-bottom: 0.5px solid #e0e0da; }
+  td { padding: 10px 14px; border-bottom: 0.5px solid #f0f0ea; vertical-align: top; line-height: 1.5; color: #333; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf8; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+  .tag-done    { background: #EAF3DE; color: #3B6D11; }
+  .tag-pending { background: #FAEEDA; color: #854F0B; }
+  .tag-no      { background: #F1EFE8; color: #5F5E5A; }
+  .id    { font-size: 10px; color: #aaa; font-family: monospace; }
+  .detail { font-size: 11px; color: #888; margin-top: 2px; }
+  .sprint { font-size: 10px; color: #aaa; font-family: monospace; }
+  .category-row td { background: #f4f4f1; font-weight: 600; font-size: 11px; color: #555; letter-spacing: 0.04em; padding: 7px 14px; border-bottom: 0.5px solid #e0e0da; }
+  .note { background: #fffbe8; border: 0.5px solid #e8d96a; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #5a4a00; margin-bottom: 20px; line-height: 1.6; }
+  .note strong { color: #3a2e00; }
+  code { font-family: monospace; font-size: 11px; background: #f1f0ec; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>Bellex — Fichas Clínicas</h1>
+<p class="meta">Comparativo: fichas existentes no sistema vs. fichas no backlog · por categoria de serviço</p>
+
+<div class="note">
+  <strong>O que é uma ficha?</strong> Formulário clínico vinculado a um tipo de serviço. Cada serviço pode ter uma ou mais fichas ativas. A clínica configura no painel de tenant quais fichas aparecem nos atendimentos — e pode duplicar e personalizar uma ficha com campos em ordem diferente para um cliente específico (ex: ficha da Ana com campos reorganizados, ativada só na clínica dela). Consentimentos e Fotos antes/depois são módulos separados, não fichas.
+</div>
+
+<p class="section-label">Fichas por categoria de serviço</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:210px">Ficha</th>
+      <th style="width:90px">No sistema</th>
+      <th style="width:90px">No backlog</th>
+      <th>Recursos / Itens do backlog</th>
+      <th style="width:90px">IDs backlog</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr class="category-row"><td colspan="5">Anamnese</td></tr>
+    <tr>
+      <td>
+        <strong>Anamnese — Estética</strong>
+        <div class="detail">Diagrama facial + corporal interativo</div>
+      </td>
+      <td><span class="tag tag-done">✅ Existe</span></td>
+      <td><span class="tag tag-no">—</span></td>
+      <td>SVG de rosto e corpo com campos interativos por zona. Já entregue.</td>
+      <td class="sprint">—</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Anamnese — Nutricional</strong>
+        <div class="detail">Hábitos alimentares, histórico, metas</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>Ficha de anamnese específica para atendimentos nutricionais: hábitos, restrições alimentares, histórico de saúde e objetivos do paciente.</td>
+      <td class="sprint">F-10</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Nutrição</td></tr>
+    <tr>
+      <td>
+        <strong>Ficha Nutricional</strong>
+        <div class="detail">IMC, TMB, VET, silhuetas, metas</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>Silhuetas SVG interativas (somatotipo), cálculo de IMC / TMB / VET, registro de metas nutricionais e exportação PDF.</td>
+      <td class="sprint">F-10–16</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Estética Facial</td></tr>
+    <tr>
+      <td>
+        <strong>Ficha Facial</strong>
+        <div class="detail">Mapa de pele, classificações, lesões</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG de face com zonas clicáveis, escalas Baumann, Fitzpatrick e Glogau, mapeamento de acne e rosácea por região.</td>
+      <td class="sprint">F-20–26</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Estética Corporal</td></tr>
+    <tr>
+      <td>
+        <strong>Ficha Corporal</strong>
+        <div class="detail">Medidas, adipometria, perimetria</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG corporal interativo, registro de dobras cutâneas (adipometria), perimetria por segmento, mapeamento de estrias e classificação de somatotipo.</td>
+      <td class="sprint">F-30–38</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Ficha de Epilação</strong>
+        <div class="detail">Zonas, Fitzpatrick, contraindicações</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG corporal com zonas de epilação clicáveis, classificação Fitzpatrick, contraindicações por zona e histórico de sessões anteriores.</td>
+      <td class="sprint">F-80–85</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Procedimentos Injetáveis</td></tr>
+    <tr>
+      <td>
+        <strong>Ficha de Injetáveis</strong>
+        <div class="detail">Pontos por produto, 3 ângulos faciais</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG facial em 3 ângulos (frente, perfil, ¾), pontos clicáveis com registro de produto, dose e lote por ponto.</td>
+      <td class="sprint">F-40–44</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Odontologia</td></tr>
+    <tr>
+      <td>
+        <strong>Odontograma</strong>
+        <div class="detail">32 dentes, status por face dental</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG com 32 dentes e status por face dental (vestibular, lingual, mesial, distal, oclusal). Exclusivo para clínicas odontológicas.</td>
+      <td class="sprint">F-50–53</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Beleza &amp; Make</td></tr>
+    <tr>
+      <td>
+        <strong>Ficha de Beleza</strong>
+        <div class="detail">Rosto, sobrancelha, unhas</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG de rosto para mapeamento estético (design de sobrancelha, maquiagem), diagrama de sobrancelha e mapa de unhas.</td>
+      <td class="sprint">F-60–62</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Capilar &amp; Tricologia</td></tr>
+    <tr>
+      <td>
+        <strong>Ficha Capilar</strong>
+        <div class="detail">Couro cabeludo, escalas de alopecia</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>SVG de couro cabeludo com regiões clicáveis, escalas Ludwig (feminino) e Hamilton (masculino) para classificação de alopecia, exportação PDF.</td>
+      <td class="sprint">F-70–75</td>
+    </tr>
+
+    <tr class="category-row"><td colspan="5">Plano de Tratamento (transversal)</td></tr>
+    <tr>
+      <td>
+        <strong>Plano de Tratamento</strong>
+        <div class="detail">Sessões previstas, progresso, PDF</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>Registro de sessões previstas vs. realizadas, barra de progresso por protocolo e exportação de plano completo em PDF. Pode ser usado em qualquer tipo de serviço.</td>
+      <td class="sprint">F-100–104</td>
+    </tr>
+
+  </tbody>
+</table>
+
+<p class="section-label">Infraestrutura — habilita todo o sistema de fichas</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:210px">Item</th>
+      <th style="width:90px">No sistema</th>
+      <th style="width:90px">No backlog</th>
+      <th>O que entrega</th>
+      <th style="width:90px">IDs backlog</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <strong>Registry de fichas</strong>
+        <div class="detail">registry.ts — catálogo central</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>Arquivo <code>registry.ts</code> com metadados de todas as fichas disponíveis (id, nome, categoria, componente React).</td>
+      <td class="sprint">F-00</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Config por clínica</strong>
+        <div class="detail">Fichas ativas no tenant</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>Tabela <code>ficha_configs</code> (clinica_id + ficha_id + ativo) e tabela <code>servico_fichas</code> (many-to-many serviço ↔ ficha).</td>
+      <td class="sprint">F-01–02</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>UI Admin — fichas</strong>
+        <div class="detail">Ativar, desativar, duplicar por clínica</div>
+      </td>
+      <td><span class="tag tag-no">—</span></td>
+      <td><span class="tag tag-pending">⏳ Backlog</span></td>
+      <td>Painel no tenant admin para ativar/desativar fichas por clínica e duplicar uma ficha com campos reorganizados para uma clínica específica.</td>
+      <td class="sprint">F-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="section-label">Resumo</p>
+<table>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Qtd</th>
+      <th>Fichas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="tag tag-done">✅ No sistema</span></td>
+      <td><strong>1</strong></td>
+      <td>Anamnese Estética (rosto + corpo, SVG interativo)</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-pending">⏳ No backlog</span></td>
+      <td><strong>10</strong></td>
+      <td>Anamnese Nutricional, Ficha Nutricional, Ficha Facial, Ficha Corporal, Ficha de Epilação, Ficha de Injetáveis, Odontograma, Ficha de Beleza, Ficha Capilar, Plano de Tratamento</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-pending">⏳ Infra no backlog</span></td>
+      <td><strong>3</strong> itens</td>
+      <td>Registry de fichas (F-00) + config por clínica (F-01–02) + UI Admin (F-03) — pré-requisito para todo o sistema de fichas</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -1,13 +1,14 @@
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import { LogoDraw } from "@/components/ui/logo-draw";
+import { loadBrandForDomain, useBrand, type BrandConfig } from "@/hooks/useBrand";
 
 // Build mode — "clinic" removes Workspace/SuperAdmin routes (used for whitelabel deploys)
 const IS_CLINIC_BUILD = import.meta.env.VITE_APP_MODE === "clinic";
@@ -72,7 +73,6 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Landing = lazy(() => import("@/pages/Landing"));
 const Pipeline = lazy(() => import("@/pages/Pipeline"));
 const Mensagens = lazy(() => import("@/pages/Mensagens"));
-const Inbox = lazy(() => import("@/pages/Inbox"));
 const Equipe = lazy(() => import("@/pages/Equipe"));
 const RecursoAgenda = lazy(() => import("@/pages/recursos/Agenda"));
 const RecursoClientes = lazy(() => import("@/pages/recursos/Clientes"));
@@ -122,14 +122,29 @@ const queryClient = new QueryClient({
 const SPLASH_MS = 1750;
 const SPLASH_FADE_MS = 350;
 
+const PUBLIC_PATHS = new Set(["/", "/login", "/esqueci-senha", "/redefinir-senha"]);
+
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATHS.has(pathname)
+    || pathname.startsWith("/recursos")
+    || pathname.startsWith("/agendar")
+    || pathname.startsWith("/cancelar")
+    || pathname.startsWith("/docs");
+}
+
 function SplashOverlay() {
+  const { pathname } = useLocation();
+  const isPublic = isPublicPath(pathname);
   const [phase, setPhase] = useState<"visible" | "fading" | "done">("visible");
+
   useEffect(() => {
+    if (isPublic) return;
     const t1 = setTimeout(() => setPhase("fading"), SPLASH_MS);
     const t2 = setTimeout(() => setPhase("done"), SPLASH_MS + SPLASH_FADE_MS);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
-  if (phase === "done") return null;
+  }, [isPublic]);
+
+  if (isPublic || phase === "done") return null;
   return (
     <div
       style={{
@@ -154,6 +169,60 @@ const PageLoader = () => (
 
 const isBookingDomain = window.location.hostname.startsWith("agendamento.");
 
+// Domínios que pertencem à própria Bellex — nunca precisam de validação de tenant
+const BELLEX_OWNED_HOSTS = new Set([
+  "bellex.beauty",
+  "www.bellex.beauty",
+  "ws.bellex.beauty",
+  "localhost",
+  "127.0.0.1",
+]);
+
+const hostname = window.location.hostname;
+
+const isWorkspaceDomain = hostname === "ws.bellex.beauty";
+const isCustomDomain =
+  !BELLEX_OWNED_HOSTS.has(hostname) &&
+  !hostname.endsWith(".bellex.beauty") &&
+  !isBookingDomain;
+
+function DomainNotFound() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4 px-6 text-center">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
+        <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" strokeLinecap="round" />
+      </svg>
+      <h1 className="text-xl font-semibold text-foreground">Domínio não reconhecido</h1>
+      <p className="text-sm text-muted-foreground max-w-xs">
+        Este endereço não está associado a nenhuma clínica cadastrada no sistema.
+      </p>
+      <a href="https://bellex.beauty" className="text-sm text-primary underline underline-offset-4 mt-2">
+        Voltar para bellex.beauty
+      </a>
+    </div>
+  );
+}
+
+function CustomDomainGate({ children }: { children: React.ReactNode }) {
+  const [status, setStatus] = useState<"checking" | "ok" | "notfound">("checking");
+
+  useEffect(() => {
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase
+        .from("workspace_clinics")
+        // Seleciona apenas id — mínimo necessário para validar existência
+        .select("id")
+        .eq("custom_domain", hostname)
+        .maybeSingle()
+        .then(({ data }) => setStatus(data ? "ok" : "notfound"));
+    });
+  }, []);
+
+  if (status === "checking") return <PageLoader />;
+  if (status === "notfound") return <DomainNotFound />;
+  return <>{children}</>;
+}
+
 function AnimatedRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -162,6 +231,37 @@ function AnimatedRoutes() {
               <>
                 <Route path="/" element={<PublicBooking />} />
                 <Route path="*" element={<PublicBooking />} />
+              </>
+            ) : isWorkspaceDomain ? (
+              <>
+                <Route path="/login" element={<Login />} />
+                <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                <Route path="/redefinir-senha" element={<ResetPassword />} />
+                <Route path="/" element={<Navigate to="/workspace" replace />} />
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/workspace" element={<WorkspaceLayout />}>
+                    <Route index element={WorkspaceDashboard ? <WorkspaceDashboard /> : null} />
+                    <Route path="clientes" element={WorkspaceClientes ? <WorkspaceClientes /> : null} />
+                    <Route path="clinicas" element={WorkspaceClinics ? <WorkspaceClinics /> : null} />
+                    <Route path="clinicas/nova" element={WorkspaceClinicNew ? <WorkspaceClinicNew /> : null} />
+                    <Route path="clinicas/:id" element={WorkspaceClinicDetail ? <WorkspaceClinicDetail /> : null} />
+                    <Route path="planos" element={WorkspacePlanos ? <WorkspacePlanos /> : null} />
+                    <Route path="financeiro" element={WorkspaceFinanceiro ? <WorkspaceFinanceiro /> : null} />
+                    <Route path="licencas" element={WorkspaceLicencas ? <WorkspaceLicencas /> : null} />
+                    <Route path="usuarios" element={WorkspaceUsuarios ? <WorkspaceUsuarios /> : null} />
+                    <Route path="relatorios" element={WorkspaceRelatorios ? <WorkspaceRelatorios /> : null} />
+                    <Route path="notificacoes" element={WorkspaceNotificacoes ? <WorkspaceNotificacoes /> : null} />
+                    <Route path="configuracoes" element={WorkspaceConfiguracoes ? <WorkspaceConfiguracoes /> : null} />
+                    <Route path="suporte" element={WorkspaceSuporte ? <WorkspaceSuporte /> : null} />
+                  </Route>
+                </Route>
+                <Route path="*" element={<Navigate to="/workspace" replace />} />
               </>
             ) : (
               <>
@@ -226,7 +326,6 @@ function AnimatedRoutes() {
                   <Route path="/admin/lembretes" element={<ReminderLogs />} />
                   
                   <Route path="/pipeline" element={<Pipeline />} />
-                  <Route path="/inbox" element={<Inbox />} />
                   <Route path="/mensagens" element={<Mensagens />} />
                   <Route path="/marketing" element={<Marketing />} />
                   <Route path="/marketing/historico" element={<CampaignHistory />} />
@@ -287,6 +386,18 @@ function AnimatedRoutes() {
   );
 }
 
+function BrandLoader() {
+  const [brand, setBrand] = useState<BrandConfig | null>(null);
+  const loaded = useRef(false);
+  useEffect(() => {
+    if (loaded.current) return;
+    loaded.current = true;
+    loadBrandForDomain().then(b => { if (b) setBrand(b); });
+  }, []);
+  useBrand(brand);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -294,8 +405,15 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          {IS_CLINIC_BUILD && <BrandLoader />}
           <SplashOverlay />
-          <AnimatedRoutes />
+          {isCustomDomain ? (
+            <CustomDomainGate>
+              <AnimatedRoutes />
+            </CustomDomainGate>
+          ) : (
+            <AnimatedRoutes />
+          )}
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

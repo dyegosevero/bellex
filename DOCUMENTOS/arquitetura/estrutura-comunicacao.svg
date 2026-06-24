@@ -1,0 +1,99 @@
+<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <title>Bellex — Estrutura de Comunicação: Atual vs Proposta</title>
+  <desc>Mapa comparativo mostrando a reorganização de Notificações, Automações, Marketing e Templates</desc>
+
+  <rect width="900" height="640" fill="#ffffff"/>
+
+  <!-- TÍTULO -->
+  <text x="450" y="32" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">Estado Atual → Proposta de Estrutura</text>
+
+  <!-- ═══ COLUNA ESQUERDA: HOJE ═══ -->
+  <text x="205" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626">HOJE (confuso)</text>
+
+  <!-- boxes atual -->
+  <rect x="30" y="68" width="350" height="48" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="205" y="88" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">⚙️  Configurações → /admin/notificacoes</text>
+  <text x="205" y="104" text-anchor="middle" font-size="9.5" fill="#b91c1c">Lembrete de agenda · Aniversário · Clientes inativos (toggle on/off)</text>
+
+  <rect x="30" y="128" width="350" height="48" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="205" y="148" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">📣  Marketing → /marketing</text>
+  <text x="205" y="164" text-anchor="middle" font-size="9.5" fill="#b91c1c">Campanhas manuais por Email / SMS / WhatsApp</text>
+
+  <rect x="30" y="188" width="350" height="48" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="205" y="208" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">💬  Mensagens · Inbox → dois lugares, mesma coisa</text>
+  <text x="205" y="224" text-anchor="middle" font-size="9.5" fill="#b91c1c">Conversas em tempo real duplicadas na sidebar</text>
+
+  <rect x="30" y="248" width="350" height="48" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="205" y="268" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">📄  Templates espalhados</text>
+  <text x="205" y="284" text-anchor="middle" font-size="9.5" fill="#b91c1c">Dentro de Config · dentro de Marketing · sem padrão</text>
+
+  <rect x="30" y="308" width="350" height="48" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="205" y="328" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">🪵  /admin/lembretes (escondido)</text>
+  <text x="205" y="344" text-anchor="middle" font-size="9.5" fill="#b91c1c">Log de disparos — ninguém consegue achar</text>
+
+  <!-- problemas -->
+  <rect x="30" y="368" width="350" height="48" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="205" y="386" text-anchor="middle" font-size="9" fill="#7f1d1d">⚠  Automação misturada com configuração</text>
+  <text x="205" y="400" text-anchor="middle" font-size="9" fill="#7f1d1d">⚠  Templates sem lar fixo · Log inacessível · Inbox duplicado</text>
+
+  <!-- ═══ DIVISOR ═══ -->
+  <line x1="450" y1="48" x2="450" y2="590" stroke="#e5e7eb" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="450" y="310" text-anchor="middle" font-size="22" fill="#9ca3af">→</text>
+
+  <!-- ═══ COLUNA DIREITA: PROPOSTA ═══ -->
+  <text x="685" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">PROPOSTA (claro)</text>
+
+  <!-- MARKETING (com Automações dentro) -->
+  <rect x="470" y="68" width="400" height="190" rx="10" fill="#fef9c3" stroke="#fde047" stroke-width="1.5"/>
+  <text x="670" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#854d0e">📣  Marketing → /marketing</text>
+  <text x="670" y="106" text-anchor="middle" font-size="9.5" fill="#713f12">Tudo sobre comunicação proativa: manual e automático</text>
+  <line x1="490" y1="114" x2="850" y2="114" stroke="#fde047" stroke-width="1"/>
+
+  <!-- sub: Campanhas -->
+  <rect x="486" y="122" width="170" height="120" rx="7" fill="#ffffff" stroke="#fde047" stroke-width="1"/>
+  <text x="571" y="140" text-anchor="middle" font-size="9.5" font-weight="600" fill="#854d0e">Campanhas (manual)</text>
+  <text x="498" y="156" font-size="9" fill="#713f12">• Disparo único segmentado</text>
+  <text x="498" y="170" font-size="9" fill="#713f12">• Email / SMS / WhatsApp</text>
+  <text x="498" y="184" font-size="9" fill="#713f12">• Audiências salvas</text>
+  <text x="498" y="198" font-size="9" fill="#713f12">• Histórico + métricas</text>
+  <text x="498" y="212" font-size="9" fill="#713f12">• Você decide quando</text>
+  <text x="498" y="228" font-size="9" fill="#713f12">  disparar</text>
+
+  <!-- sub: Automações -->
+  <rect x="666" y="122" width="188" height="120" rx="7" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="760" y="140" text-anchor="middle" font-size="9.5" font-weight="600" fill="#15803d">🤖 Automações (gatilho)</text>
+  <text x="678" y="156" font-size="9" fill="#166534">• Aniversário do cliente</text>
+  <text x="678" y="170" font-size="9" fill="#166534">• Inativo (ex. 4 meses)</text>
+  <text x="678" y="184" font-size="9" fill="#166534">• Serviço n continuado</text>
+  <text x="678" y="198" font-size="9" fill="#166534">• Pós-atendimento</text>
+  <text x="678" y="212" font-size="9" fill="#166534">• Personalizada</text>
+  <text x="678" y="226" font-size="9" fill="#166534">• Log de disparos</text>
+
+  <!-- NOTIFICAÇÕES -->
+  <rect x="470" y="274" width="400" height="110" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="670" y="295" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">🔔  Notificações → /admin/notificacoes</text>
+  <text x="670" y="311" text-anchor="middle" font-size="9.5" fill="#1e40af">Alertas transacionais — reagem a eventos em tempo real</text>
+  <line x1="490" y1="319" x2="850" y2="319" stroke="#93c5fd" stroke-width="1"/>
+  <text x="490" y="335" font-size="9" fill="#1e40af">•  Lembrete de agendamento  →  cliente</text>
+  <text x="490" y="349" font-size="9" fill="#1e40af">•  Cancelamento  →  cliente + colaborador</text>
+  <text x="490" y="363" font-size="9" fill="#1e40af">•  Novo agendamento  →  colaborador</text>
+  <text x="490" y="377" font-size="9" fill="#1e40af">•  Confirmação de pagamento  →  cliente</text>
+
+  <!-- TEMPLATES -->
+  <rect x="470" y="400" width="400" height="86" rx="10" fill="#f3e8ff" stroke="#d8b4fe" stroke-width="1.5"/>
+  <text x="670" y="421" text-anchor="middle" font-size="11" font-weight="700" fill="#6b21a8">📄  Templates → /templates</text>
+  <text x="670" y="437" text-anchor="middle" font-size="9.5" fill="#581c87">Biblioteca central — reutilizada por Automações e Campanhas</text>
+  <line x1="490" y1="445" x2="850" y2="445" stroke="#d8b4fe" stroke-width="1"/>
+  <text x="490" y="461" font-size="9" fill="#581c87">•  Por canal: WhatsApp · Email · SMS</text>
+  <text x="490" y="475" font-size="9" fill="#581c87">•  Variáveis: {{nome}}, {{servico}}, {{data}}, {{link_agendamento}}</text>
+
+  <!-- MENSAGENS -->
+  <rect x="470" y="502" width="400" height="48" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="670" y="522" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">💬  Mensagens → /mensagens</text>
+  <text x="670" y="538" text-anchor="middle" font-size="9.5" fill="#64748b">Conversas em tempo real — Inbox removido (duplicata)</text>
+
+  <!-- RODAPÉ -->
+  <line x1="30" y1="568" x2="870" y2="568" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="450" y="585" text-anchor="middle" font-size="9" fill="#9ca3af">Automações = gatilho + tempo  ·  Notificações = evento em tempo real  ·  Marketing/Campanhas = manual</text>
+  <text x="450" y="600" text-anchor="middle" font-size="9" fill="#9ca3af">Bellex — Arquitetura de Comunicação v2  ·  Jun 2026</text>
+</svg>
