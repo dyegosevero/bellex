@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, CreditCard, DollarSign,
-  Key, UserCog, BarChart3, Bell, Settings, LogOut,
+  UserCog, BarChart3, Bell, Settings, LogOut,
   PanelLeftClose, PanelLeftOpen, ChevronDown, LifeBuoy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,6 @@ const NAV = [
   { to: "/workspace/clinicas",         icon: Building2,       label: "Clínicas" },
   { to: "/workspace/planos",           icon: CreditCard,      label: "Planos" },
   { to: "/workspace/financeiro",       icon: DollarSign,      label: "Financeiro" },
-  { to: "/workspace/licencas",         icon: Key,             label: "Licenças" },
   { to: "/workspace/usuarios",         icon: UserCog,         label: "Usuários" },
   { to: "/workspace/relatorios",       icon: BarChart3,       label: "Relatórios" },
   { to: "/workspace/notificacoes",     icon: Bell,            label: "Notificações", badge: 3 },

@@ -103,7 +103,6 @@ const WorkspaceClinics = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/wor
 const WorkspaceClinicDetail = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
 const WorkspacePlanos = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspacePlanos"));
 const WorkspaceFinanceiro = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceFinanceiro"));
-const WorkspaceLicencas = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
 const WorkspaceUsuarios = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceUsuarios"));
 const WorkspaceRelatorios = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceRelatorios"));
 const WorkspaceNotificacoes = IS_CLINIC_BUILD ? null : lazy(() => import("@/pages/workspace/WorkspaceNotificacoes"));
@@ -259,7 +258,6 @@ function AnimatedRoutes() {
                     <Route path="clinicas/:id" element={WorkspaceClinicDetail ? <WorkspaceClinicDetail /> : null} />
                     <Route path="planos" element={WorkspacePlanos ? <WorkspacePlanos /> : null} />
                     <Route path="financeiro" element={WorkspaceFinanceiro ? <WorkspaceFinanceiro /> : null} />
-                    <Route path="licencas" element={WorkspaceLicencas ? <WorkspaceLicencas /> : null} />
                     <Route path="usuarios" element={WorkspaceUsuarios ? <WorkspaceUsuarios /> : null} />
                     <Route path="relatorios" element={WorkspaceRelatorios ? <WorkspaceRelatorios /> : null} />
                     <Route path="notificacoes" element={WorkspaceNotificacoes ? <WorkspaceNotificacoes /> : null} />
@@ -375,7 +373,6 @@ function AnimatedRoutes() {
                     <Route path="clinicas/:id" element={WorkspaceClinicDetail ? <WorkspaceClinicDetail /> : null} />
                     <Route path="planos" element={WorkspacePlanos ? <WorkspacePlanos /> : null} />
                     <Route path="financeiro" element={WorkspaceFinanceiro ? <WorkspaceFinanceiro /> : null} />
-                    <Route path="licencas" element={WorkspaceLicencas ? <WorkspaceLicencas /> : null} />
                     <Route path="usuarios" element={WorkspaceUsuarios ? <WorkspaceUsuarios /> : null} />
                     <Route path="relatorios" element={WorkspaceRelatorios ? <WorkspaceRelatorios /> : null} />
                     <Route path="notificacoes" element={WorkspaceNotificacoes ? <WorkspaceNotificacoes /> : null} />
