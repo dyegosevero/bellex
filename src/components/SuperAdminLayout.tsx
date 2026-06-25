@@ -10,13 +10,13 @@ import logoWhite from "@/assets/logo-1x1-white.png";
 import { BrandGrain } from "@/components/BrandGrain";
 
 const NAV = [
-  { to: "/superadmin",               icon: LayoutDashboard, label: "Dashboard",    end: true },
-  { to: "/superadmin/clientes",      icon: Users,           label: "Clientes" },
-  { to: "/superadmin/integracoes",   icon: Plug,            label: "Integrações" },
-  { to: "/superadmin/financeiro",    icon: DollarSign,      label: "Financeiro" },
-  { to: "/superadmin/storage",       icon: HardDrive,       label: "Storage" },
-  { to: "/superadmin/ia",            icon: Bot,             label: "IA & Uso" },
-  { to: "/superadmin/configuracoes", icon: Settings,        label: "Configurações" },
+  { to: "/dashboard",     icon: LayoutDashboard, label: "Dashboard",    end: true },
+  { to: "/clientes",      icon: Users,           label: "Clientes" },
+  { to: "/integracoes",   icon: Plug,            label: "Integrações" },
+  { to: "/financeiro",    icon: DollarSign,      label: "Financeiro" },
+  { to: "/storage",       icon: HardDrive,       label: "Storage" },
+  { to: "/ia",            icon: Bot,             label: "IA & Uso" },
+  { to: "/configuracoes", icon: Settings,        label: "Configurações" },
 ];
 
 const SIDEBAR_KEY = "bellex_sa_sidebar";

@@ -16,15 +16,15 @@ import { BrandGrain } from "@/components/BrandGrain";
 import { Badge } from "@/components/ui/badge";
 
 const NAV = [
-  { to: "/workspace",                  icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/workspace/clientes",         icon: Users,           label: "Clientes" },
-  { to: "/workspace/clinicas",         icon: Building2,       label: "Clínicas" },
-  { to: "/workspace/planos",           icon: CreditCard,      label: "Planos" },
-  { to: "/workspace/financeiro",       icon: DollarSign,      label: "Financeiro" },
-  { to: "/workspace/usuarios",         icon: UserCog,         label: "Usuários" },
-  { to: "/workspace/relatorios",       icon: BarChart3,       label: "Relatórios" },
-  { to: "/workspace/notificacoes",     icon: Bell,            label: "Notificações", badge: 3 },
-  { to: "/workspace/suporte",          icon: LifeBuoy,        label: "Suporte", badge: 2 },
+  { to: "/dashboard",      icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/clientes",       icon: Users,           label: "Clientes" },
+  { to: "/clinicas",       icon: Building2,       label: "Clínicas" },
+  { to: "/planos",         icon: CreditCard,      label: "Planos" },
+  { to: "/financeiro",     icon: DollarSign,      label: "Financeiro" },
+  { to: "/usuarios",       icon: UserCog,         label: "Usuários" },
+  { to: "/relatorios",     icon: BarChart3,       label: "Relatórios" },
+  { to: "/notificacoes",   icon: Bell,            label: "Notificações", badge: 3 },
+  { to: "/suporte",        icon: LifeBuoy,        label: "Suporte", badge: 2 },
 ];
 
 const SIDEBAR_KEY = "bellex_workspace_sidebar";
@@ -78,7 +78,7 @@ export default function WorkspaceLayout() {
             <NavLink
               key={to}
               to={to}
-              end={to === "/workspace"}
+              end={to === "/dashboard"}
               title={!expanded ? label : undefined}
               className={({ isActive }) => cn(
                 "flex items-center h-9 rounded-lg transition-all duration-150 text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -102,7 +102,7 @@ export default function WorkspaceLayout() {
         {/* Footer */}
         <div className="px-2 pb-3 space-y-0.5 border-t border-border/40 pt-2">
           <NavLink
-            to="/workspace/configuracoes"
+            to="/configuracoes"
             title={!expanded ? "Configurações" : undefined}
             className={({ isActive }) => cn(
               "flex items-center h-9 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -135,7 +135,7 @@ export default function WorkspaceLayout() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="top" className="w-48">
-              <DropdownMenuItem onClick={() => navigate("/workspace/perfil")}>
+              <DropdownMenuItem onClick={() => navigate("/perfil")}>
                 Meu perfil
               </DropdownMenuItem>
               <DropdownMenuSeparator />
