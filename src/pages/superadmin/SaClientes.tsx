@@ -31,7 +31,7 @@ export default function SaClientes() {
   const { clinics } = useWorkspaceClinics();
   const [search, setSearch] = useState("");
 
-  const clinicsOf = (licId: string) => clinics.filter(c => c.license_id === licId).length;
+  const clinicsOf = (licId: string) => clinics.filter(c => c.customer_id === licId).length;
 
   const filtered = licenses.filter(l =>
     l.client_name.toLowerCase().includes(search.toLowerCase()) ||

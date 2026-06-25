@@ -37,7 +37,7 @@ export default function WorkspaceClientes() {
   const [plan, setPlan] = useState<string>("starter");
 
   const clinicsPerClient = (clientId: string) =>
-    clinics.filter(c => c.license_id === clientId).length;
+    clinics.filter(c => c.customer_id === clientId).length;
 
   const filtered = licenses.filter(l =>
     l.client_name.toLowerCase().includes(search.toLowerCase())

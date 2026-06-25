@@ -26,7 +26,7 @@ export default function WorkspaceClinicNew() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     client: "",
-    license_id: "",
+    customer_id: "",
     name: "",
     subdomain: "",
     color: "#e8957a",
@@ -46,7 +46,7 @@ export default function WorkspaceClinicNew() {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const canNext = () => {
-    if (step === 1) return form.license_id !== "" && form.name !== "";
+    if (step === 1) return form.customer_id !== "" && form.name !== "";
     if (step === 2) return form.subdomain !== "";
     if (step === 3) return form.plan !== "";
     return true;
@@ -54,13 +54,13 @@ export default function WorkspaceClinicNew() {
 
   const handleCreate = async () => {
     setSubmitting(true);
-    const selectedLic = availableLicenses.find(l => l.id === form.license_id);
+    const selectedLic = availableLicenses.find(l => l.id === form.customer_id);
     const { error } = await create({
       name: form.name,
       client_name: form.client,
       subdomain: form.subdomain,
       custom_domain: null,
-      license_id: form.license_id || null,
+      customer_id: form.customer_id || null,
       color: form.color,
       logo_url: null,
       plan: form.plan || selectedLic?.plan || "",
@@ -126,9 +126,9 @@ export default function WorkspaceClinicNew() {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label>Cliente (licença) <span className="text-destructive">*</span></Label>
-                  <Select value={form.license_id} onValueChange={v => {
+                  <Select value={form.customer_id} onValueChange={v => {
                     const lic = availableLicenses.find(l => l.id === v);
-                    set("license_id", v);
+                    set("customer_id", v);
                     if (lic) set("client", lic.client_name);
                   }}>
                     <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>

@@ -8,7 +8,7 @@ export type WorkspaceClinic = {
   client_name: string;
   subdomain: string;
   custom_domain: string | null;
-  license_id: string | null;
+  customer_id: string | null;
   color: string;
   logo_url: string | null;
   plan: string;

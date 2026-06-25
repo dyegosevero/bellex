@@ -28,7 +28,7 @@ export default function WorkspaceRelatorios() {
     const byPlan = ["starter", "pro", "scale"].map(p => ({
       name: p.charAt(0).toUpperCase() + p.slice(1),
       valor: clinics.filter(c => {
-        const lic = c.license_id ? licMap[c.license_id] : null;
+        const lic = c.customer_id ? licMap[c.customer_id] : null;
         return lic?.plan === p;
       }).length,
       fill: planColor[p],
@@ -47,7 +47,7 @@ export default function WorkspaceRelatorios() {
     const rows = [
       ["Nome","Subdomínio","Status","Plano","Criado em"],
       ...clinics.map(c => {
-        const lic = licenses.find(l => l.id === c.license_id);
+        const lic = licenses.find(l => l.id === c.customer_id);
         return [c.name, c.subdomain, c.status, lic?.plan ?? "—", new Date(c.created_at).toLocaleDateString("pt-BR")];
       }),
     ];
@@ -142,7 +142,7 @@ export default function WorkspaceRelatorios() {
             </thead>
             <tbody>
               {clinics.map((c, i) => {
-                const lic = licenses.find(l => l.id === c.license_id);
+                const lic = licenses.find(l => l.id === c.customer_id);
                 return (
                   <tr key={c.id} className={`border-b border-border/20 hover:bg-muted/10 ${i % 2 ? "bg-muted/5" : ""}`}>
                     <td className="p-4">

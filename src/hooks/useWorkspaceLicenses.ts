@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type WorkspaceLicense = {
+export type WorkspaceCustomer = {
   id: string;
   owner_id: string;
   client_name: string;
@@ -24,7 +24,10 @@ export type WorkspaceLicense = {
   updated_at: string;
 };
 
-export type NewWorkspaceLicense = {
+// Alias para compatibilidade com código existente
+export type WorkspaceLicense = WorkspaceCustomer;
+
+export type NewWorkspaceCustomer = {
   client_name: string;
   plan: string;
   seats_total: number;
@@ -40,8 +43,10 @@ export type NewWorkspaceLicense = {
   notes?: string | null;
 };
 
+export type NewWorkspaceLicense = NewWorkspaceCustomer;
+
 export function useWorkspaceLicenses() {
-  const [licenses, setLicenses] = useState<WorkspaceLicense[]>([]);
+  const [licenses, setLicenses] = useState<WorkspaceCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,41 +54,41 @@ export function useWorkspaceLicenses() {
     setLoading(true);
     setError(null);
     const { data, error: err } = await supabase
-      .from("workspace_licenses")
+      .from("workspace_customers")
       .select("*")
       .order("created_at", { ascending: false });
     if (err) setError(err.message);
-    else setLicenses((data as WorkspaceLicense[]) ?? []);
+    else setLicenses((data as WorkspaceCustomer[]) ?? []);
     setLoading(false);
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  const create = async (lic: NewWorkspaceLicense) => {
+  const create = async (lic: NewWorkspaceCustomer) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: "Não autenticado" };
     const { data, error: err } = await supabase
-      .from("workspace_licenses")
+      .from("workspace_customers")
       .insert({ ...lic, owner_id: user.id, status: "trial" })
       .select()
       .single();
-    if (!err) setLicenses(prev => [data as WorkspaceLicense, ...prev]);
+    if (!err) setLicenses(prev => [data as WorkspaceCustomer, ...prev]);
     return { data, error: err?.message };
   };
 
-  const update = async (id: string, patch: Partial<WorkspaceLicense>) => {
+  const update = async (id: string, patch: Partial<WorkspaceCustomer>) => {
     const { data, error: err } = await supabase
-      .from("workspace_licenses")
+      .from("workspace_customers")
       .update({ ...patch, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single();
-    if (!err) setLicenses(prev => prev.map(l => l.id === id ? data as WorkspaceLicense : l));
+    if (!err) setLicenses(prev => prev.map(l => l.id === id ? data as WorkspaceCustomer : l));
     return { data, error: err?.message };
   };
 
   const remove = async (id: string) => {
-    const { error: err } = await supabase.from("workspace_licenses").delete().eq("id", id);
+    const { error: err } = await supabase.from("workspace_customers").delete().eq("id", id);
     if (!err) setLicenses(prev => prev.filter(l => l.id !== id));
     return { error: err?.message };
   };
