@@ -43,6 +43,7 @@ const WorkspaceClinics     = lazy(() => import("@/pages/workspace/WorkspaceClini
 const WorkspaceClinicDetail= lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
 const WorkspaceClinicNew   = lazy(() => import("@/pages/workspace/WorkspaceClinicNew"));
 const WorkspacePlanos      = lazy(() => import("@/pages/workspace/WorkspacePlanos"));
+const WorkspacePlanEdit    = lazy(() => import("@/pages/workspace/WorkspacePlanEdit"));
 const WorkspaceFinanceiro  = lazy(() => import("@/pages/workspace/WorkspaceFinanceiro"));
 const WorkspaceUsuarios    = lazy(() => import("@/pages/workspace/WorkspaceUsuarios"));
 const WorkspaceRelatorios  = lazy(() => import("@/pages/workspace/WorkspaceRelatorios"));
@@ -258,6 +259,8 @@ function WorkspaceRoutes() {
           <Route path="/clinicas/nova"        element={<WorkspaceClinicNew />} />
           <Route path="/clinicas/:id"         element={<WorkspaceClinicDetail />} />
           <Route path="/planos"               element={<WorkspacePlanos />} />
+          <Route path="/planos/novo"          element={<WorkspacePlanEdit />} />
+          <Route path="/planos/:id"           element={<WorkspacePlanEdit />} />
           <Route path="/financeiro"           element={<WorkspaceFinanceiro />} />
           <Route path="/usuarios"             element={<WorkspaceUsuarios />} />
           <Route path="/relatorios"           element={<WorkspaceRelatorios />} />
