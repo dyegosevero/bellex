@@ -64,8 +64,8 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
         }
       `}</style>
       <svg
-        width={110 * 4.14}
-        height={110}
+        width={110 * 4.14 * 0.8}
+        height={110 * 0.8}
         viewBox="0 0 1876.58 453.51"
         fill="rgba(255,255,255,1)"
         xmlns="http://www.w3.org/2000/svg"
