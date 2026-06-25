@@ -23,6 +23,7 @@ export default function WorkspaceClinics() {
   const { clinics, loading, update, remove } = useWorkspaceClinics();
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   const filtered = clinics.filter(c =>
@@ -49,7 +50,7 @@ export default function WorkspaceClinics() {
     const { error } = await remove(deleteTarget.id);
     setDeleting(false);
     if (error) toast.error("Erro ao remover clínica");
-    else { toast.success("Clínica removida"); setDeleteTarget(null); }
+    else { toast.success("Clínica removida"); setDeleteTarget(null); setDeleteConfirmText(""); }
   };
 
   return (
@@ -161,7 +162,7 @@ export default function WorkspaceClinics() {
       )}
 
       {/* Dialog de confirmação de remoção */}
-      <Dialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }}>
+      <Dialog open={!!deleteTarget} onOpenChange={open => { if (!open) { setDeleteTarget(null); setDeleteConfirmText(""); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-1">
@@ -171,14 +172,24 @@ export default function WorkspaceClinics() {
               <DialogTitle>Remover clínica</DialogTitle>
             </div>
             <DialogDescription>
-              Tem certeza que deseja remover <strong>{deleteTarget?.name}</strong>? Esta ação é irreversível e todos os dados da clínica serão perdidos.
+              Esta ação é irreversível. Todos os dados de <strong>{deleteTarget?.name}</strong> serão permanentemente removidos.
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-1.5 py-1">
+            <p className="text-xs text-muted-foreground">Digite <span className="font-mono font-semibold text-foreground">REMOVER</span> para confirmar</p>
+            <Input
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="REMOVER"
+              className="font-mono"
+              autoFocus
+            />
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+            <Button variant="outline" onClick={() => { setDeleteTarget(null); setDeleteConfirmText(""); }} disabled={deleting}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting || deleteConfirmText !== "REMOVER"}>
               {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
-              {deleting ? "Removendo..." : "Sim, remover"}
+              {deleting ? "Removendo..." : "Remover definitivamente"}
             </Button>
           </DialogFooter>
         </DialogContent>
