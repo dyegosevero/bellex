@@ -102,7 +102,7 @@ export default function WorkspaceClinicDetail() {
     <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-3">
       <Building2 className="w-10 h-10 opacity-20" />
       <p className="text-sm">Clínica não encontrada.</p>
-      <Button size="sm" variant="outline" onClick={() => navigate("/workspace/clinicas")}>Voltar</Button>
+      <Button size="sm" variant="outline" onClick={() => navigate("/clinicas")}>Voltar</Button>
     </div>
   );
 
@@ -197,7 +197,7 @@ export default function WorkspaceClinicDetail() {
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => navigate("/workspace/clinicas")}>
+        <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => navigate("/clinicas")}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex items-center gap-3">
@@ -273,40 +273,6 @@ export default function WorkspaceClinicDetail() {
             </div>
           </div>
 
-          {/* OpenAI key por clínica */}
-          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#10a37f] flex items-center justify-center shrink-0">
-                <Shield className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Chave OpenAI</p>
-                <p className="text-xs text-muted-foreground">
-                  {openaiKey ? "Usando chave própria desta clínica" : "Herdando chave do workspace"}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>API Key (opcional)</Label>
-              <div className="relative">
-                <Input
-                  type="password"
-                  value={openaiKey}
-                  onChange={e => setOpenaiKey(e.target.value)}
-                  placeholder="sk-proj-... (deixe em branco para herdar do workspace)"
-                  className="font-mono text-sm"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Se preenchida, esta clínica usará esta chave. Caso contrário, usa a chave configurada no workspace.
-              </p>
-            </div>
-            <div className="flex justify-end">
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? "Salvando..." : "Salvar chave"}
-              </Button>
-            </div>
-          </div>
         </TabsContent>
 
         {/* ── DOMÍNIO ── */}
@@ -473,7 +439,8 @@ export default function WorkspaceClinicDetail() {
             <p className="text-xs text-muted-foreground">Controle quais funcionalidades estão disponíveis para os usuários desta instalação.</p>
             <div className="space-y-1 divide-y divide-border/30">
               {[
-                { key: "agenda", label: "Agenda & Atendimentos", desc: "Calendário, agendamento online, sessões", required: true },
+                { key: "agenda", label: "Agenda & Atendimentos", desc: "Calendário, sessões de atendimento", required: true },
+                { key: "agendamento_publico", label: "Agendamento online público", desc: "Clientes agendam sem login via link público", required: false },
                 { key: "cobrancas", label: "Cobranças & Faturamento", desc: "Emissão de cobranças, faturamento mensal", required: true },
                 { key: "pipeline", label: "Pipeline de Vendas (CRM)", desc: "Kanban de leads, conversões", required: false },
                 { key: "mensagens", label: "Mensagens Omnichannel", desc: "WhatsApp, Instagram integrados", required: false },
@@ -615,16 +582,42 @@ export default function WorkspaceClinicDetail() {
 
         {/* ── AVANÇADO ── */}
         <TabsContent value="avancado" className="mt-6 space-y-4">
+          {/* Chave OpenAI */}
+          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#10a37f] flex items-center justify-center shrink-0">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Chave OpenAI</p>
+                <p className="text-xs text-muted-foreground">
+                  {openaiKey ? "Usando chave própria desta clínica" : "Herdando chave do workspace"}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>API Key (opcional)</Label>
+              <Input
+                type="password"
+                value={openaiKey}
+                onChange={e => setOpenaiKey(e.target.value)}
+                placeholder="sk-proj-... (deixe em branco para herdar do workspace)"
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Se preenchida, esta clínica usa esta chave. Caso contrário, herda a chave do workspace.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? "Salvando..." : "Salvar chave"}
+              </Button>
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
             <p className="text-sm font-medium">Configurações avançadas</p>
             <div className="space-y-3 divide-y divide-border/30">
-              <div className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium">Agendamento online público</p>
-                  <p className="text-xs text-muted-foreground">Permite que clientes agendem sem login</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
               <div className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-sm font-medium">Modo manutenção</p>

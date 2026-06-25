@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Plus, Search, MoreHorizontal, Globe, Palette, ArrowUpRight, Settings, Loader2 } from "lucide-react";
+import { Building2, Plus, Search, MoreHorizontal, Globe, Palette, ArrowUpRight, Settings, Loader2, AlertTriangle } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 
@@ -20,6 +21,9 @@ export default function WorkspaceClinics() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { clinics, loading, update, remove } = useWorkspaceClinics();
+
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const filtered = clinics.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -39,11 +43,13 @@ export default function WorkspaceClinics() {
     else toast.success("Clínica ativada");
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Remover "${name}"? Esta ação não pode ser desfeita.`)) return;
-    const { error } = await remove(id);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await remove(deleteTarget.id);
+    setDeleting(false);
     if (error) toast.error("Erro ao remover clínica");
-    else toast.success("Clínica removida");
+    else { toast.success("Clínica removida"); setDeleteTarget(null); }
   };
 
   return (
@@ -55,7 +61,7 @@ export default function WorkspaceClinics() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar clínica, cliente ou domínio..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <Button size="sm" onClick={() => navigate("/workspace/clinicas/nova")} className="gap-1.5">
+        <Button size="sm" onClick={() => navigate("/clinicas/nova")} className="gap-1.5">
           <Plus className="w-4 h-4" /> Nova clínica
         </Button>
       </div>
@@ -71,7 +77,7 @@ export default function WorkspaceClinics() {
           <Building2 className="w-10 h-10 opacity-20" />
           <p className="text-sm">{search ? "Nenhuma clínica encontrada." : "Nenhuma clínica cadastrada ainda."}</p>
           {!search && (
-            <Button size="sm" variant="outline" onClick={() => navigate("/workspace/clinicas/nova")}>
+            <Button size="sm" variant="outline" onClick={() => navigate("/clinicas/nova")}>
               <Plus className="w-4 h-4 mr-1.5" /> Criar primeira clínica
             </Button>
           )}
@@ -81,7 +87,11 @@ export default function WorkspaceClinics() {
       {!loading && filtered.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(c => (
-            <div key={c.id} className="rounded-2xl border border-border/40 bg-card overflow-hidden hover:shadow-md transition-shadow group cursor-pointer" onClick={() => navigate(`/workspace/clinicas/${c.id}`)}>
+            <div
+              key={c.id}
+              className="rounded-2xl border border-border/40 bg-card overflow-hidden hover:shadow-md transition-shadow group cursor-pointer"
+              onClick={() => navigate(`/clinicas/${c.id}`)}
+            >
               <div className="h-2" style={{ background: c.color }} />
               <div className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
@@ -96,30 +106,33 @@ export default function WorkspaceClinics() {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost" size="icon"
+                        className="w-7 h-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={e => e.stopPropagation()}
+                      >
                         <MoreHorizontal className="w-3.5 h-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem><ArrowUpRight className="w-3.5 h-3.5 mr-2" />Acessar painel</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate(`/workspace/clinicas/${c.id}`)}>
+                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                      <DropdownMenuItem onSelect={() => window.open(`https://${c.subdomain}.bellex.beauty`, "_blank")}>
+                        <ArrowUpRight className="w-3.5 h-3.5 mr-2" />Acessar painel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => navigate(`/clinicas/${c.id}`)}>
                         <Settings className="w-3.5 h-3.5 mr-2" />Configurações
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate(`/workspace/clinicas/${c.id}`)}>
+                      <DropdownMenuItem onSelect={() => navigate(`/clinicas/${c.id}?tab=dominio`)}>
                         <Globe className="w-3.5 h-3.5 mr-2" />Configurar domínio
                       </DropdownMenuItem>
                       {c.status !== "suspenso" ? (
-                        <DropdownMenuItem className="text-orange-600" onClick={() => handleSuspend(c.id)}>
+                        <DropdownMenuItem className="text-orange-600" onSelect={() => handleSuspend(c.id)}>
                           Suspender
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem className="text-green-600" onClick={() => handleActivate(c.id)}>
+                        <DropdownMenuItem className="text-green-600" onSelect={() => handleActivate(c.id)}>
                           Reativar
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(c.id, c.name)}>
-                        Remover
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -146,6 +159,30 @@ export default function WorkspaceClinics() {
           ))}
         </div>
       )}
+
+      {/* Dialog de confirmação de remoção */}
+      <Dialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <DialogTitle>Remover clínica</DialogTitle>
+            </div>
+            <DialogDescription>
+              Tem certeza que deseja remover <strong>{deleteTarget?.name}</strong>? Esta ação é irreversível e todos os dados da clínica serão perdidos.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
+              {deleting ? "Removendo..." : "Sim, remover"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
