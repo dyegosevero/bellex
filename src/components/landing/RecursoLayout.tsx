@@ -54,7 +54,7 @@ export function RecursoLayout({ content }: { content: RecursoPageContent }) {
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
             <p className="text-xs text-primary tracking-widest uppercase font-medium mb-4">O problema real</p>
-            <h2 className="text-3xl md:text-4xl font-light leading-tight text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-light leading-tight text-foreground mb-4 normal-case tracking-normal">
               {content.problemTitle}
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-8">{content.problemSubtitle}</p>
@@ -78,7 +78,7 @@ export function RecursoLayout({ content }: { content: RecursoPageContent }) {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs text-primary tracking-widest uppercase font-medium mb-3">A solução</p>
-            <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4 max-w-2xl mx-auto leading-tight">
+            <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4 max-w-2xl mx-auto leading-tight normal-case tracking-normal">
               {content.solutionTitle}
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">{content.solutionDesc}</p>
@@ -101,7 +101,7 @@ export function RecursoLayout({ content }: { content: RecursoPageContent }) {
       <section className="py-20 px-6 relative overflow-hidden" style={{ background: "hsl(10 60% 96%)" }}>
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           <p className="text-xs text-primary tracking-widest uppercase font-medium mb-4">Resultados reais</p>
-          <h2 className="text-3xl md:text-4xl font-light text-foreground mb-14 max-w-xl mx-auto leading-tight">
+          <h2 className="text-3xl md:text-4xl font-light text-foreground mb-14 max-w-xl mx-auto leading-tight normal-case tracking-normal">
             {content.transformTitle}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border/30 rounded-2xl overflow-hidden">
@@ -129,7 +129,7 @@ export function RecursoLayout({ content }: { content: RecursoPageContent }) {
               </div>
             ))}
           </div>
-          <h2 className="font-heading text-4xl md:text-5xl font-light text-foreground mb-4 leading-tight">
+          <h2 className="font-heading text-4xl md:text-5xl font-light text-foreground mb-4 leading-tight normal-case tracking-normal">
             {content.ctaTitle}
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-10 max-w-md mx-auto">
