@@ -31,9 +31,9 @@ function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.
             key={i}
             style={{
               display: "inline-block",
-              fontSize: "13px",
-              fontWeight: 300,
-              letterSpacing: "0.26em",
+              fontSize: "11px",
+              fontWeight: 400,
+              letterSpacing: "0.32em",
               opacity: 0,
               animation: `strokeFill 0.75s ease forwards`,
               animationDelay: `${delay + i * 0.05}s`,
@@ -53,8 +53,8 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
     <div style={{ opacity: 1 }}>
       <style>{`
         @keyframes blurLetterIn {
-          from { opacity: 0; filter: blur(12px); transform: scale(1.6); }
-          to   { opacity: 1; filter: blur(0px);  transform: scale(1); }
+          from { opacity: 0; filter: blur(8px); transform: scale(1.15); }
+          to   { opacity: 1; filter: blur(0px); transform: scale(1); }
         }
         .logo-letter {
           animation: blurLetterIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
@@ -118,7 +118,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left — Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center" style={{ overflow: "clip" }}>
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center" style={{ overflow: "hidden" }}>
 
         <div className="absolute inset-0">
           <Grainient
@@ -151,7 +151,7 @@ const Login = () => {
           <div style={{ overflow: "visible", padding: "20px 40px" }}>
             <LogoBlur delay={0.3} />
           </div>
-          <StrokeFillLetters delay={2.2} />
+          <StrokeFillLetters delay={1.0} />
         </div>
       </div>
 
