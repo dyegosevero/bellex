@@ -15,17 +15,8 @@ import { toast } from "sonner";
 
 // Subtítulo: letra por letra, stroke → fill
 function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.2, color = "#ffffff" }: { text?: string; delay?: number; color?: string }) {
-  const id = `sf-${color.replace("#", "")}`;
   return (
-    <div className="flex flex-wrap justify-center mt-2 gap-0">
-      <style>{`
-        @keyframes strokeFill-${id} {
-          0%   { opacity: 0; -webkit-text-stroke: 1px ${color}CC; color: transparent; }
-          25%  { opacity: 1; -webkit-text-stroke: 1px ${color}CC; color: transparent; }
-          70%  { opacity: 1; -webkit-text-stroke: 1px ${color}80; color: ${color}99; }
-          100% { opacity: 1; -webkit-text-stroke: 0px transparent; color: ${color}; }
-        }
-      `}</style>
+    <div className="flex flex-wrap justify-center mt-3 gap-0">
       {text.split("").map((char, i) =>
         char === " " ? (
           <span key={i} style={{ display: "inline-block", width: "0.45em" }} />
@@ -34,12 +25,14 @@ function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.
             key={i}
             style={{
               display: "inline-block",
-              fontSize: "15px",
-              fontWeight: 400,
-              letterSpacing: "0.32em",
+              fontSize: "13px",
+              fontWeight: 300,
+              letterSpacing: "0.35em",
+              color,
               opacity: 0,
-              animation: `strokeFill-${id} 0.75s ease forwards`,
-              animationDelay: `${delay + i * 0.05}s`,
+              filter: "blur(6px)",
+              animation: `letterBlurIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards`,
+              animationDelay: `${delay + i * 0.04}s`,
             }}
           >
             {char}
@@ -247,13 +240,18 @@ const Login = () => {
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2, overflow: "visible" }}>
           <style>{`
+            @keyframes letterBlurIn {
+              from { opacity: 0; filter: blur(6px); }
+              to   { opacity: 1; filter: blur(0px); }
+            }
             @keyframes svgLineDraw {
-              from { stroke-dashoffset: var(--path-len); opacity: 1; }
-              to   { stroke-dashoffset: 0; opacity: 1; }
+              0%   { stroke-dashoffset: var(--path-len); filter: blur(3px); opacity: 0.6; }
+              40%  { filter: blur(1px); opacity: 1; }
+              100% { stroke-dashoffset: 0; filter: blur(0px); opacity: 1; }
             }
             @keyframes svgFillIn {
-              from { fill-opacity: 0; filter: blur(4px); transform: scale(1.05); }
-              to   { fill-opacity: 1; filter: blur(0px); transform: scale(1); }
+              from { fill-opacity: 0; filter: blur(3px); }
+              to   { fill-opacity: 1; filter: blur(0px); }
             }
             @keyframes blurLogoIn {
               from { opacity: 0; filter: blur(12px); transform: scale(1.1); }
@@ -281,9 +279,9 @@ const Login = () => {
               stroke: none;
               stroke-dasharray: none;
               stroke-dashoffset: 0;
-              fill: white;
+              fill: var(--logo-color, white);
               fill-opacity: 0;
-              animation: svgFillIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+              animation: svgFillIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
             }
           `}</style>
           <div style={{ overflow: "visible", padding: "20px 40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
