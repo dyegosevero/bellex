@@ -11,7 +11,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import logoWhite from "@/assets/logo-1x1-white.png";
+import logo from "@/assets/logo-color.png";
 import { Badge } from "@/components/ui/badge";
 
 const NAV = [
@@ -53,14 +53,10 @@ export default function WorkspaceLayout() {
       >
         {/* Logo */}
         <div className={cn(
-          "h-14 flex items-center shrink-0 bg-[#c97b63]",
+          "h-14 flex items-center shrink-0",
           expanded ? "px-4" : "justify-center"
         )}>
-          {expanded ? (
-            <img src={logoWhite} alt="Bellex" className="h-5" />
-          ) : (
-            <img src={logoWhite} alt="B" className="h-5" />
-          )}
+          <img src={logo} alt="Bellex" className="h-5" />
         </div>
 
         {/* Nav */}
