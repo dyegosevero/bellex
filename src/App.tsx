@@ -11,19 +11,14 @@ import { LogoDraw } from "@/components/ui/logo-draw";
 import { loadBrandForDomain, useBrand, type BrandConfig } from "@/hooks/useBrand";
 
 // ─── Hostname detection ────────────────────────────────────────────────────────
-const hostname = window.location.hostname;
-
-export const isSuperAdminDomain = hostname === "sa.bellex.beauty";
-export const isWorkspaceDomain   = hostname === "ws.bellex.beauty";
-export const isBookingDomain     = hostname.startsWith("agendamento.");
-export const isLandingDomain     = hostname === "bellex.beauty" || hostname === "www.bellex.beauty";
-export const isClinicSubdomain   =
-  hostname.endsWith(".bellex.beauty") &&
-  !isSuperAdminDomain && !isWorkspaceDomain && !isBookingDomain && !isLandingDomain;
-export const isCustomDomain      =
-  !isSuperAdminDomain && !isWorkspaceDomain && !isBookingDomain &&
-  !isLandingDomain && !isClinicSubdomain &&
-  hostname !== "localhost" && hostname !== "127.0.0.1";
+export {
+  isSuperAdminDomain,
+  isWorkspaceDomain,
+  isBookingDomain,
+  isLandingDomain,
+  isClinicSubdomain,
+  isCustomDomain,
+} from "@/lib/domain";
 
 // ─── Lazy pages — SuperAdmin ───────────────────────────────────────────────────
 const SuperAdminLayout     = lazy(() => import("@/components/SuperAdminLayout"));

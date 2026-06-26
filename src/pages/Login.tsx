@@ -6,7 +6,7 @@ import { LogoDraw } from "@/components/ui/logo-draw";
 import logoColor from "@/assets/logo-color.png";
 import Grainient from "@/components/Grainient";
 import { loadBrandForDomain } from "@/hooks/useBrand";
-import { isClinicSubdomain, isCustomDomain } from "@/App";
+import { isClinicSubdomain, isCustomDomain } from "@/lib/domain";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

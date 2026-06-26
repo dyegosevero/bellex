@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogoDraw } from "@/components/ui/logo-draw";
-import { isClinicSubdomain, isCustomDomain } from "@/App";
+import { isClinicSubdomain, isCustomDomain } from "@/lib/domain";
 
 const isClinicDomain = isClinicSubdomain || isCustomDomain;
 
