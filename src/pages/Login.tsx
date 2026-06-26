@@ -105,28 +105,31 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
         const safe = text
           .replace(/<script[\s\S]*?<\/script>/gi, "")
           .replace(/\son\w+="[^"]*"/g, "");
-        // Injeta fill na raiz do SVG (cobre SVGs com ou sem fill nos paths)
         const colored = safe
           .replace(/\sfill="[^"]*"/g, ` fill="${logoColor}"`)
           .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`)
-          .replace(/<svg(\s)/i, `<svg fill="${logoColor}"$1`);
+          .replace(/\sstroke="[^"]*"/g, ' stroke="none"')
+          .replace(/stroke\s*:[^;")]+/g, "stroke:none")
+          .replace(/<svg(\s)/i, `<svg fill="${logoColor}" stroke="none"$1`);
         setSvg(colored);
       })
       .catch(() => setSvg(null));
   }, [src, logoColor]);
 
+  const anim = "clinicLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s both";
+
   if (!svg) return (
-    <img src={src} alt={name}
-      style={{ width: size, maxWidth: "80%", opacity: 0, animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s both" }}
-      className="object-contain"
-    />
+    <>
+      <style>{`@keyframes clinicLogoIn { from { opacity:0; filter:blur(12px); transform:scale(1.1); } to { opacity:1; filter:blur(0); transform:scale(1); } }`}</style>
+      <img src={src} alt={name} style={{ width: size, maxWidth: "80%", opacity: 0, animation: anim }} className="object-contain" />
+    </>
   );
 
   return (
-    <div
-      style={{ width: size, maxWidth: "80%", opacity: 0, animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s both" }}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+    <>
+      <style>{`@keyframes clinicLogoIn { from { opacity:0; filter:blur(12px); transform:scale(1.1); } to { opacity:1; filter:blur(0); transform:scale(1); } }`}</style>
+      <div style={{ width: size, maxWidth: "80%", opacity: 0, animation: anim }} dangerouslySetInnerHTML={{ __html: svg }} />
+    </>
   );
 }
 
