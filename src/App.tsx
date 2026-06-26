@@ -351,7 +351,7 @@ function ClinicRoutes() {
           <Route path="/docs"            element={<ProtectedRoute><Docs /></ProtectedRoute>} />
           <Route path="/docs/:group/:slug" element={<ProtectedRoute><Docs /></ProtectedRoute>} />
 
-          <Route path="/"                            element={<Landing />} />
+          <Route path="/"                            element={<Navigate to="/login" replace />} />
           <Route path="/recursos/agenda"             element={<RecursoAgenda />} />
           <Route path="/recursos/clientes"           element={<RecursoClientes />} />
           <Route path="/recursos/financeiro"         element={<RecursoFinanceiro />} />
