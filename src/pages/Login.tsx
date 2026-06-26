@@ -14,15 +14,16 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 // Subtítulo: letra por letra, stroke → fill
-function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.2 }: { text?: string; delay?: number }) {
+function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.2, color = "#ffffff" }: { text?: string; delay?: number; color?: string }) {
+  const id = `sf-${color.replace("#", "")}`;
   return (
     <div className="flex flex-wrap justify-center mt-2 gap-0">
       <style>{`
-        @keyframes strokeFill {
-          0%   { opacity: 0; -webkit-text-stroke: 1px rgba(255,255,255,0.9); color: transparent; }
-          25%  { opacity: 1; -webkit-text-stroke: 1px rgba(255,255,255,0.9); color: transparent; }
-          70%  { opacity: 1; -webkit-text-stroke: 1px rgba(255,255,255,0.5); color: rgba(255,255,255,0.6); }
-          100% { opacity: 1; -webkit-text-stroke: 0px transparent; color: rgba(255,255,255,1); }
+        @keyframes strokeFill-${id} {
+          0%   { opacity: 0; -webkit-text-stroke: 1px ${color}CC; color: transparent; }
+          25%  { opacity: 1; -webkit-text-stroke: 1px ${color}CC; color: transparent; }
+          70%  { opacity: 1; -webkit-text-stroke: 1px ${color}80; color: ${color}99; }
+          100% { opacity: 1; -webkit-text-stroke: 0px transparent; color: ${color}; }
         }
       `}</style>
       {text.split("").map((char, i) =>
@@ -33,11 +34,11 @@ function StrokeFillLetters({ text = "SISTEMA DE GESTÃO INTELIGENTE", delay = 2.
             key={i}
             style={{
               display: "inline-block",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: 400,
               letterSpacing: "0.32em",
               opacity: 0,
-              animation: `strokeFill 0.75s ease forwards`,
+              animation: `strokeFill-${id} 0.75s ease forwards`,
               animationDelay: `${delay + i * 0.05}s`,
             }}
           >
@@ -285,13 +286,13 @@ const Login = () => {
               animation: svgFillIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
             }
           `}</style>
-          <div style={{ overflow: "visible", padding: "20px 40px" }}>
+          <div style={{ overflow: "visible", padding: "20px 40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
             {clinicLogo
               ? <ClinicLogoAnimated src={clinicLogo} size={logoSize} name={clinicName ?? "Logo"} logoColor={logoColor} />
               : <LogoBlur delay={0.3} />
             }
+            <StrokeFillLetters text={clinicName ?? "SISTEMA DE GESTÃO INTELIGENTE"} delay={1.0} color={logoColor} />
           </div>
-          <StrokeFillLetters text={clinicName ?? "SISTEMA DE GESTÃO INTELIGENTE"} delay={1.0} />
         </div>
       </div>
 
