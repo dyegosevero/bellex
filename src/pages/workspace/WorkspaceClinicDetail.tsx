@@ -555,7 +555,7 @@ export default function WorkspaceClinicDetail() {
                       ? <div style={{
                             width: Math.max(32, logoSize * 0.3),
                             height: Math.max(32, logoSize * 0.3),
-                            backgroundColor: logoColor,
+                            backgroundColor: "#000000",
                             WebkitMaskImage: `url(${logoUrl})`,
                             maskImage: `url(${logoUrl})`,
                             WebkitMaskSize: "contain",
@@ -565,9 +565,9 @@ export default function WorkspaceClinicDetail() {
                             WebkitMaskPosition: "center",
                             maskPosition: "center",
                           }} />
-                      : <Building2 className="w-8 h-8 text-white/50" />
+                      : <Building2 className="w-8 h-8 text-muted-foreground/40" />
                     }
-                    <p className="text-xs" style={{ color: logoColor, opacity: 0.8 }}>
+                    <p className="text-xs text-muted-foreground/60">
                       {uploadingLogo ? "Enviando..." : logoUrl ? "Clique para trocar" : "Clique ou arraste o SVG"}
                     </p>
                   </div>
