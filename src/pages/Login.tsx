@@ -197,18 +197,12 @@ const Login = () => {
       >
         <div className="absolute inset-0">
           {/* For clinic domains: NEVER show Bellex gradient — show neutral black until brand loads */}
-          {isClinic
-            ? brandColor1
-              ? <>
-                  <div className="absolute inset-0" style={{
-                    background: `linear-gradient(135deg, ${brandColor1} 0%, ${brandColor2 ?? brandColor1} 50%, ${brandColor3 ?? brandColor1} 100%)`
-                  }} />
-                  <div className="absolute inset-0 opacity-[0.12]"
-                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px" }} />
-                </>
-              : <div className="absolute inset-0 bg-neutral-900" />
+          {isClinic && !brandColor1
+            ? <div className="absolute inset-0 bg-neutral-900" />
             : <Grainient
-                color1="#f5c5b8" color2="#e8957a" color3="#f0d5cc"
+                color1={brandColor1 ?? "#f5c5b8"}
+                color2={brandColor2 ?? (brandColor1 ? brandColor1 : "#e8957a")}
+                color3={brandColor3 ?? (brandColor1 ? brandColor1 : "#f0d5cc")}
                 timeSpeed={0.25} colorBalance={0} warpStrength={1} warpFrequency={5}
                 warpSpeed={2} warpAmplitude={50} blendAngle={0} blendSoftness={0.05}
                 rotationAmount={500} noiseScale={2} grainAmount={0.08} grainScale={2}
