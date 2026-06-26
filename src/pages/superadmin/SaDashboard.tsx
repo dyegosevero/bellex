@@ -70,6 +70,7 @@ function fmtBytes(b: number) {
   return `${(b / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+
 const statusColor: Record<string, string> = {
   ativo: "#22c55e", trial: "#60a5fa", inadimplente: "#ef4444",
   suspenso: "#f59e0b", cancelado: "#64748b", expirando: "#f59e0b",

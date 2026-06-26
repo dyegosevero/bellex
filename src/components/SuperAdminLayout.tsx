@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, DollarSign, BarChart3,
-  Plug, Settings, LogOut, Shield, ChevronDown,
+  Plug, Settings, LogOut, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,20 +32,17 @@ export default function SuperAdminLayout() {
   return (
     <div className="flex flex-col h-screen bg-[#08080f] overflow-hidden">
       {/* Topbar */}
-      <header className="h-12 flex items-center shrink-0 border-b border-white/[0.06] bg-[#0d0d1a] px-4 gap-0">
+      <header className="h-12 flex items-center shrink-0 border-b border-white/[0.06] bg-[#0d0d1a] px-4">
         {/* Logo + badge */}
-        <div className="flex items-center gap-2.5 mr-6">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#e8957a] to-[#c96a4a] flex items-center justify-center shrink-0">
-            <Shield className="w-3.5 h-3.5 text-white" />
-          </div>
+        <div className="flex items-center gap-2 w-40 shrink-0">
           <img src={logoWhite} alt="Bellex" className="h-4 opacity-90" />
           <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.12em] border border-white/10 px-1.5 py-0.5 rounded">
-            Super Admin
+            SA
           </span>
         </div>
 
-        {/* Nav items */}
-        <nav className="flex items-center gap-0.5 flex-1">
+        {/* Nav items — centralizados */}
+        <nav className="flex items-center gap-0.5 flex-1 justify-center">
           {NAV.map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}
@@ -65,7 +62,7 @@ export default function SuperAdminLayout() {
         </nav>
 
         {/* Right side */}
-        <div className="flex items-center gap-2 ml-4">
+        <div className="flex items-center gap-2 w-40 justify-end">
           <span className="text-[10px] font-semibold text-blue-400 bg-blue-950/60 border border-blue-900/60 px-2 py-1 rounded-md tracking-wide">
             PROD
           </span>
