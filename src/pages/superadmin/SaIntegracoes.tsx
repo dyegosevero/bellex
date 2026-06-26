@@ -12,7 +12,7 @@ export default function SaIntegracoes() {
   const { licenses, loading } = useWorkspaceLicenses();
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl mx-auto">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <PageHeader icon={<Plug className="w-5 h-5" />} title="Integrações" subtitle="Visão geral das integrações ativas na plataforma" />
 
       {/* Info */}

@@ -2,8 +2,15 @@ import { useState } from "react";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Search, Users, Building2, MoreHorizontal, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,10 +19,33 @@ const statusColor: Record<string, string> = {
   suspenso: "#f59e0b", cancelado: "#64748b", expirando: "#f59e0b",
 };
 
+const PLAN_PRICE: Record<string, number> = { starter: 500, pro: 750, scale: 1000 };
+
+type FormState = {
+  client_name: string;
+  contact_email: string;
+  contact_phone: string;
+  plan: string;
+  license_type: "anual" | "vitalicia";
+  valid_until: string;
+};
+
+const FORM_DEFAULT: FormState = {
+  client_name: "",
+  contact_email: "",
+  contact_phone: "",
+  plan: "starter",
+  license_type: "anual",
+  valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+};
+
 export default function SaWorkspaces() {
-  const { licenses, loading, update } = useWorkspaceLicenses();
+  const { licenses, loading, create, update } = useWorkspaceLicenses();
   const { clinics } = useWorkspaceClinics();
   const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<FormState>(FORM_DEFAULT);
+  const [saving, setSaving] = useState(false);
 
   const filtered = licenses.filter(l =>
     l.client_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -23,6 +53,27 @@ export default function SaWorkspaces() {
   );
 
   const clinicsForWs = (id: string) => clinics.filter(c => c.customer_id === id).length;
+
+  const set = (k: keyof FormState, v: string) => setForm(prev => ({ ...prev, [k]: v }));
+
+  const handleCreate = async () => {
+    if (!form.client_name.trim()) { toast.error("Nome do workspace obrigatório"); return; }
+    setSaving(true);
+    const { error } = await create({
+      client_name: form.client_name.trim(),
+      contact_email: form.contact_email.trim() || null,
+      contact_phone: form.contact_phone.trim() || null,
+      plan: form.plan,
+      seats_total: 1,
+      license_type: form.license_type,
+      valid_until: form.license_type === "anual" ? form.valid_until : null,
+    });
+    setSaving(false);
+    if (error) { toast.error("Erro ao criar workspace"); return; }
+    toast.success(`Workspace "${form.client_name}" criado em trial`);
+    setOpen(false);
+    setForm(FORM_DEFAULT);
+  };
 
   const handleSuspend  = async (id: string) => { const r = await update(id, { status: "suspenso" }); if (r.error) toast.error("Erro"); else toast.success("Suspenso"); };
   const handleActivate = async (id: string) => { const r = await update(id, { status: "ativo"    }); if (r.error) toast.error("Erro"); else toast.success("Reativado"); };
@@ -32,44 +83,44 @@ export default function SaWorkspaces() {
       <div className="flex items-center justify-between mb-1">
         <div>
           <h1 className="text-lg font-semibold text-foreground">Workspaces</h1>
-          <p className="text-[12px] text-muted-foreground/70 mt-0.5">Todos os workspaces ativos na plataforma</p>
+          <p className="text-[12px] text-muted-foreground mt-0.5">Todos os workspaces ativos na plataforma</p>
         </div>
-        <Button size="sm" className="gap-1.5 bg-muted hover:bg-white/15 text-white border-border border">
+        <Button size="sm" className="gap-1.5" onClick={() => setOpen(true)}>
           <Plus className="w-3.5 h-3.5" /> Novo workspace
         </Button>
       </div>
 
       <div className="relative max-w-xs">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/70" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
         <Input
           placeholder="Buscar workspace ou e-mail..."
-          className="pl-9 h-8 text-sm bg-muted/30 border-border/40 text-foreground/80 placeholder:text-white/20"
+          className="pl-9 h-8 text-sm"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground/70">
+        <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin" /> Carregando...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center text-white/20 gap-3">
-          <Users className="w-10 h-10 opacity-20" />
-          <p className="text-sm">{search ? "Nenhum resultado." : "Nenhum workspace cadastrado."}</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+          <Users className="w-10 h-10 text-muted-foreground/20" />
+          <p className="text-sm text-muted-foreground">{search ? "Nenhum resultado." : "Nenhum workspace cadastrado."}</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-border/35 overflow-hidden">
-          <div className="grid grid-cols-[2fr_1fr_80px_80px_60px_40px] px-4 py-2.5 border-b border-border/25 bg-muted/20">
+        <div className="rounded-xl border border-border/40 overflow-hidden">
+          <div className="grid grid-cols-[2fr_1fr_80px_80px_70px_40px] px-4 py-2.5 border-b border-border/40 bg-muted/30">
             {["Workspace", "Plano", "Clínicas", "Status", "MRR", ""].map(h => (
-              <span key={h} className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.07em]">{h}</span>
+              <span key={h} className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.07em]">{h}</span>
             ))}
           </div>
           {filtered.map(ws => (
-            <div key={ws.id} className="grid grid-cols-[2fr_1fr_80px_80px_60px_40px] px-4 py-3 border-b border-border/20 hover:bg-muted/20 transition-colors items-center">
+            <div key={ws.id} className="grid grid-cols-[2fr_1fr_80px_80px_70px_40px] px-4 py-3 border-b border-border/20 hover:bg-muted/20 transition-colors items-center last:border-0">
               <div>
-                <p className="text-[13px] text-foreground/90 font-medium">{ws.client_name}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">{ws.contact_email ?? "—"}</p>
+                <p className="text-[13px] font-medium text-foreground">{ws.client_name}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{ws.contact_email ?? "—"}</p>
               </div>
               <span className="text-[12px] text-muted-foreground capitalize">{ws.plan}</span>
               <span className="text-[12px] text-muted-foreground flex items-center gap-1.5">
@@ -79,18 +130,18 @@ export default function SaWorkspaces() {
                 {ws.status}
               </span>
               <span className="text-[12px] font-medium text-green-600">
-                {ws.status === "ativo" ? `R$${ws.mrr ?? 0}` : "—"}
+                {ws.status === "ativo" ? `R$ ${(PLAN_PRICE[ws.plan] ?? 0).toLocaleString("pt-BR")}` : "—"}
               </span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground/70 hover:text-white hover:bg-muted">
+                  <Button variant="ghost" size="icon" className="w-7 h-7">
                     <MoreHorizontal className="w-3.5 h-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[#0d0d1a] border-border">
+                <DropdownMenuContent align="end">
                   {ws.status !== "suspenso"
-                    ? <DropdownMenuItem className="text-amber-400 focus:text-amber-300 focus:bg-amber-950/40" onClick={() => handleSuspend(ws.id)}>Suspender</DropdownMenuItem>
-                    : <DropdownMenuItem className="text-green-600 focus:text-green-300 focus:bg-green-950/40" onClick={() => handleActivate(ws.id)}>Reativar</DropdownMenuItem>
+                    ? <DropdownMenuItem className="text-amber-600" onClick={() => handleSuspend(ws.id)}>Suspender</DropdownMenuItem>
+                    : <DropdownMenuItem className="text-green-600" onClick={() => handleActivate(ws.id)}>Reativar</DropdownMenuItem>
                   }
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -98,6 +149,70 @@ export default function SaWorkspaces() {
           ))}
         </div>
       )}
+
+      {/* Modal novo workspace */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo workspace</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-1">
+            <div className="space-y-1.5">
+              <Label>Nome do workspace *</Label>
+              <Input placeholder="ex: Clínica Silva" value={form.client_name} onChange={e => set("client_name", e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>E-mail de contato</Label>
+                <Input type="email" placeholder="email@empresa.com" value={form.contact_email} onChange={e => set("contact_email", e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Telefone</Label>
+                <Input placeholder="(11) 99999-9999" value={form.contact_phone} onChange={e => set("contact_phone", e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Plano</Label>
+                <Select value={form.plan} onValueChange={v => set("plan", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="starter">Starter — R$ 500/mês</SelectItem>
+                    <SelectItem value="pro">Pro — R$ 750/mês</SelectItem>
+                    <SelectItem value="scale">Scale — R$ 1.000/mês</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tipo de licença</Label>
+                <Select value={form.license_type} onValueChange={v => set("license_type", v as "anual" | "vitalicia")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="anual">Anual</SelectItem>
+                    <SelectItem value="vitalicia">Vitalícia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {form.license_type === "anual" && (
+              <div className="space-y-1.5">
+                <Label>Válido até</Label>
+                <Input type="date" value={form.valid_until} onChange={e => set("valid_until", e.target.value)} />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">O workspace será criado com status <strong>trial</strong>. Mude para <strong>ativo</strong> após confirmação de pagamento.</p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreate} disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Criar workspace
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function SaFinanceiro() {
   );
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <PageHeader icon={<DollarSign className="w-5 h-5" />} title="Financeiro" subtitle="MRR e métricas financeiras baseadas nos workspaces ativos" />
 
       {/* KPIs */}
