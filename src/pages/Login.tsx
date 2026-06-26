@@ -106,16 +106,25 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [clinicLogo, setClinicLogo] = useState<string | null>(null);
-  const [clinicName, setClinicName] = useState<string | null>(null);
-  const [brandColor1, setBrandColor1] = useState<string | null>(null);
-  const [brandColor2, setBrandColor2] = useState<string | null>(null);
-  const [brandColor3, setBrandColor3] = useState<string | null>(null);
-  const [logoSize, setLogoSize] = useState(120);
-  const [loginSplit, setLoginSplit] = useState(50);
+  // Read cached brand synchronously so first render already has clinic colors
+  const isClinic = isClinicSubdomain || isCustomDomain;
+  const cachedBrand = (() => {
+    if (!isClinic) return null;
+    try { return JSON.parse(localStorage.getItem("brand_" + location.hostname) ?? "null"); } catch { return null; }
+  })();
+
+  const [clinicLogo, setClinicLogo] = useState<string | null>(
+    cachedBrand?.logo_url ? `${cachedBrand.logo_url.split("?")[0]}?download=` : null
+  );
+  const [clinicName, setClinicName] = useState<string | null>(cachedBrand?.name ?? null);
+  const [brandColor1, setBrandColor1] = useState<string | null>(cachedBrand?.color ?? null);
+  const [brandColor2, setBrandColor2] = useState<string | null>(cachedBrand?.appearance?.color2 ?? null);
+  const [brandColor3, setBrandColor3] = useState<string | null>(cachedBrand?.appearance?.color3 ?? null);
+  const [logoSize, setLogoSize] = useState<number>(cachedBrand?.appearance?.logoSize ?? 120);
+  const [loginSplit, setLoginSplit] = useState<number>(cachedBrand?.appearance?.loginSplit ?? 50);
 
   useEffect(() => {
-    if (!isClinicSubdomain && !isCustomDomain) return;
+    if (!isClinic) return;
     loadBrandForDomain().then(b => {
       if (!b) return;
       if (b.logo_url) setClinicLogo(`${b.logo_url.split("?")[0]}?download=`);
@@ -256,7 +265,7 @@ const Login = () => {
             </div>
           </form>
 
-          <p className="text-xs text-center text-muted-foreground">BELLEX SYSTEM · v1.1</p>
+          {!isClinic && <p className="text-xs text-center text-muted-foreground">BELLEX SYSTEM · v1.1</p>}
         </div>
       </div>
     </div>
