@@ -26,7 +26,7 @@ export function useSaPlans() {
   async function load() {
     setLoading(true);
     const { data, error } = await supabase
-      .from("sa_plans")
+      .from("workspace_plans")
       .select("*")
       .order("sort_order");
     if (!error && data) setPlans(data as SaPlan[]);
@@ -37,7 +37,7 @@ export function useSaPlans() {
 
   async function update(id: string, payload: Partial<SaPlan>) {
     const { error } = await supabase
-      .from("sa_plans")
+      .from("workspace_plans")
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) { toast.error("Erro ao salvar plano"); return false; }
