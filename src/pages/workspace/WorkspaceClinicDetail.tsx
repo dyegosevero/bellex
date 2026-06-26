@@ -552,7 +552,19 @@ export default function WorkspaceClinicDetail() {
                 >
                   <div className="flex flex-col items-center justify-center py-6 gap-2">
                     {logoUrl
-                      ? <img src={logoUrl} alt="Logo" style={{ height: Math.max(32, logoSize * 0.3) }} className="object-contain drop-shadow-md" />
+                      ? <div style={{
+                            width: Math.max(32, logoSize * 0.3),
+                            height: Math.max(32, logoSize * 0.3),
+                            backgroundColor: logoColor,
+                            WebkitMaskImage: `url(${logoUrl})`,
+                            maskImage: `url(${logoUrl})`,
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                          }} />
                       : <Building2 className="w-8 h-8 text-white/50" />
                     }
                     <p className="text-xs text-white/70">
