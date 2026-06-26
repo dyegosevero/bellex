@@ -144,6 +144,32 @@ function ScrollToTop() {
   return null;
 }
 
+const isClinicContext = isClinicSubdomain || isCustomDomain;
+
+function getClinicBrandCache() {
+  try { return JSON.parse(localStorage.getItem("brand_" + window.location.hostname) ?? "null"); } catch { return null; }
+}
+
+function ClinicSplash({ opacity, fading }: { opacity: number; fading: boolean }) {
+  const brand = getClinicBrandCache();
+  const bg = brand?.color ?? "#111";
+  const logo = brand?.logo_url ? `${brand.logo_url.split("?")[0]}?download=` : null;
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999, background: bg,
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16,
+      opacity, transition: fading ? `opacity ${SPLASH_FADE_MS}ms ease` : "none",
+      pointerEvents: fading ? "none" : "auto",
+    }}>
+      {logo
+        ? <img src={logo} alt="" style={{ width: 80, height: 80, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+        : <div style={{ width: 36, height: 36, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "splash-spin 0.8s linear infinite" }} />
+      }
+      <style>{`@keyframes splash-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
 function SplashOverlay() {
   const { pathname } = useLocation();
   const isPublic = isPublicPath(pathname);
@@ -155,6 +181,7 @@ function SplashOverlay() {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [isPublic]);
   if (isPublic || phase === "done") return null;
+  if (isClinicContext) return <ClinicSplash opacity={phase === "fading" ? 0 : 1} fading={phase === "fading"} />;
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
@@ -169,11 +196,26 @@ function SplashOverlay() {
   );
 }
 
-const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-    <LogoDraw size={48} drawDuration={1200} fillDuration={400} fillDelay={150} />
-  </div>
-);
+const PageLoader = () => {
+  if (isClinicContext) {
+    const brand = getClinicBrandCache();
+    const bg = brand?.color ?? "#111";
+    const logo = brand?.logo_url ? `${brand.logo_url.split("?")[0]}?download=` : null;
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: bg }}>
+        {logo
+          ? <img src={logo} alt="" style={{ width: 64, height: 64, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          : <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "splash-spin 0.8s linear infinite" }} />
+        }
+      </div>
+    );
+  }
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+      <LogoDraw size={48} drawDuration={1200} fillDuration={400} fillDelay={150} />
+    </div>
+  );
+};
 
 // ─── Domain-not-found fallback ─────────────────────────────────────────────────
 function DomainNotFound() {
@@ -208,13 +250,16 @@ function CustomDomainGate({ children }: { children: React.ReactNode }) {
 
 // ─── Brand loader (clinic context only) ───────────────────────────────────────
 function BrandLoader() {
-  const [brand, setBrand] = useState<BrandConfig | null>(null);
+  const [brand, setBrand] = useState<BrandConfig | null>(() => getClinicBrandCache());
   const loaded = useRef(false);
   useEffect(() => {
     if (loaded.current) return;
     loaded.current = true;
     loadBrandForDomain().then(b => { if (b) setBrand(b); });
   }, []);
+  useEffect(() => {
+    if (brand?.name) document.title = brand.name;
+  }, [brand]);
   useBrand(brand);
   return null;
 }
@@ -291,6 +336,7 @@ function ClinicRoutes() {
         </>
       ) : (
         <>
+          <Route path="/"                element={<Navigate to="/login" replace />} />
           <Route path="/login"           element={<Login />} />
           <Route path="/esqueci-senha"   element={<ForgotPassword />} />
           <Route path="/redefinir-senha" element={<ResetPassword />} />
