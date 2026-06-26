@@ -105,17 +105,17 @@ export default function WorkspaceClientes() {
               {filtered.map((c, i) => (
                 <tr key={c.id} className={`border-b border-border/30 hover:bg-muted/20 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
                   <td className="p-4">
-                    <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(`/clinicas/${c.id}`)} className="flex items-center gap-3 hover:opacity-75 transition-opacity text-left">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                         {(c.client_name || c.name).split(" ").map(n => n[0]).slice(0, 2).join("")}
                       </div>
-                      <p className="text-sm font-medium">{c.client_name || "—"}</p>
-                    </div>
+                      <p className="text-sm font-medium underline-offset-2 hover:underline">{c.client_name || "—"}</p>
+                    </button>
                   </td>
                   <td className="p-4">
-                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <button onClick={() => navigate(`/clinicas/${c.id}`)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors hover:underline underline-offset-2">
                       <Building2 className="w-3.5 h-3.5" />{c.name}
-                    </span>
+                    </button>
                   </td>
                   <td className="p-4">
                     <span className="text-sm capitalize">{c.plan}</span>
