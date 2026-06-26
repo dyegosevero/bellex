@@ -27,7 +27,9 @@
         var cached = localStorage.getItem("brand_" + h);
         if (!cached) return;
         var b = JSON.parse(cached);
-        if (!b || !b.color) return;
+        if (!b) return;
+        if (b.name) document.title = b.name;
+        if (!b.color) return;
         // parse hex to hsl
         var hex = b.color.replace("#", "");
         var r = parseInt(hex.slice(0,2),16)/255, g = parseInt(hex.slice(2,4),16)/255, bl = parseInt(hex.slice(4,6),16)/255;
