@@ -418,7 +418,7 @@ const AppointmentDetail = () => {
                       return;
                     }
                     toast.success("Atendimento excluído.");
-                    navigate("/agenda");
+                    navigate("/dashboard");
                   }}
                 >
                   Excluir
