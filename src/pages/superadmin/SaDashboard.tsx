@@ -36,7 +36,7 @@ function PctBar({ value }: { value: number }) {
   const color = value >= 90 ? "#ef4444" : value >= 75 ? "#f59e0b" : "#22c55e";
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${Math.min(value, 100)}%`, background: color }} />
       </div>
       <span className="text-[10px] w-10 text-right tabular-nums"
@@ -51,15 +51,15 @@ function KpiCard({ icon: Icon, label, value, sub, color }: {
   icon: React.ElementType; label: string; value: string; sub: string; color: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4">
+    <div className="rounded-xl border border-border/35 bg-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}20` }}>
           <Icon className="w-3.5 h-3.5" style={{ color }} />
         </div>
-        <span className="text-[11px] text-white/40 uppercase tracking-[0.07em] font-medium">{label}</span>
+        <span className="text-[11px] text-muted-foreground uppercase tracking-[0.07em] font-medium">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
-      <p className="text-[11px] text-white/30 mt-0.5">{sub}</p>
+      <p className="text-2xl font-bold text-foreground tracking-tight">{value}</p>
+      <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>
     </div>
   );
 }
@@ -111,7 +111,7 @@ export default function SaDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 gap-2 text-white/30">
+      <div className="flex items-center justify-center h-64 gap-2 text-muted-foreground/70">
         <Loader2 className="w-4 h-4 animate-spin" />
         <span className="text-sm">Carregando métricas...</span>
       </div>
@@ -121,20 +121,20 @@ export default function SaDashboard() {
   return (
     <div className="p-6 space-y-5 max-w-7xl mx-auto">
       <div className="mb-1">
-        <h1 className="text-lg font-semibold text-white/90">Dashboard</h1>
-        <p className="text-[12px] text-white/30 mt-0.5">
+        <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+        <p className="text-[12px] text-muted-foreground/70 mt-0.5">
           Visão geral da plataforma — {new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
         </p>
       </div>
 
       {alerts.length > 0 && (
-        <div className="rounded-xl border border-amber-900/60 bg-amber-950/30 p-3.5 flex items-start gap-3">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 flex items-start gap-3">
           <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-amber-300">
+            <p className="text-sm font-medium text-amber-800">
               {alerts.length} workspace{alerts.length > 1 ? "s" : ""} com uso elevado (≥80%)
             </p>
-            <p className="text-[11px] text-amber-500/60 mt-0.5">{alerts.map(r => r.client_name).join(" · ")}</p>
+            <p className="text-[11px] text-amber-600 mt-0.5">{alerts.map(r => r.client_name).join(" · ")}</p>
           </div>
         </div>
       )}
@@ -166,28 +166,28 @@ export default function SaDashboard() {
       {/* Workspaces table */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[0.08em]">
+          <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em]">
             Uso por workspace — {new Date().toLocaleDateString("pt-BR", { month: "long" })}
           </p>
           <button
             onClick={() => navigate("/workspaces")}
-            className="text-[11px] text-white/30 hover:text-white/60 transition-colors flex items-center gap-1"
+            className="text-[11px] text-muted-foreground/70 hover:text-foreground/60 transition-colors flex items-center gap-1"
           >
             Gerenciar <ExternalLink className="w-3 h-3" />
           </button>
         </div>
 
-        <div className="rounded-xl border border-white/[0.07] overflow-hidden">
-          <div className="grid grid-cols-[2fr_1fr_120px_120px_80px_70px] px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.02]">
+        <div className="rounded-xl border border-border/35 overflow-hidden">
+          <div className="grid grid-cols-[2fr_1fr_120px_120px_80px_70px] px-4 py-2.5 border-b border-border/25 bg-muted/20">
             {["Workspace", "Plano", "Storage", "Conv. IA", "MRR", "Status"].map(h => (
-              <span key={h} className="text-[10px] font-semibold text-white/25 uppercase tracking-[0.07em]">{h}</span>
+              <span key={h} className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.07em]">{h}</span>
             ))}
           </div>
 
           {rows.length === 0 ? (
             <div className="py-12 text-center">
-              <Users className="w-8 h-8 text-white/10 mx-auto mb-2" />
-              <p className="text-sm text-white/20">Nenhum workspace cadastrado</p>
+              <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground/40">Nenhum workspace cadastrado</p>
             </div>
           ) : (
             rows.map(r => {
@@ -197,23 +197,23 @@ export default function SaDashboard() {
               return (
                 <div
                   key={r.workspace_id}
-                  className="grid grid-cols-[2fr_1fr_120px_120px_80px_70px] px-4 py-3.5 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer items-center"
+                  className="grid grid-cols-[2fr_1fr_120px_120px_80px_70px] px-4 py-3.5 border-b border-border/20 hover:bg-muted/20 transition-colors cursor-pointer items-center"
                   onClick={() => navigate("/workspaces")}
                 >
                   <div>
-                    <p className="text-[13px] text-white/80 font-medium">{r.client_name}</p>
+                    <p className="text-[13px] text-foreground/90 font-medium">{r.client_name}</p>
                     <p className="text-[10px] text-white/20 mt-0.5 capitalize">{r.plan}</p>
                   </div>
-                  <span className="text-[12px] text-white/50 capitalize">{r.plan}</span>
+                  <span className="text-[12px] text-muted-foreground capitalize">{r.plan}</span>
                   <div className="pr-4">
-                    <p className="text-[10px] text-white/30 mb-1">{fmtBytes(r.storage_bytes)} / {lim.storage_gb} GB</p>
+                    <p className="text-[10px] text-muted-foreground/70 mb-1">{fmtBytes(r.storage_bytes)} / {lim.storage_gb} GB</p>
                     <PctBar value={storagePct} />
                   </div>
                   <div className="pr-4">
-                    <p className="text-[10px] text-white/30 mb-1">{r.conversations_month} / {lim.ai_conversations_month}</p>
+                    <p className="text-[10px] text-muted-foreground/70 mb-1">{r.conversations_month} / {lim.ai_conversations_month}</p>
                     <PctBar value={aiPct} />
                   </div>
-                  <span className="text-[12px] font-medium text-green-400">
+                  <span className="text-[12px] font-medium text-green-600">
                     {r.status === "ativo" ? `R$${lim.price.toLocaleString("pt-BR")}` : "—"}
                   </span>
                   <span className="text-[10px] font-semibold capitalize" style={{ color: statusColor[r.status] ?? "#64748b" }}>
@@ -228,13 +228,13 @@ export default function SaDashboard() {
 
       {/* Storage + Conv IA painéis */}
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="rounded-xl border border-border/35 bg-muted/20 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <HardDrive className="w-3.5 h-3.5 text-white/30" />
-            <p className="text-[12px] font-semibold text-white/50">Storage por workspace</p>
+            <HardDrive className="w-3.5 h-3.5 text-muted-foreground/70" />
+            <p className="text-[12px] font-semibold text-muted-foreground">Storage por workspace</p>
           </div>
           {rows.length === 0 ? (
-            <p className="text-[11px] text-white/20">Sem workspaces</p>
+            <p className="text-[11px] text-muted-foreground/40">Sem workspaces</p>
           ) : (
             <div className="space-y-3">
               {rows.map(r => {
@@ -242,8 +242,8 @@ export default function SaDashboard() {
                 return (
                   <div key={r.workspace_id} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-white/50 truncate">{r.client_name}</span>
-                      <span className="text-[10px] text-white/25 ml-2 shrink-0">
+                      <span className="text-[11px] text-muted-foreground truncate">{r.client_name}</span>
+                      <span className="text-[10px] text-muted-foreground/60 ml-2 shrink-0">
                         {fmtBytes(r.storage_bytes)} / {lim.storage_gb} GB
                       </span>
                     </div>
@@ -255,13 +255,13 @@ export default function SaDashboard() {
           )}
         </div>
 
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="rounded-xl border border-border/35 bg-muted/20 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <MessageSquare className="w-3.5 h-3.5 text-white/30" />
-            <p className="text-[12px] font-semibold text-white/50">Conv. IA este mês</p>
+            <MessageSquare className="w-3.5 h-3.5 text-muted-foreground/70" />
+            <p className="text-[12px] font-semibold text-muted-foreground">Conv. IA este mês</p>
           </div>
           {rows.length === 0 ? (
-            <p className="text-[11px] text-white/20">Sem workspaces</p>
+            <p className="text-[11px] text-muted-foreground/40">Sem workspaces</p>
           ) : (
             <div className="space-y-3">
               {rows.map(r => {
@@ -269,8 +269,8 @@ export default function SaDashboard() {
                 return (
                   <div key={r.workspace_id} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-white/50 truncate">{r.client_name}</span>
-                      <span className="text-[10px] text-white/25 ml-2 shrink-0">
+                      <span className="text-[11px] text-muted-foreground truncate">{r.client_name}</span>
+                      <span className="text-[10px] text-muted-foreground/60 ml-2 shrink-0">
                         {r.conversations_month} / {lim.ai_conversations_month}
                       </span>
                     </div>

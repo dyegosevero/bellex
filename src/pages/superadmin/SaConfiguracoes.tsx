@@ -58,7 +58,7 @@ export default function SaConfiguracoes() {
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64 gap-2 text-white/40">
+    <div className="flex items-center justify-center h-64 gap-2 text-muted-foreground">
       <Loader2 className="w-5 h-5 animate-spin" />
     </div>
   );
@@ -68,8 +68,8 @@ export default function SaConfiguracoes() {
       <PageHeader icon={<Settings className="w-5 h-5" />} title="Configurações" subtitle="Parâmetros globais da plataforma Bellex" />
 
       {/* Alertas */}
-      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 space-y-4">
-        <div className="flex items-center gap-2 pb-1 border-b border-white/[0.06]">
+      <section className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b border-border/30">
           <Bell className="w-4 h-4 text-amber-500" />
           <p className="text-sm font-medium">Alertas automáticos</p>
         </div>
@@ -107,15 +107,15 @@ export default function SaConfiguracoes() {
       </section>
 
       {/* Segurança */}
-      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 space-y-4">
-        <div className="flex items-center gap-2 pb-1 border-b border-white/[0.06]">
+      <section className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b border-border/30">
           <Shield className="w-4 h-4 text-green-500" />
           <p className="text-sm font-medium">Segurança</p>
         </div>
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-2">
-          <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Acesso Super Admin</p>
-          <p className="text-sm">Apenas usuários com acesso ao domínio <code className="text-xs bg-white/10 px-1 py-0.5 rounded">sa.bellex.beauty</code> com conta Supabase válida.</p>
-          <p className="text-xs text-white/40">Autenticação via Supabase Auth — RLS bloqueia queries de outros contextos.</p>
+        <div className="rounded-xl border border-border/30 bg-muted/20 p-4 space-y-2">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Acesso Super Admin</p>
+          <p className="text-sm">Apenas usuários com acesso ao domínio <code className="text-xs bg-muted px-1 py-0.5 rounded">sa.bellex.beauty</code> com conta Supabase válida.</p>
+          <p className="text-xs text-muted-foreground">Autenticação via Supabase Auth — RLS bloqueia queries de outros contextos.</p>
         </div>
       </section>
 

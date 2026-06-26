@@ -36,7 +36,7 @@ export default function SaFinanceiro() {
   }, [licenses]);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64 gap-2 text-white/40">
+    <div className="flex items-center justify-center h-64 gap-2 text-muted-foreground">
       <Loader2 className="w-5 h-5 animate-spin" />
     </div>
   );
@@ -53,13 +53,13 @@ export default function SaFinanceiro() {
           { label: "LTV estimado (12m)", value: stats.ltv > 0 ? fmtR(stats.ltv) : "–", icon: TrendingUp, color: "#a78bfa" },
           { label: "Churn acumulado", value: `${stats.churnRate.toFixed(1)}%`, icon: TrendingDown, color: "#ef4444" },
         ].map(k => (
-          <div key={k.label} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 space-y-3">
+          <div key={k.label} className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${k.color}1a` }}>
               <k.icon className="w-4 h-4" style={{ color: k.color }} />
             </div>
             <div>
               <p className="text-2xl font-semibold tracking-tight">{k.value}</p>
-              <p className="text-xs text-white/40 mt-0.5">{k.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{k.label}</p>
             </div>
           </div>
         ))}
@@ -67,35 +67,35 @@ export default function SaFinanceiro() {
 
       {/* Resumo rápido */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
-          <p className="text-3xl font-bold text-green-400">{stats.ativos}</p>
-          <p className="text-xs text-white/40 mt-1">Workspaces ativos</p>
+        <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
+          <p className="text-3xl font-bold text-green-600">{stats.ativos}</p>
+          <p className="text-xs text-muted-foreground mt-1">Workspaces ativos</p>
         </div>
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
-          <p className="text-3xl font-bold text-white/70">{licenses.length}</p>
-          <p className="text-xs text-white/40 mt-1">Total de licenças</p>
+        <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
+          <p className="text-3xl font-bold text-foreground/80">{licenses.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Total de licenças</p>
         </div>
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+        <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
           <p className="text-3xl font-bold text-red-400">
             {licenses.filter(l => l.status === "cancelado").length}
           </p>
-          <p className="text-xs text-white/40 mt-1">Cancelados</p>
+          <p className="text-xs text-muted-foreground mt-1">Cancelados</p>
         </div>
       </div>
 
       {/* MRR por plano */}
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 space-y-4">
+      <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
         <p className="text-sm font-medium">MRR por plano</p>
         {stats.byPlan.every(p => p.mrr === 0) ? (
-          <p className="text-sm text-white/30 py-8 text-center">Nenhum workspace ativo ainda.</p>
+          <p className="text-sm text-muted-foreground/70 py-8 text-center">Nenhum workspace ativo ainda.</p>
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={stats.byPlan} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 11 }} axisLine={false} tickLine={false} width={60} tickFormatter={v => `R$${v}`} />
+              <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} width={60} tickFormatter={v => `R$${v}`} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#0d0d1a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "#fff", fontSize: 12 }}
+                contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, color: "hsl(var(--foreground))", fontSize: 12 }}
                 formatter={(v: number) => [fmtR(v), "MRR"]}
               />
               <Bar dataKey="mrr" radius={[6, 6, 0, 0]}>
