@@ -56,9 +56,9 @@ const WorkspaceConfiguracoes= lazy(() => import("@/pages/workspace/WorkspaceConf
 const WorkspaceSuporte     = lazy(() => import("@/pages/workspace/WorkspaceSuporte"));
 
 // ─── Lazy pages — Clinic ──────────────────────────────────────────────────────
-const Login                = lazy(() => import("@/pages/Login"));
-const ForgotPassword       = lazy(() => import("@/pages/ForgotPassword"));
-const ResetPassword        = lazy(() => import("@/pages/ResetPassword"));
+import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 const Dashboard            = lazy(() => import("@/pages/Dashboard"));
 const DashboardHome        = lazy(() => import("@/pages/DashboardHome"));
 const Documents            = lazy(() => import("@/pages/Documents"));
