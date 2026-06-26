@@ -78,16 +78,15 @@ export default function WorkspaceClinicDetail() {
   }, [clinic]);
 
   const handleSave = async () => {
-    if (!clinic) return;
+    console.log("[save] clinic:", clinic?.id, "color:", color, "name:", name);
+    if (!clinic) { toast.error("Clínica não carregada"); return; }
     setSaving(true);
-    const { error } = await update(clinic.id, {
-      name,
-      color,
-      logo_url: logoUrl?.split("?t=")[0] ?? null,
-      custom_domain: customDomain || null,
-    } as Parameters<typeof update>[1]);
+    const patch = { name, color, logo_url: logoUrl?.split("?t=")[0] ?? null, custom_domain: customDomain || null };
+    console.log("[save] patch:", patch);
+    const { data, error } = await update(clinic.id, patch as Parameters<typeof update>[1]);
+    console.log("[save] result:", { data, error });
     setSaving(false);
-    if (error) toast.error("Erro ao salvar");
+    if (error) toast.error(`Erro ao salvar: ${error}`);
     else toast.success("Alterações salvas!");
   };
 
@@ -575,7 +574,9 @@ export default function WorkspaceClinicDetail() {
               </div>
             </div>
             <div className="flex justify-end">
-              <Button size="sm" className="gap-1.5"><Save className="w-3.5 h-3.5" />Salvar aparência</Button>
+              <Button size="sm" className="gap-1.5" onClick={handleSave} disabled={saving}>
+                <Save className="w-3.5 h-3.5" />{saving ? "Salvando..." : "Salvar aparência"}
+              </Button>
             </div>
           </div>
         </TabsContent>
