@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type BrandConfig = {
+  id: string;
   name: string;
   color: string;
   logo_url: string | null;
@@ -56,12 +57,13 @@ export async function loadBrandForDomain(): Promise<BrandConfig | null> {
 
   const { data } = await supabase
     .from("workspace_clinics")
-    .select("name, color, logo_url, custom_domain, subdomain, appearance")
+    .select("id, name, color, logo_url, custom_domain, subdomain, appearance")
     .or(`subdomain.eq.${subdomain},custom_domain.eq.${hostname}`)
     .maybeSingle();
 
   if (!data) return null;
   const brand: BrandConfig = {
+    id: data.id,
     name: data.name,
     color: data.color,
     logo_url: data.logo_url ?? null,

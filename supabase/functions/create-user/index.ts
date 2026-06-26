@@ -58,7 +58,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { email, password, full_name, phone, role, avatar_url } = body;
+    const { email, password, full_name, phone, role, avatar_url, clinic_id } = body;
 
     if (!email || !password || !full_name || !role) {
       return new Response(
@@ -78,6 +78,9 @@ serve(async (req) => {
         password,
         email_confirm: true,
         user_metadata: { full_name },
+        // clinic_id in app_metadata is included in the JWT automatically
+        // This is how we do tenant isolation — no DB call needed on every request
+        app_metadata: clinic_id ? { clinic_id } : {},
       });
 
     if (createError) {
@@ -120,6 +123,14 @@ serve(async (req) => {
       user_id: userId,
       role,
     });
+
+    // If this is a clinic user, link them to the clinic
+    if (clinic_id) {
+      await adminClient
+        .from("workspace_clinics")
+        .update({ clinic_auth_user_id: userId })
+        .eq("id", clinic_id);
+    }
 
     // Send welcome email with password-reset link (never send plaintext password)
     try {
