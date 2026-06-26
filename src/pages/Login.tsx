@@ -102,8 +102,9 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
 }
 
 function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; name: string }) {
-  const [svgContent, setSvgContent] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"draw" | "fill" | "img">("draw");
+  const [svgDraw, setSvgDraw]     = useState<string | null>(null);
+  const [svgFilled, setSvgFilled] = useState<string | null>(null);
+  const [phase, setPhase]         = useState<"draw" | "fill" | "img">("draw");
 
   useEffect(() => {
     fetch(src)
@@ -114,30 +115,38 @@ function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; na
       })
       .then(text => {
         if (!text) return;
-        setSvgContent(text);
-        // line-draw runs 1.2s → then switch to fill
+        // Fase draw: remove todos os fills → só stroke branco visível
+        const draw = text
+          .replace(/\sfill="[^"]*"/g, ' fill="none"')
+          .replace(/fill\s*:[^;")]+/g, "fill:none");
+        // Fase fill: força fill branco em todos os paths
+        const filled = text
+          .replace(/\sfill="[^"]*"/g, ' fill="white"')
+          .replace(/fill\s*:[^;")]+/g, "fill:white");
+        setSvgDraw(draw);
+        setSvgFilled(filled);
         setTimeout(() => setPhase("fill"), 1200);
       })
       .catch(() => setPhase("img"));
   }, [src]);
 
-  if (phase === "img" || (!svgContent && phase !== "draw")) {
+  if (phase === "img" || (!svgDraw && phase !== "draw")) {
     return (
       <img
         src={src} alt={name}
-        style={{ width: size, maxWidth: "80%", animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both", opacity: 0 }}
+        style={{ width: size, maxWidth: "80%", filter: "brightness(0) invert(1)", animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both", opacity: 0 }}
         className="object-contain drop-shadow-lg"
       />
     );
   }
 
-  if (!svgContent) return null;
+  if (!svgDraw) return null;
 
   return (
     <div
       className={`clinic-svg-wrap${phase === "fill" ? " filled" : ""}`}
       style={{ width: size, maxWidth: "80%" }}
-      dangerouslySetInnerHTML={{ __html: svgContent }}
+      dangerouslySetInnerHTML={{ __html: phase === "fill" && svgFilled ? svgFilled : svgDraw }}
     />
   );
 }
@@ -248,7 +257,7 @@ const Login = () => {
               stroke: none;
               stroke-dasharray: none;
               stroke-dashoffset: 0;
-              fill: revert;
+              fill: white;
               fill-opacity: 0;
               animation: svgFillIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
             }

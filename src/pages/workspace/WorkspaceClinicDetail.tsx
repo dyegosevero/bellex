@@ -572,33 +572,23 @@ export default function WorkspaceClinicDetail() {
               <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
                 <p className="text-sm font-semibold">Cores</p>
                 {[
-                  { label: "Cor primária", val: color, set: setColor },
-                  { label: "Gradiente 2", val: color2, set: setColor2 },
-                  { label: "Gradiente 3", val: color3, set: setColor3 },
-                ].map(({ label, val, set }) => (
+                  { label: "Cor primária", hint: "Botões, links, destaques", val: color, set: setColor },
+                  { label: "Gradiente login 2", hint: "Tom médio do fundo do login", val: color2, set: setColor2 },
+                  { label: "Gradiente login 3", hint: "Tom escuro do fundo do login", val: color3, set: setColor3 },
+                ].map(({ label, hint, val, set }) => (
                   <div key={label} className="flex items-center gap-3">
                     <input type="color" value={val} onChange={e => set(e.target.value)}
                       className="w-9 h-9 rounded-lg border border-input cursor-pointer shrink-0 p-0.5" />
                     <Input value={val} onChange={e => set(e.target.value)} className="w-32 font-mono text-xs h-8" />
-                    <div className="flex-1 h-5 rounded-md" style={{ background: val }} />
-                    <span className="text-xs text-muted-foreground shrink-0 w-24">{label}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium leading-none">{label}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>
+                    </div>
                   </div>
                 ))}
                 <div className="h-6 rounded-lg w-full" style={{ background: `linear-gradient(135deg, ${color}, ${color2}, ${color3})` }} />
               </div>
 
-              {/* Layout da tela de login */}
-              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
-                <p className="text-sm font-semibold">Layout do login</p>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Proporção esquerda/direita</Label>
-                    <span className="text-xs font-mono text-muted-foreground">{loginSplit}% / {100 - loginSplit}%</span>
-                  </div>
-                  <input type="range" min={30} max={70} value={loginSplit} onChange={e => setLoginSplit(Number(e.target.value))}
-                    className="w-full accent-primary h-1.5 rounded-full" />
-                </div>
-              </div>
 
               {/* Favicon */}
               <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
@@ -627,45 +617,115 @@ export default function WorkspaceClinicDetail() {
               </div>
             </div>
 
-            {/* ── Preview da tela de login ── */}
-            <div className="sticky top-6">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Preview · Tela de login</p>
-              <div className="rounded-2xl border border-border/40 overflow-hidden shadow-lg" style={{ aspectRatio: "16/10" }}>
-                <div className="w-full h-full flex text-[0px]">
-                  {/* Lado esquerdo — gradiente + logo */}
-                  <div
-                    className="relative flex flex-col items-center justify-center overflow-hidden shrink-0"
-                    style={{
-                      width: `${loginSplit}%`,
-                      background: `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)`,
-                    }}
-                  >
-                    {/* Grain overlay */}
-                    <div className="absolute inset-0 opacity-20"
-                      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
-                    {logoUrl
-                      ? <img src={logoUrl} alt="Logo" style={{ width: logoSize * 0.55, maxWidth: "70%" }} className="object-contain drop-shadow-md relative z-10" />
-                      : <div className="relative z-10 flex flex-col items-center gap-1">
-                          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg font-bold">{clinic.name[0]}</div>
-                          <p className="text-white/80 text-[9px] tracking-widest uppercase mt-1">{clinic.name}</p>
-                        </div>
-                    }
-                    <p className="absolute bottom-4 text-white/50 text-[8px] tracking-widest uppercase z-10">{clinic.name}</p>
-                  </div>
-                  {/* Lado direito — formulário */}
-                  <div className="flex-1 bg-background flex flex-col items-center justify-center gap-2 px-6">
-                    <p className="text-[10px] font-light tracking-[0.2em] text-foreground">ACESSAR</p>
-                    <p className="text-[7px] text-muted-foreground mb-1">Entre com suas credenciais</p>
-                    <div className="w-full space-y-1.5">
-                      <div className="h-5 rounded-md border border-border/60 bg-muted/30 w-full" />
-                      <div className="h-5 rounded-md border border-border/60 bg-muted/30 w-full" />
+            {/* ── Previews ── */}
+            <div className="sticky top-6 space-y-5">
+
+              {/* Preview login */}
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Preview · Tela de login</p>
+                <div className="rounded-2xl border border-border/40 overflow-hidden shadow-lg" style={{ aspectRatio: "16/10" }}>
+                  <div className="w-full h-full flex text-[0px]">
+                    <div
+                      className="relative flex flex-col items-center justify-center overflow-hidden shrink-0"
+                      style={{ width: "50%", background: `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)` }}
+                    >
+                      <div className="absolute inset-0 opacity-20"
+                        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
+                      {logoUrl
+                        ? <img src={logoUrl} alt="Logo" style={{ width: logoSize * 0.55, maxWidth: "70%", filter: "brightness(0) invert(1)" }} className="object-contain drop-shadow-md relative z-10" />
+                        : <div className="relative z-10 flex flex-col items-center gap-1">
+                            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg font-bold">{clinic.name[0]}</div>
+                          </div>
+                      }
+                      <p className="absolute bottom-4 text-white/50 text-[8px] tracking-widest uppercase z-10">{clinic.name}</p>
                     </div>
-                    <div className="h-5 rounded-md w-full mt-1" style={{ background: color }} />
-                    <p className="text-[6px] text-muted-foreground mt-1">Esqueceu a senha?</p>
+                    <div className="flex-1 bg-background flex flex-col items-center justify-center gap-2 px-6">
+                      <p className="text-[10px] font-light tracking-[0.2em] text-foreground">ACESSAR</p>
+                      <p className="text-[7px] text-muted-foreground mb-1">Entre com suas credenciais</p>
+                      <div className="w-full space-y-1.5">
+                        <div className="h-5 rounded-md border border-border/60 bg-muted/30 w-full" />
+                        <div className="h-5 rounded-md border border-border/60 bg-muted/30 w-full" />
+                      </div>
+                      <div className="h-5 rounded-md w-full mt-1" style={{ background: color }} />
+                      <p className="text-[6px] text-muted-foreground mt-1">Esqueceu a senha?</p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground/50 text-center mt-2">Preview aproximado · resultado real pode variar</p>
+              </div>
+
+              {/* Preview design system */}
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Preview · Design System</p>
+                <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                  {/* Tipografia */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tipografia</p>
+                    <p className="text-lg font-semibold text-foreground">Título Principal</p>
+                    <p className="text-sm text-muted-foreground">Texto secundário e descrições</p>
+                    <p className="text-xs" style={{ color }}>Link / Destaque</p>
+                  </div>
+
+                  <div className="h-px bg-border/40" />
+
+                  {/* Botões */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Botões</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button className="px-4 py-1.5 rounded-lg text-xs font-medium text-white" style={{ background: color }}>
+                        Primário
+                      </button>
+                      <button className="px-4 py-1.5 rounded-lg text-xs font-medium border" style={{ color, borderColor: color }}>
+                        Outline
+                      </button>
+                      <button className="px-4 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground">
+                        Ghost
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border/40" />
+
+                  {/* Badges e status */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Badges</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ background: color }}>Ativo</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium border" style={{ color, borderColor: `${color}60`, background: `${color}15` }}>Pendente</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground">Inativo</span>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border/40" />
+
+                  {/* Input */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Input</p>
+                    <div className="h-8 rounded-md border px-3 flex items-center text-xs text-muted-foreground bg-background" style={{ borderColor: color, boxShadow: `0 0 0 2px ${color}30` }}>
+                      Campo em foco
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border/40" />
+
+                  {/* Ícone + cor primária */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ícone / Avatar</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold" style={{ background: color }}>
+                        {clinic.name[0]}
+                      </div>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center border" style={{ color, borderColor: `${color}60`, background: `${color}15` }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                      </div>
+                      <div className="h-2 flex-1 rounded-full overflow-hidden bg-muted">
+                        <div className="h-full w-2/3 rounded-full" style={{ background: color }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground/50 text-center mt-2">Preview aproximado · resultado real pode variar</p>
+
             </div>
 
           </div>
