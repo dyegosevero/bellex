@@ -4,12 +4,11 @@ import { Building2, ChevronRight, Check, ArrowLeft, User, Globe, Palette, Credit
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
-import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
 import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
+import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 
 const PRESET_COLORS = ["#e8957a", "#f5c87a", "#a78bfa", "#60a5fa", "#34d399", "#fb923c", "#f472b6", "#818cf8"];
 
@@ -33,20 +32,17 @@ export default function WorkspaceClinicNew() {
     plan: "",
   });
 
+  const { workspace } = useCurrentWorkspace();
   const { create } = useWorkspaceClinics();
-  const { licenses } = useWorkspaceLicenses();
-  const { plans, loading: plansLoading } = useWorkspacePlans();
+  const { plans, loading: plansLoading } = useWorkspacePlans(workspace?.id ?? undefined);
 
-  const availableLicenses = licenses.filter(
-    l => l.status !== "suspenso" && l.status !== "cancelado" && l.seats_used < l.seats_total
-  );
   const activePlans = plans.filter(p => p.active);
   const selectedPlan = activePlans.find(p => p.name === form.plan);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const canNext = () => {
-    if (step === 1) return form.customer_id !== "" && form.name !== "";
+    if (step === 1) return form.client !== "" && form.name !== "";
     if (step === 2) return form.subdomain !== "";
     if (step === 3) return form.plan !== "";
     return true;
@@ -54,16 +50,15 @@ export default function WorkspaceClinicNew() {
 
   const handleCreate = async () => {
     setSubmitting(true);
-    const selectedLic = availableLicenses.find(l => l.id === form.customer_id);
     const { error } = await create({
       name: form.name,
       client_name: form.client,
       subdomain: form.subdomain,
       custom_domain: null,
-      customer_id: form.customer_id || null,
+      customer_id: workspace?.id ?? null,
       color: form.color,
       logo_url: null,
-      plan: form.plan || selectedLic?.plan || "",
+      plan: form.plan,
       status: "trial",
     });
     setSubmitting(false);
@@ -121,29 +116,17 @@ export default function WorkspaceClinicNew() {
             <>
               <div>
                 <h2 className="text-xl font-semibold">Dados do cliente</h2>
-                <p className="text-sm text-muted-foreground mt-1">Selecione o cliente titular e defina o nome da clínica.</p>
+                <p className="text-sm text-muted-foreground mt-1">Informe o nome do cliente e o nome da clínica.</p>
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Cliente (licença) <span className="text-destructive">*</span></Label>
-                  <Select value={form.customer_id} onValueChange={v => {
-                    const lic = availableLicenses.find(l => l.id === v);
-                    set("customer_id", v);
-                    if (lic) set("client", lic.client_name);
-                  }}>
-                    <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
-                    <SelectContent>
-                      {availableLicenses.length === 0 && (
-                        <SelectItem value="__none__" disabled>Nenhum cliente com seats disponíveis</SelectItem>
-                      )}
-                      {availableLicenses.map(l => (
-                        <SelectItem key={l.id} value={l.id}>
-                          {l.client_name} — {l.seats_used}/{l.seats_total} clínicas usadas
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">Apenas clientes com seats disponíveis são listados.</p>
+                  <Label>Nome do cliente <span className="text-destructive">*</span></Label>
+                  <Input
+                    placeholder="Ex: Patricia Rocha"
+                    value={form.client}
+                    onChange={e => set("client", e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">Nome da pessoa ou empresa responsável pela clínica.</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Nome da clínica <span className="text-destructive">*</span></Label>
@@ -333,7 +316,7 @@ export default function WorkspaceClinicNew() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground border-t border-border/40 pt-3">
-                    A clínica ficará disponível em <span className="font-mono font-medium">{form.subdomain}.bellex.beauty</span> e consumirá 1 seat da licença de {form.client}.
+                    A clínica ficará disponível em <span className="font-mono font-medium">{form.subdomain}.bellex.beauty</span> e iniciará no plano <strong>{form.plan}</strong> como trial.
                   </p>
                 </div>
               </div>

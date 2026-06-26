@@ -7,21 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useWorkspacePlans, type WorkspacePlan } from "@/hooks/useWorkspacePlans";
-import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 
 export default function WorkspacePlanos() {
   const navigate = useNavigate();
   const { workspace } = useCurrentWorkspace();
   const { plans, loading, remove } = useWorkspacePlans(workspace?.id ?? undefined);
-  const { licenses } = useWorkspaceLicenses();
+  const { clinics } = useWorkspaceClinics();
 
   const [deleteTarget, setDeleteTarget] = useState<WorkspacePlan | null>(null);
   const [deleteText, setDeleteText] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  const activeByPlan = (name: string) =>
-    licenses.filter(l => l.plan === name.toLowerCase() && l.status === "ativo").length;
+  const myClinics = clinics.filter(c => c.customer_id === workspace?.id);
+
+  const activeByPlan = (slug: string) =>
+    myClinics.filter(c => c.plan === slug.toLowerCase() && c.status === "ativo").length;
 
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
