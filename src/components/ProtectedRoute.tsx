@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogoDraw } from "@/components/ui/logo-draw";
@@ -15,6 +16,19 @@ function getClinicIdFromCache(): string | null {
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, role, signOut } = useAuth();
 
+  // Clinic domain: if user has no clinic_id in JWT or wrong one → sign out
+  const denied = !loading && !!user && isClinicDomain && role !== "admin" && (() => {
+    const userClinicId: string | undefined = (user.app_metadata as Record<string, string>)?.clinic_id;
+    if (!userClinicId) return true;
+    const domainClinicId = getClinicIdFromCache();
+    if (domainClinicId && userClinicId !== domainClinicId) return true;
+    return false;
+  })();
+
+  useEffect(() => {
+    if (denied) signOut();
+  }, [denied]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -23,25 +37,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
-
-  // Clinic domain: validate that user belongs to this clinic via JWT app_metadata
-  if (isClinicDomain && role !== "admin") {
-    const userClinicId: string | undefined = (user.app_metadata as Record<string, string>)?.clinic_id;
-    const domainClinicId = getClinicIdFromCache();
-
-    // If user has no clinic_id in JWT → not a clinic user → deny
-    if (!userClinicId) {
-      signOut();
-      return <Navigate to="/login" replace />;
-    }
-
-    // If we have the domain's clinic_id cached, validate it matches
-    if (domainClinicId && userClinicId !== domainClinicId) {
-      signOut();
-      return <Navigate to="/login" replace />;
-    }
-  }
+  if (!user || denied) return <Navigate to="/login" replace />;
 
   return <>{children}</>;
 };
