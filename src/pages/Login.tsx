@@ -96,69 +96,34 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
 }
 
 function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: string; size: number; name: string; logoColor?: string }) {
-  const [svgDraw, setSvgDraw]     = useState<string | null>(null);
-  const [svgFilled, setSvgFilled] = useState<string | null>(null);
-  const [phase, setPhase]         = useState<"draw" | "fill" | "done" | "img">("draw");
-  const containerRef              = useRef<HTMLDivElement>(null);
+  const [svg, setSvg] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(src)
-      .then(r => {
-        const ct = r.headers.get("content-type") ?? "";
-        if (!ct.includes("svg") && !src.toLowerCase().includes(".svg")) { setPhase("img"); return null; }
-        return r.text();
-      })
+      .then(r => r.text())
       .then(text => {
-        if (!text) return;
-        // Strip fills e atributos perigosos (XSS defense)
         const safe = text
           .replace(/<script[\s\S]*?<\/script>/gi, "")
           .replace(/\son\w+="[^"]*"/g, "");
-        const draw = safe
-          .replace(/\sfill="[^"]*"/g, ' fill="none"')
-          .replace(/fill\s*:[^;")]+/g, "fill:none");
-        const filled = safe
+        const colored = safe
           .replace(/\sfill="[^"]*"/g, ` fill="${logoColor}"`)
           .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`);
-        setSvgDraw(draw);
-        setSvgFilled(filled);
-        setTimeout(() => { setPhase("fill"); setTimeout(() => setPhase("done"), 700); }, 1300);
+        setSvg(colored);
       })
-      .catch(() => setPhase("img"));
-  }, [src]);
+      .catch(() => setSvg(null));
+  }, [src, logoColor]);
 
-  // Após injetar o SVG no DOM, calcular getTotalLength() por elemento
-  useEffect(() => {
-    if (phase !== "draw" || !svgDraw || !containerRef.current) return;
-    const els = containerRef.current.querySelectorAll<SVGGeometryElement>("path, rect, circle, ellipse, polygon, polyline");
-    els.forEach(el => {
-      try {
-        const len = el.getTotalLength();
-        el.style.setProperty("--path-len", String(len));
-        el.style.strokeDasharray = String(len);
-        el.style.strokeDashoffset = String(len);
-      } catch { /* rect/ellipse não têm getTotalLength em alguns browsers */ }
-    });
-  }, [svgDraw, phase]);
-
-  if (phase === "img" || (!svgDraw && phase !== "draw")) {
-    return (
-      <img
-        src={src} alt={name}
-        style={{ width: size, maxWidth: "80%", filter: "brightness(0) invert(1)", animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both", opacity: 0 }}
-        className="object-contain drop-shadow-lg"
-      />
-    );
-  }
-
-  if (!svgDraw) return null;
+  if (!svg) return (
+    <img src={src} alt={name}
+      style={{ width: size, maxWidth: "80%", opacity: 0, animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s both" }}
+      className="object-contain"
+    />
+  );
 
   return (
     <div
-      ref={containerRef}
-      className={phase === "fill" ? "clinic-svg-wrap filled" : phase === "done" ? "clinic-svg-done" : "clinic-svg-wrap"}
-      style={{ width: size, maxWidth: "80%" }}
-      dangerouslySetInnerHTML={{ __html: (phase === "fill" || phase === "done") && svgFilled ? svgFilled : svgDraw }}
+      style={{ width: size, maxWidth: "80%", opacity: 0, animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s both" }}
+      dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
 }
