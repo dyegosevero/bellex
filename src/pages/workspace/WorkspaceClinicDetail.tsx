@@ -545,7 +545,7 @@ export default function WorkspaceClinicDetail() {
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
                 <div
                   className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
-                  style={{ background: `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)`, minHeight: 120 }}
+                  style={{ minHeight: 120 }}
                   onClick={() => logoInputRef.current?.click()}
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleLogoUpload(f); }}
