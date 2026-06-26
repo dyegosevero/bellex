@@ -162,19 +162,26 @@ export default function WorkspaceClinicDetail() {
     if (!clinic || !inviteEmail.includes("@")) return;
     setInviting(true);
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await supabase.functions.invoke("invite-workspace-user", {
+    // Use create-user com clinic_id para garantir isolamento de tenant via JWT
+    const clinicName = clinic.client_name || clinic.name;
+    const res = await supabase.functions.invoke("create-user", {
       body: {
         email: inviteEmail,
+        password: Math.random().toString(36).slice(-10) + "A1!", // senha temporária — usuário vai redefinir
+        full_name: clinicName,
         role: "admin",
-        workspace_url: `https://${clinic.subdomain}.bellex.beauty`,
+        clinic_id: clinic.id, // JWT app_metadata.clinic_id
       },
       headers: { Authorization: `Bearer ${session?.access_token}` },
     });
     setInviting(false);
-    if (res.error) { toast.error("Erro ao enviar convite"); return; }
+    if (res.error || res.data?.error) {
+      toast.error(res.data?.error || "Erro ao criar acesso da clínica");
+      return;
+    }
     await update(clinic.id, { contact_email: inviteEmail } as any);
     setInviteEmail("");
-    toast.success(`Convite enviado para ${inviteEmail}`);
+    toast.success(`Acesso criado e e-mail enviado para ${inviteEmail}`);
   };
 
   const verifyToken = `bellex-verify=${clinic.subdomain}-a4f8c2e1b7d3`;

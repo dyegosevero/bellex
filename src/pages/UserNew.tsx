@@ -40,6 +40,13 @@ const UserNew = () => {
       if (!password.trim()) throw new Error("Senha é obrigatória");
       if (!role) throw new Error("Selecione um cargo");
 
+      // Clinic_id from JWT app_metadata (cached in localStorage by BrandLoader)
+      let clinicId: string | undefined;
+      try {
+        const cached = JSON.parse(localStorage.getItem("brand_" + window.location.hostname) ?? "null");
+        clinicId = cached?.id;
+      } catch { /* ignore */ }
+
       const { data, error } = await invokeEdgeFunction("create-user", {
         body: {
           email: email.trim(),
@@ -48,6 +55,7 @@ const UserNew = () => {
           phone: phone.trim() || null,
           role,
           avatar_url: null,
+          clinic_id: clinicId,
         },
       });
 
