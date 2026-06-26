@@ -83,9 +83,8 @@ export default function WorkspaceClinicDetail() {
     const { error } = await update(clinic.id, {
       name,
       color,
-      logo_url: logoUrl,
+      logo_url: logoUrl?.split("?t=")[0] ?? null,
       custom_domain: customDomain || null,
-      openai_api_key: openaiKey || null,
     } as Parameters<typeof update>[1]);
     setSaving(false);
     if (error) toast.error("Erro ao salvar");
