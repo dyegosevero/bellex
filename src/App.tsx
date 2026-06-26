@@ -269,6 +269,17 @@ function BrandLoader() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CONTEXTO 0 — LANDING  (bellex.beauty | www.bellex.beauty)
+// ═══════════════════════════════════════════════════════════════════════════════
+function LandingRoutes() {
+  return (
+    <Routes>
+      <Route path="*" element={<Landing />} />
+    </Routes>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CONTEXTO 1 — SUPERADMIN  (sa.bellex.beauty)
 // ═══════════════════════════════════════════════════════════════════════════════
 function SuperAdminRoutes() {
@@ -425,6 +436,7 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       {isSuperAdminDomain ? <SuperAdminRoutes /> :
        isWorkspaceDomain  ? <WorkspaceRoutes />  :
+       isLandingDomain    ? <LandingRoutes />    :
        isCustomDomain     ? <CustomDomainGate><ClinicRoutes /></CustomDomainGate> :
                             <ClinicRoutes />}
     </Suspense>

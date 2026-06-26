@@ -105,6 +105,7 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
   const [svgDraw, setSvgDraw]     = useState<string | null>(null);
   const [svgFilled, setSvgFilled] = useState<string | null>(null);
   const [phase, setPhase]         = useState<"draw" | "fill" | "img">("draw");
+  const containerRef              = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch(src)
@@ -115,20 +116,36 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
       })
       .then(text => {
         if (!text) return;
-        // Fase draw: remove todos os fills → só stroke branco visível
-        const draw = text
+        // Strip fills e atributos perigosos (XSS defense)
+        const safe = text
+          .replace(/<script[\s\S]*?<\/script>/gi, "")
+          .replace(/\son\w+="[^"]*"/g, "");
+        const draw = safe
           .replace(/\sfill="[^"]*"/g, ' fill="none"')
           .replace(/fill\s*:[^;")]+/g, "fill:none");
-        // Fase fill: força fill na cor escolhida em todos os paths
-        const filled = text
+        const filled = safe
           .replace(/\sfill="[^"]*"/g, ` fill="${logoColor}"`)
           .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`);
         setSvgDraw(draw);
         setSvgFilled(filled);
-        setTimeout(() => setPhase("fill"), 1200);
+        setTimeout(() => setPhase("fill"), 1300);
       })
       .catch(() => setPhase("img"));
   }, [src]);
+
+  // Após injetar o SVG no DOM, calcular getTotalLength() por elemento
+  useEffect(() => {
+    if (phase !== "draw" || !svgDraw || !containerRef.current) return;
+    const els = containerRef.current.querySelectorAll<SVGGeometryElement>("path, rect, circle, ellipse, polygon, polyline");
+    els.forEach(el => {
+      try {
+        const len = el.getTotalLength();
+        el.style.setProperty("--path-len", String(len));
+        el.style.strokeDasharray = String(len);
+        el.style.strokeDashoffset = String(len);
+      } catch { /* rect/ellipse não têm getTotalLength em alguns browsers */ }
+    });
+  }, [svgDraw, phase]);
 
   if (phase === "img" || (!svgDraw && phase !== "draw")) {
     return (
@@ -144,6 +161,7 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
 
   return (
     <div
+      ref={containerRef}
       className={`clinic-svg-wrap${phase === "fill" ? " filled" : ""}`}
       style={{ width: size, maxWidth: "80%", ["--logo-color" as string]: logoColor }}
       dangerouslySetInnerHTML={{ __html: phase === "fill" && svgFilled ? svgFilled : svgDraw }}
