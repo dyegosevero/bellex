@@ -28,8 +28,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       .maybeSingle()
       .then(({ data }) => {
         if (!data) { setClinicCheck("denied"); return; }
-        // If clinic has no auth user set yet, allow — it means clinic users haven't been created
-        if (!data.clinic_auth_user_id) { setClinicCheck("ok"); return; }
+        // No user assigned → only superadmin can enter (clinic not set up yet)
+        if (!data.clinic_auth_user_id) { setClinicCheck("denied"); return; }
         setClinicCheck(data.clinic_auth_user_id === user.id ? "ok" : "denied");
       });
   }, [user, role]);
