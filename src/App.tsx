@@ -11,6 +11,15 @@ import { LogoDraw } from "@/components/ui/logo-draw";
 import { loadBrandForDomain, useBrand, type BrandConfig } from "@/hooks/useBrand";
 
 // ─── Hostname detection ────────────────────────────────────────────────────────
+import {
+  isSuperAdminDomain,
+  isWorkspaceDomain,
+  isBookingDomain,
+  isLandingDomain,
+  isClinicSubdomain,
+  isCustomDomain,
+} from "@/lib/domain";
+
 export {
   isSuperAdminDomain,
   isWorkspaceDomain,
