@@ -2,8 +2,9 @@ import { DollarSign, TrendingUp, TrendingDown, Download } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
+import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 import { useMemo } from "react";
 
 const planColor: Record<string, string> = { starter: "#60a5fa", pro: "#e8957a", scale: "#a78bfa" };
@@ -32,50 +33,58 @@ function KpiCard({ label, value, sub, trend, color }: { label: string; value: st
 }
 
 export default function WorkspaceFinanceiro() {
-  const { licenses, loading } = useWorkspaceLicenses();
-  const { plans } = useWorkspacePlans();
+  const { workspace } = useCurrentWorkspace();
+  const { clinics, loading } = useWorkspaceClinics();
+  const { plans } = useWorkspacePlans(workspace?.id ?? undefined);
 
+  // Apenas clínicas deste workspace
+  const myClinicas = useMemo(
+    () => clinics.filter(c => c.customer_id === workspace?.id),
+    [clinics, workspace?.id]
+  );
+
+  // Preço por slug do plano (prioriza plano customizado do workspace sobre o global)
   const planPrice = useMemo(() =>
-    Object.fromEntries(plans.map(p => [p.name.toLowerCase(), p.price])),
+    Object.fromEntries(plans.map(p => [p.slug, p.price])),
   [plans]);
 
   const stats = useMemo(() => {
-    const active = licenses.filter(l => l.status === "ativo");
-    const trial = licenses.filter(l => l.status === "trial");
-    const inadimplente = licenses.filter(l => l.status === "inadimplente");
-    const mrr = active.reduce((s, l) => s + (planPrice[l.plan] ?? 0), 0);
-    const riskMrr = inadimplente.reduce((s, l) => s + (planPrice[l.plan] ?? 0), 0);
+    const active = myClinicas.filter(c => c.status === "ativo");
+    const trial = myClinicas.filter(c => c.status === "trial");
+    const inadimplente = myClinicas.filter(c => c.status === "inadimplente");
+    const mrr = active.reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0);
+    const riskMrr = inadimplente.reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0);
 
     const byPlan = ["starter", "pro", "scale"].map(p => ({
       name: p.charAt(0).toUpperCase() + p.slice(1),
-      value: active.filter(l => l.plan === p).reduce((s, l) => s + (planPrice[l.plan] ?? 0), 0),
+      value: active.filter(c => c.plan === p).reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0),
       fill: planColor[p],
-      count: active.filter(l => l.plan === p).length,
+      count: active.filter(c => c.plan === p).length,
     })).filter(p => p.value > 0);
 
     const months = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
     const monthlyMrr = new Array(12).fill(0);
-    active.forEach(l => {
-      const m = new Date(l.created_at).getMonth();
-      monthlyMrr[m] += planPrice[l.plan] ?? 0;
+    active.forEach(c => {
+      const m = new Date(c.created_at).getMonth();
+      monthlyMrr[m] += planPrice[c.plan] ?? 0;
     });
     const mrrChart = months.map((mes, i) => ({ mes, mrr: monthlyMrr[i] }));
 
     return { mrr, riskMrr, active, trial, inadimplente, byPlan, mrrChart };
-  }, [licenses]);
+  }, [myClinicas, planPrice]);
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex items-start justify-between">
-        <PageHeader icon={<DollarSign className="w-5 h-5" />} title="Financeiro" subtitle="MRR e receita por licença" />
+        <PageHeader icon={<DollarSign className="w-5 h-5" />} title="Financeiro" subtitle="MRR e receita por clínica" />
         <Button variant="outline" size="sm" className="gap-1.5"><Download className="w-4 h-4" />Exportar CSV</Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="MRR (licenças ativas)" value={`R$ ${stats.mrr.toLocaleString("pt-BR")}`} sub={`${stats.active.length} assinantes`} color="hsl(142 70% 45%)" trend="up" />
+        <KpiCard label="MRR (clínicas ativas)" value={`R$ ${stats.mrr.toLocaleString("pt-BR")}`} sub={`${stats.active.length} clínicas`} color="hsl(142 70% 45%)" trend="up" />
         <KpiCard label="MRR em risco" value={`R$ ${stats.riskMrr.toLocaleString("pt-BR")}`} sub={`${stats.inadimplente.length} inadimplentes`} color="hsl(0 72% 51%)" />
         <KpiCard label="Em trial" value={String(stats.trial.length)} sub="sem cobrança ativa" color="hsl(221 83% 53%)" />
-        <KpiCard label="Ticket médio" value={stats.active.length ? `R$ ${Math.round(stats.mrr / stats.active.length)}` : "—"} sub="por assinante ativo" color="hsl(271 81% 56%)" />
+        <KpiCard label="Ticket médio" value={stats.active.length ? `R$ ${Math.round(stats.mrr / stats.active.length).toLocaleString("pt-BR")}` : "—"} sub="por clínica ativa" color="hsl(271 81% 56%)" />
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
@@ -101,7 +110,7 @@ export default function WorkspaceFinanceiro() {
         <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
           <p className="text-sm font-medium">MRR por plano</p>
           {stats.byPlan.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-8 text-center">Sem licenças ativas</p>
+            <p className="text-xs text-muted-foreground py-8 text-center">Sem clínicas ativas</p>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={140}>
@@ -130,7 +139,7 @@ export default function WorkspaceFinanceiro() {
 
       <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
         <div className="p-4 border-b border-border/40">
-          <p className="text-sm font-medium">Licenças ({licenses.length})</p>
+          <p className="text-sm font-medium">Clínicas ({myClinicas.length})</p>
         </div>
         {loading ? (
           <p className="text-center py-8 text-sm text-muted-foreground">Carregando…</p>
@@ -139,6 +148,7 @@ export default function WorkspaceFinanceiro() {
             <thead>
               <tr className="border-b border-border/30 bg-muted/20">
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Cliente</th>
+                <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Clínica</th>
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Plano</th>
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Valor/mês</th>
                 <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
@@ -146,25 +156,26 @@ export default function WorkspaceFinanceiro() {
               </tr>
             </thead>
             <tbody>
-              {licenses.map((l, i) => (
-                <tr key={l.id} className={`border-b border-border/20 hover:bg-muted/10 ${i % 2 ? "bg-muted/5" : ""}`}>
-                  <td className="p-4 text-sm font-medium">{l.client_name}</td>
-                  <td className="p-4 text-sm capitalize">{l.plan}</td>
+              {myClinicas.map((c, i) => (
+                <tr key={c.id} className={`border-b border-border/20 hover:bg-muted/10 ${i % 2 ? "bg-muted/5" : ""}`}>
+                  <td className="p-4 text-sm font-medium">{c.client_name || "—"}</td>
+                  <td className="p-4 text-sm text-muted-foreground">{c.name}</td>
+                  <td className="p-4 text-sm capitalize">{c.plan}</td>
                   <td className="p-4 text-sm font-medium">
-                    {l.status === "ativo" ? `R$ ${(planPrice[l.plan] ?? 0).toLocaleString("pt-BR")}` : "—"}
+                    {c.status === "ativo" ? `R$ ${(planPrice[c.plan] ?? 0).toLocaleString("pt-BR")}` : "—"}
                   </td>
                   <td className="p-4">
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${statusStyle[l.status] ?? statusStyle.cancelado}`}>
-                      {l.status}
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${statusStyle[c.status] ?? statusStyle.cancelado}`}>
+                      {c.status}
                     </span>
                   </td>
                   <td className="p-4 hidden md:table-cell text-xs text-muted-foreground">
-                    {new Date(l.created_at).toLocaleDateString("pt-BR")}
+                    {new Date(c.created_at).toLocaleDateString("pt-BR")}
                   </td>
                 </tr>
               ))}
-              {licenses.length === 0 && (
-                <tr><td colSpan={5} className="p-8 text-center text-sm text-muted-foreground">Nenhuma licença cadastrada.</td></tr>
+              {myClinicas.length === 0 && (
+                <tr><td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">Nenhuma clínica cadastrada.</td></tr>
               )}
             </tbody>
           </table>
