@@ -101,6 +101,47 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
   );
 }
 
+function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; name: string }) {
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"draw" | "fill" | "img">("draw");
+
+  useEffect(() => {
+    fetch(src)
+      .then(r => {
+        const ct = r.headers.get("content-type") ?? "";
+        if (!ct.includes("svg") && !src.toLowerCase().includes(".svg")) { setPhase("img"); return null; }
+        return r.text();
+      })
+      .then(text => {
+        if (!text) return;
+        setSvgContent(text);
+        // line-draw runs 1.2s → then switch to fill
+        setTimeout(() => setPhase("fill"), 1200);
+      })
+      .catch(() => setPhase("img"));
+  }, [src]);
+
+  if (phase === "img" || (!svgContent && phase !== "draw")) {
+    return (
+      <img
+        src={src} alt={name}
+        style={{ width: size, maxWidth: "80%", animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both", opacity: 0 }}
+        className="object-contain drop-shadow-lg"
+      />
+    );
+  }
+
+  if (!svgContent) return null;
+
+  return (
+    <div
+      className={`clinic-svg-wrap${phase === "fill" ? " filled" : ""}`}
+      style={{ width: size, maxWidth: "80%" }}
+      dangerouslySetInnerHTML={{ __html: svgContent }}
+    />
+  );
+}
+
 const Login = () => {
   const { user, signIn } = useAuth();
   const [email, setEmail] = useState("");
@@ -155,19 +196,19 @@ const Login = () => {
         style={{ width: `${loginSplit}%`, overflow: "hidden", flexShrink: 0 }}
       >
         <div className="absolute inset-0">
-          {brandColor1
-            ? <>
-                <div className="absolute inset-0" style={{
-                  background: `linear-gradient(135deg, ${brandColor1} 0%, ${brandColor2 ?? brandColor1} 50%, ${brandColor3 ?? brandColor1} 100%)`
-                }} />
-                {/* grain overlay */}
-                <div className="absolute inset-0 opacity-[0.12]"
-                  style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px" }} />
-              </>
+          {/* For clinic domains: NEVER show Bellex gradient — show neutral black until brand loads */}
+          {isClinic
+            ? brandColor1
+              ? <>
+                  <div className="absolute inset-0" style={{
+                    background: `linear-gradient(135deg, ${brandColor1} 0%, ${brandColor2 ?? brandColor1} 50%, ${brandColor3 ?? brandColor1} 100%)`
+                  }} />
+                  <div className="absolute inset-0 opacity-[0.12]"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px" }} />
+                </>
+              : <div className="absolute inset-0 bg-neutral-900" />
             : <Grainient
-                color1="#f5c5b8"
-                color2="#e8957a"
-                color3="#f0d5cc"
+                color1="#f5c5b8" color2="#e8957a" color3="#f0d5cc"
                 timeSpeed={0.25} colorBalance={0} warpStrength={1} warpFrequency={5}
                 warpSpeed={2} warpAmplitude={50} blendAngle={0} blendSoftness={0.05}
                 rotationAmount={500} noiseScale={2} grainAmount={0.08} grainScale={2}
@@ -179,25 +220,54 @@ const Login = () => {
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2, overflow: "visible" }}>
           <style>{`
+            @keyframes svgLineDraw {
+              from { stroke-dashoffset: var(--path-len); opacity: 1; }
+              to   { stroke-dashoffset: 0; opacity: 1; }
+            }
+            @keyframes svgFillIn {
+              from { fill-opacity: 0; filter: blur(4px); transform: scale(1.05); }
+              to   { fill-opacity: 1; filter: blur(0px); transform: scale(1); }
+            }
             @keyframes blurLogoIn {
               from { opacity: 0; filter: blur(12px); transform: scale(1.1); }
               to   { opacity: 1; filter: blur(0px);  transform: scale(1); }
             }
+            .clinic-svg-wrap svg path,
+            .clinic-svg-wrap svg rect,
+            .clinic-svg-wrap svg circle,
+            .clinic-svg-wrap svg ellipse,
+            .clinic-svg-wrap svg polygon,
+            .clinic-svg-wrap svg polyline {
+              fill: transparent;
+              stroke: white;
+              stroke-width: 1.5px;
+              stroke-dasharray: var(--path-len, 2000);
+              stroke-dashoffset: var(--path-len, 2000);
+              animation: svgLineDraw 1.1s cubic-bezier(0.4,0,0.2,1) 0.1s forwards;
+            }
+            .clinic-svg-wrap.filled svg path,
+            .clinic-svg-wrap.filled svg rect,
+            .clinic-svg-wrap.filled svg circle,
+            .clinic-svg-wrap.filled svg ellipse,
+            .clinic-svg-wrap.filled svg polygon,
+            .clinic-svg-wrap.filled svg polyline {
+              stroke: none;
+              stroke-dasharray: none;
+              stroke-dashoffset: 0;
+              fill: revert;
+              fill-opacity: 0;
+              animation: svgFillIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+            }
           `}</style>
           <div style={{ overflow: "visible", padding: "20px 40px" }}>
             {clinicLogo
-              ? <img
-                  src={clinicLogo}
-                  alt={clinicName ?? "Logo"}
-                  style={{ width: logoSize, maxWidth: "80%", animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both" }}
-                  className="object-contain drop-shadow-lg"
-                />
+              ? <ClinicLogoAnimated src={clinicLogo} size={logoSize} name={clinicName ?? "Logo"} />
               : <LogoBlur delay={0.3} />
             }
           </div>
           {clinicName
             ? <p className="text-white/70 text-sm tracking-widest uppercase mt-2"
-                style={{ animation: "blurLogoIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.8s both" }}>
+                style={{ animation: "blurLogoIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.8s both", opacity: 0 }}>
                 {clinicName}
               </p>
             : <StrokeFillLetters delay={1.0} />
