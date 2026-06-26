@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 
 import { LogoDraw } from "@/components/ui/logo-draw";
 import logoColor from "@/assets/logo-color.png";
 import Grainient from "@/components/Grainient";
+import { loadBrandForDomain } from "@/hooks/useBrand";
+import { isClinicSubdomain, isCustomDomain } from "@/App";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,6 +106,16 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [clinicLogo, setClinicLogo] = useState<string | null>(null);
+  const [clinicName, setClinicName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isClinicSubdomain && !isCustomDomain) return;
+    loadBrandForDomain().then(b => {
+      if (b?.logo_url) setClinicLogo(b.logo_url);
+      if (b?.name) setClinicName(b.name);
+    });
+  }, []);
 
   if (user) return <Navigate to="/dashboard" replace />;
 
@@ -149,9 +161,15 @@ const Login = () => {
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2, overflow: "visible" }}>
           <div style={{ overflow: "visible", padding: "20px 40px" }}>
-            <LogoBlur delay={0.3} />
+            {clinicLogo
+              ? <img src={clinicLogo} alt={clinicName ?? "Logo"} className="h-16 object-contain drop-shadow-lg" />
+              : <LogoBlur delay={0.3} />
+            }
           </div>
-          <StrokeFillLetters delay={1.0} />
+          {clinicName
+            ? <p className="text-white/70 text-sm tracking-widest uppercase mt-2">{clinicName}</p>
+            : <StrokeFillLetters delay={1.0} />
+          }
         </div>
       </div>
 
@@ -159,7 +177,10 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm space-y-8">
           <div className="lg:hidden flex justify-center mb-8">
-            <img src={logoColor} alt="Bellex" className="w-48 invert" />
+            {clinicLogo
+              ? <img src={clinicLogo} alt={clinicName ?? "Logo"} className="h-12 object-contain" />
+              : <img src={logoColor} alt="Bellex" className="w-48 invert" />
+            }
           </div>
 
           <div>

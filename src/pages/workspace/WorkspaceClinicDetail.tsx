@@ -119,7 +119,8 @@ export default function WorkspaceClinicDetail() {
       if (upErr) throw upErr;
       const { data } = storage.from("clinic-branding").getPublicUrl(path);
       const url = data.publicUrl;
-      setLogoUrl(url);
+      const urlWithBust = `${url}?t=${Date.now()}`;
+      setLogoUrl(urlWithBust);
       await update(clinic.id, { logo_url: url } as Parameters<typeof update>[1]);
       toast.success("Logo atualizado!");
     } catch {
