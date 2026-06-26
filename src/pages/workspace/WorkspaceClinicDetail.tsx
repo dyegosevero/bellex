@@ -51,6 +51,10 @@ export default function WorkspaceClinicDetail() {
   const clinic = clinics.find(c => c.id === id);
 
   const [color, setColor] = useState("#e8957a");
+  const [color2, setColor2] = useState("#f5c87a");
+  const [color3, setColor3] = useState("#c084fc");
+  const [logoSize, setLogoSize] = useState(120);
+  const [loginSplit, setLoginSplit] = useState(50);
   const [name, setName] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [domainVerified, setDomainVerified] = useState(false);
@@ -75,17 +79,24 @@ export default function WorkspaceClinicDetail() {
       setOpenaiKey((clinic as Record<string, unknown>).openai_api_key as string ?? "");
       const raw = (clinic as Record<string, unknown>).logo_url as string ?? null;
       setLogoUrl(raw ? `${raw.split("?")[0]}?download=` : null);
+      const app = (clinic as Record<string, unknown>).appearance as Record<string, unknown> ?? {};
+      if (app.color2) setColor2(app.color2 as string);
+      if (app.color3) setColor3(app.color3 as string);
+      if (app.logoSize) setLogoSize(app.logoSize as number);
+      if (app.loginSplit) setLoginSplit(app.loginSplit as number);
     }
   }, [clinic]);
 
   const handleSave = async () => {
-    console.log("[save] clinic:", clinic?.id, "color:", color, "name:", name);
     if (!clinic) { toast.error("Clínica não carregada"); return; }
     setSaving(true);
-    const patch = { name, color, logo_url: logoUrl?.split("?t=")[0] ?? null, custom_domain: customDomain || null };
-    console.log("[save] patch:", patch);
-    const { data, error } = await update(clinic.id, patch as Parameters<typeof update>[1]);
-    console.log("[save] result:", { data, error });
+    const logoRaw = logoUrl?.split("?")[0] ?? null;
+    const { error } = await update(clinic.id, {
+      name, color,
+      logo_url: logoRaw,
+      custom_domain: customDomain || null,
+      appearance: { color2, color3, logoSize, loginSplit },
+    } as Parameters<typeof update>[1]);
     setSaving(false);
     if (error) toast.error(`Erro ao salvar: ${error}`);
     else toast.success("Alterações salvas!");
@@ -512,73 +523,144 @@ export default function WorkspaceClinicDetail() {
         </TabsContent>
 
         {/* ── APARÊNCIA ── */}
-        <TabsContent value="aparencia" className="mt-6 space-y-4">
-          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-5">
-            <p className="text-sm font-medium">Identidade visual da clínica</p>
-            <div className="space-y-1.5">
-              <Label>Cor principal</Label>
-              <div className="flex items-center gap-3">
-                <input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-10 h-10 rounded-xl border border-input cursor-pointer" />
-                <Input value={color} onChange={e => setColor(e.target.value)} className="w-32 font-mono text-sm" />
-                <div className="w-10 h-10 rounded-xl border border-border" style={{ background: color }} />
+        <TabsContent value="aparencia" className="mt-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+            {/* ── Painel de controles ── */}
+            <div className="space-y-5">
+
+              {/* Logo */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <p className="text-sm font-semibold">Logo</p>
+                <input ref={logoInputRef} type="file" accept=".svg,image/svg+xml" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
+                <div
+                  className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
+                  style={{ background: `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)`, minHeight: 120 }}
+                  onClick={() => logoInputRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleLogoUpload(f); }}
+                >
+                  <div className="flex flex-col items-center justify-center py-6 gap-2">
+                    {logoUrl
+                      ? <img src={logoUrl} alt="Logo" style={{ height: Math.max(32, logoSize * 0.3) }} className="object-contain drop-shadow-md" />
+                      : <Building2 className="w-8 h-8 text-white/50" />
+                    }
+                    <p className="text-xs text-white/70">
+                      {uploadingLogo ? "Enviando..." : logoUrl ? "Clique para trocar" : "Clique ou arraste o SVG"}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Tamanho do logo</Label>
+                    <span className="text-xs font-mono text-muted-foreground">{logoSize}px</span>
+                  </div>
+                  <input type="range" min={40} max={280} value={logoSize} onChange={e => setLogoSize(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5 rounded-full" />
+                </div>
+              </div>
+
+              {/* Cores */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <p className="text-sm font-semibold">Cores</p>
+                {[
+                  { label: "Cor primária", val: color, set: setColor },
+                  { label: "Gradiente 2", val: color2, set: setColor2 },
+                  { label: "Gradiente 3", val: color3, set: setColor3 },
+                ].map(({ label, val, set }) => (
+                  <div key={label} className="flex items-center gap-3">
+                    <input type="color" value={val} onChange={e => set(e.target.value)}
+                      className="w-9 h-9 rounded-lg border border-input cursor-pointer shrink-0 p-0.5" />
+                    <Input value={val} onChange={e => set(e.target.value)} className="w-32 font-mono text-xs h-8" />
+                    <div className="flex-1 h-5 rounded-md" style={{ background: val }} />
+                    <span className="text-xs text-muted-foreground shrink-0 w-24">{label}</span>
+                  </div>
+                ))}
+                <div className="h-6 rounded-lg w-full" style={{ background: `linear-gradient(135deg, ${color}, ${color2}, ${color3})` }} />
+              </div>
+
+              {/* Layout da tela de login */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <p className="text-sm font-semibold">Layout do login</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Proporção esquerda/direita</Label>
+                    <span className="text-xs font-mono text-muted-foreground">{loginSplit}% / {100 - loginSplit}%</span>
+                  </div>
+                  <input type="range" min={30} max={70} value={loginSplit} onChange={e => setLoginSplit(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5 rounded-full" />
+                </div>
+              </div>
+
+              {/* Favicon */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
+                <p className="text-sm font-semibold">Favicon</p>
+                <input ref={faviconInputRef} type="file" accept="image/x-icon,image/png" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFaviconUpload(f); }} />
+                <div
+                  className="flex items-center gap-4 p-4 border border-dashed border-border rounded-xl cursor-pointer hover:border-primary/40 transition-colors"
+                  onClick={() => faviconInputRef.current?.click()}
+                >
+                  {faviconUrl
+                    ? <img src={faviconUrl} alt="Favicon" className="w-8 h-8 object-contain rounded" />
+                    : <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-muted-foreground/40 text-xs">ico</div>
+                  }
+                  <div>
+                    <p className="text-sm text-muted-foreground">{uploadingFavicon ? "Enviando..." : faviconUrl ? "Clique para trocar" : "Upload do favicon"}</p>
+                    <p className="text-xs text-muted-foreground/50">ICO ou PNG · 32×32px</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={saving} className="gap-2">
+                  <Save className="w-4 h-4" />{saving ? "Salvando..." : "Salvar aparência"}
+                </Button>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Logo</Label>
-              <input
-                ref={logoInputRef}
-                type="file"
-                accept=".svg,image/svg+xml"
-                className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }}
-              />
-              <div
-                className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
-                onClick={() => logoInputRef.current?.click()}
-                onDragOver={e => e.preventDefault()}
-                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleLogoUpload(f); }}
-              >
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="h-12 mx-auto object-contain mb-2" />
-                ) : (
-                  <Building2 className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                )}
-                <p className="text-sm text-muted-foreground">
-                  {uploadingLogo ? "Enviando..." : "Clique para fazer upload ou arraste a imagem"}
-                </p>
-                <p className="text-xs text-muted-foreground/60 mt-1">SVG obrigatório · máx. 2MB · recomendado 400×120px</p>
+
+            {/* ── Preview da tela de login ── */}
+            <div className="sticky top-6">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Preview · Tela de login</p>
+              <div className="rounded-2xl border border-border/40 overflow-hidden shadow-lg" style={{ aspectRatio: "16/10" }}>
+                <div className="w-full h-full flex text-[0px]">
+                  {/* Lado esquerdo — gradiente + logo */}
+                  <div
+                    className="relative flex flex-col items-center justify-center overflow-hidden shrink-0"
+                    style={{
+                      width: `${loginSplit}%`,
+                      background: `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)`,
+                    }}
+                  >
+                    {/* Grain overlay */}
+                    <div className="absolute inset-0 opacity-20"
+                      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
+                    {logoUrl
+                      ? <img src={logoUrl} alt="Logo" style={{ width: logoSize * 0.55, maxWidth: "70%" }} className="object-contain drop-shadow-md relative z-10" />
+                      : <div className="relative z-10 flex flex-col items-center gap-1">
+                          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg font-bold">{clinic.name[0]}</div>
+                          <p className="text-white/80 text-[9px] tracking-widest uppercase mt-1">{clinic.name}</p>
+                        </div>
+                    }
+                    <p className="absolute bottom-4 text-white/50 text-[8px] tracking-widest uppercase z-10">{clinic.name}</p>
+                  </div>
+                  {/* Lado direito — formulário */}
+                  <div className="flex-1 bg-background flex flex-col items-center justify-center gap-2 px-6">
+                    <p className="text-[10px] font-light tracking-[0.2em] text-foreground">ACESSAR</p>
+                    <p className="text-[7px] text-muted-foreground mb-1">Entre com suas credenciais</p>
+                    <div className="w-full space-y-1.5">
+                      <div className="h-5 rounded-md border border-border/60 bg-muted/30 w-full" />
+                      <div className="h-5 rounded-md border border-border/60 bg-muted/30 w-full" />
+                    </div>
+                    <div className="h-5 rounded-md w-full mt-1" style={{ background: color }} />
+                    <p className="text-[6px] text-muted-foreground mt-1">Esqueceu a senha?</p>
+                  </div>
+                </div>
               </div>
+              <p className="text-[10px] text-muted-foreground/50 text-center mt-2">Preview aproximado · resultado real pode variar</p>
             </div>
-            <div className="space-y-1.5">
-              <Label>Favicon</Label>
-              <input
-                ref={faviconInputRef}
-                type="file"
-                accept="image/x-icon,image/png"
-                className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleFaviconUpload(f); }}
-              />
-              <div
-                className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/40 transition-colors cursor-pointer"
-                onClick={() => faviconInputRef.current?.click()}
-                onDragOver={e => e.preventDefault()}
-                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFaviconUpload(f); }}
-              >
-                {faviconUrl ? (
-                  <img src={faviconUrl} alt="Favicon" className="w-8 h-8 mx-auto mb-2 object-contain" />
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {uploadingFavicon ? "Enviando..." : "Upload do favicon"}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground/60 mt-1">ICO, PNG · 32×32px</p>
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button size="sm" className="gap-1.5" onClick={handleSave} disabled={saving}>
-                <Save className="w-3.5 h-3.5" />{saving ? "Salvando..." : "Salvar aparência"}
-              </Button>
-            </div>
+
           </div>
         </TabsContent>
 
