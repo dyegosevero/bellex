@@ -276,10 +276,9 @@ const Login = () => {
             .clinic-svg-wrap.filled svg ellipse,
             .clinic-svg-wrap.filled svg polygon,
             .clinic-svg-wrap.filled svg polyline {
-              stroke: none;
-              stroke-dasharray: none;
-              stroke-dashoffset: 0;
-              fill: var(--logo-color, white);
+              stroke: none !important;
+              stroke-dasharray: none !important;
+              stroke-dashoffset: 0 !important;
               fill-opacity: 0;
               animation: svgFillIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
             }
