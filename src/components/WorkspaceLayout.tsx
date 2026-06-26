@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import logoWhite from "@/assets/logo-1x1-white.png";
-import { BrandGrain } from "@/components/BrandGrain";
 import { Badge } from "@/components/ui/badge";
 
 const NAV = [
@@ -57,18 +56,12 @@ export default function WorkspaceLayout() {
           "relative h-14 flex items-center overflow-hidden shrink-0",
           expanded ? "px-4" : "justify-center"
         )}>
-          <BrandGrain />
           {expanded ? (
             <img src={logoWhite} alt="Bellex" className="relative z-10 h-5" />
           ) : (
             <div className="relative z-10 w-6 h-6 rounded-md overflow-hidden bg-white/20 flex items-center justify-center">
               <img src={logoWhite} alt="B" className="h-4" />
             </div>
-          )}
-          {expanded && (
-            <span className="relative z-10 ml-2 text-[10px] font-semibold text-white/70 uppercase tracking-widest">
-              Workspace
-            </span>
           )}
         </div>
 
