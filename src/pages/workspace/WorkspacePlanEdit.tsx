@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
+import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 
 // Catálogo canônico de features do plano de clínica
 const FEATURES = [
@@ -75,7 +76,8 @@ function featuresToArray(map: Record<string, boolean>): string[] {
 export default function WorkspacePlanEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { plans, loading, create, update } = useWorkspacePlans();
+  const { workspace } = useCurrentWorkspace();
+  const { plans, loading, create, update } = useWorkspacePlans(workspace?.id ?? undefined);
 
   const isNew = id === "novo";
   const plan = isNew ? null : plans.find(p => p.id === id);
@@ -126,6 +128,7 @@ export default function WorkspacePlanEdit() {
     setSaving(true);
     const payload = {
       name: name.trim(),
+      slug: name.trim().toLowerCase().replace(/\s+/g, "-"),
       price: parseFloat(price),
       seats_limit: parseInt(seatsLimit) || 1,
       ai_conversations_month: parseInt(aiConv) || 250,
@@ -134,6 +137,8 @@ export default function WorkspacePlanEdit() {
       popular,
       active,
       features: featuresToArray(features),
+      customer_id: workspace?.id ?? null,
+      sort_order: plans.length + 1,
     };
     const ok = isNew ? await create(payload) : await update(id!, payload);
     setSaving(false);

@@ -8,10 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from "@/components/ui/input";
 import { useWorkspacePlans, type WorkspacePlan } from "@/hooks/useWorkspacePlans";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 
 export default function WorkspacePlanos() {
   const navigate = useNavigate();
-  const { plans, loading, remove } = useWorkspacePlans();
+  const { workspace } = useCurrentWorkspace();
+  const { plans, loading, remove } = useWorkspacePlans(workspace?.id ?? undefined);
   const { licenses } = useWorkspaceLicenses();
 
   const [deleteTarget, setDeleteTarget] = useState<WorkspacePlan | null>(null);
