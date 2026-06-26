@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
+import logoColor from "@/assets/logo-color.png";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

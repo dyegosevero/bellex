@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
+import logoColor from "@/assets/logo-color.png";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
