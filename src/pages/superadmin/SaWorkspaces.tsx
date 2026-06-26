@@ -19,7 +19,7 @@ const statusColor: Record<string, string> = {
   suspenso: "#f59e0b", cancelado: "#64748b", expirando: "#f59e0b",
 };
 
-const PLAN_PRICE: Record<string, number> = { starter: 500, pro: 750, scale: 1000 };
+const PLAN_PRICE: Record<string, number> = { starter: 750, pro: 1000, scale: 1500 };
 
 type FormState = {
   client_name: string;
@@ -178,9 +178,9 @@ export default function SaWorkspaces() {
                 <Select value={form.plan} onValueChange={v => set("plan", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">Starter — R$ 500/mês</SelectItem>
-                    <SelectItem value="pro">Pro — R$ 750/mês</SelectItem>
-                    <SelectItem value="scale">Scale — R$ 1.000/mês</SelectItem>
+                    <SelectItem value="starter">WS Starter — R$ 750/mês · 5 clínicas</SelectItem>
+                    <SelectItem value="pro">WS Pro — R$ 1.000/mês · 10 clínicas</SelectItem>
+                    <SelectItem value="scale">WS Scale — R$ 1.500/mês · 20 clínicas</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
