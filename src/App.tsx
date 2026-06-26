@@ -239,7 +239,7 @@ function CustomDomainGate({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<"checking" | "ok" | "notfound">("checking");
   useEffect(() => {
     import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.from("workspace_clinics").select("id").eq("custom_domain", hostname).maybeSingle()
+      supabase.from("workspace_clinics").select("id").eq("custom_domain", window.location.hostname).maybeSingle()
         .then(({ data }) => setStatus(data ? "ok" : "notfound"));
     });
   }, []);
