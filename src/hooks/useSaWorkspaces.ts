@@ -24,9 +24,6 @@ export type WorkspaceCustomer = {
   updated_at: string;
 };
 
-// Alias para compatibilidade com código existente
-export type WorkspaceLicense = WorkspaceCustomer;
-
 export type NewWorkspaceCustomer = {
   client_name: string;
   plan: string;
@@ -43,10 +40,8 @@ export type NewWorkspaceCustomer = {
   notes?: string | null;
 };
 
-export type NewWorkspaceLicense = NewWorkspaceCustomer;
-
-export function useWorkspaceLicenses() {
-  const [licenses, setLicenses] = useState<WorkspaceCustomer[]>([]);
+export function useSaWorkspaces() {
+  const [workspaces, setWorkspaces] = useState<WorkspaceCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,21 +53,21 @@ export function useWorkspaceLicenses() {
       .select("*")
       .order("created_at", { ascending: false });
     if (err) setError(err.message);
-    else setLicenses((data as WorkspaceCustomer[]) ?? []);
+    else setWorkspaces((data as WorkspaceCustomer[]) ?? []);
     setLoading(false);
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  const create = async (lic: NewWorkspaceCustomer) => {
+  const create = async (ws: NewWorkspaceCustomer) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: "Não autenticado" };
     const { data, error: err } = await supabase
       .from("workspace_customers")
-      .insert({ ...lic, owner_id: user.id, status: "trial" })
+      .insert({ ...ws, owner_id: user.id, status: "trial" })
       .select()
       .single();
-    if (!err) setLicenses(prev => [data as WorkspaceCustomer, ...prev]);
+    if (!err) setWorkspaces(prev => [data as WorkspaceCustomer, ...prev]);
     return { data, error: err?.message };
   };
 
@@ -83,15 +78,15 @@ export function useWorkspaceLicenses() {
       .eq("id", id)
       .select()
       .single();
-    if (!err) setLicenses(prev => prev.map(l => l.id === id ? data as WorkspaceCustomer : l));
+    if (!err) setWorkspaces(prev => prev.map(w => w.id === id ? data as WorkspaceCustomer : w));
     return { data, error: err?.message };
   };
 
   const remove = async (id: string) => {
     const { error: err } = await supabase.from("workspace_customers").delete().eq("id", id);
-    if (!err) setLicenses(prev => prev.filter(l => l.id !== id));
+    if (!err) setWorkspaces(prev => prev.filter(w => w.id !== id));
     return { error: err?.message };
   };
 
-  return { licenses, loading, error, refetch: fetch, create, update, remove };
+  return { workspaces, loading, error, refetch: fetch, create, update, remove };
 }

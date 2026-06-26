@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useSaWorkspaces } from "@/hooks/useSaWorkspaces";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useSaPlans } from "@/hooks/useSaPlans";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,7 @@ const FORM_DEFAULT: FormState = {
 };
 
 export default function SaWorkspaces() {
-  const { licenses, loading, create, update } = useWorkspaceLicenses();
+  const { workspaces: licenses, loading, create, update } = useSaWorkspaces();
   const { clinics } = useWorkspaceClinics();
   const { plans: saPlans } = useSaPlans();
   const [search, setSearch] = useState("");

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useSaWorkspaces } from "@/hooks/useSaWorkspaces";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DollarSign, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import {
@@ -15,7 +15,7 @@ function fmtR(v: number) {
 }
 
 export default function SaFinanceiro() {
-  const { licenses, loading } = useWorkspaceLicenses();
+  const { workspaces: licenses, loading } = useSaWorkspaces();
 
   const stats = useMemo(() => {
     const ativos = licenses.filter(l => l.status === "ativo");

@@ -1,4 +1,4 @@
-import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
+import { useSaWorkspaces } from "@/hooks/useSaWorkspaces";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Plug, Database, MessageSquare, Bot, Info, Loader2 } from "lucide-react";
 
@@ -9,7 +9,7 @@ const INTEGRATIONS = [
 ];
 
 export default function SaIntegracoes() {
-  const { licenses, loading } = useWorkspaceLicenses();
+  const { workspaces: licenses, loading } = useSaWorkspaces();
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
