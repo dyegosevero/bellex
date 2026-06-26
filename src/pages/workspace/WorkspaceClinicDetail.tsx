@@ -73,7 +73,8 @@ export default function WorkspaceClinicDetail() {
       setName(clinic.name);
       setCustomDomain(clinic.custom_domain ?? "");
       setOpenaiKey((clinic as Record<string, unknown>).openai_api_key as string ?? "");
-      setLogoUrl((clinic as Record<string, unknown>).logo_url as string ?? null);
+      const raw = (clinic as Record<string, unknown>).logo_url as string ?? null;
+      setLogoUrl(raw ? `${raw.split("?")[0]}?download=` : null);
     }
   }, [clinic]);
 
@@ -117,8 +118,8 @@ export default function WorkspaceClinicDetail() {
       if (upErr) throw upErr;
       const { data } = storage.from("clinic-branding").getPublicUrl(path);
       const url = data.publicUrl;
-      const urlWithBust = `${url}?t=${Date.now()}`;
-      setLogoUrl(urlWithBust);
+      const inlineUrl = `${url}?download=&t=${Date.now()}`;
+      setLogoUrl(inlineUrl);
       await update(clinic.id, { logo_url: url } as Parameters<typeof update>[1]);
       toast.success("Logo atualizado!");
     } catch {
