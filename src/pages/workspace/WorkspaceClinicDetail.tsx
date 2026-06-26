@@ -567,7 +567,7 @@ export default function WorkspaceClinicDetail() {
                           }} />
                       : <Building2 className="w-8 h-8 text-white/50" />
                     }
-                    <p className="text-xs text-white/70">
+                    <p className="text-xs" style={{ color: logoColor, opacity: 0.8 }}>
                       {uploadingLogo ? "Enviando..." : logoUrl ? "Clique para trocar" : "Clique ou arraste o SVG"}
                     </p>
                   </div>
