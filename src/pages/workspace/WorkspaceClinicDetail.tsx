@@ -643,8 +643,30 @@ export default function WorkspaceClinicDetail() {
                       <div className="absolute inset-0 opacity-20"
                         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
                       {logoUrl
-                        ? <img src={logoUrl} alt="Logo" style={{ width: logoSize * 0.55, maxWidth: "70%", filter: logoColor === "#ffffff" || logoColor === "#fff" ? "brightness(0) invert(1)" : `brightness(0) saturate(100%) invert(1)` }} className="object-contain drop-shadow-md relative z-10" />
-                        : <div className="relative z-10 flex flex-col items-center gap-1">
+                        ? <div
+                            className="relative z-10 cursor-pointer group"
+                            onClick={() => logoInputRef.current?.click()}
+                            title="Clique para trocar a logo"
+                            style={{
+                              width: logoSize * 0.55,
+                              maxWidth: "70%",
+                              aspectRatio: "1",
+                              backgroundColor: logoColor,
+                              WebkitMaskImage: `url(${logoUrl})`,
+                              maskImage: `url(${logoUrl})`,
+                              WebkitMaskSize: "contain",
+                              maskSize: "contain",
+                              WebkitMaskRepeat: "no-repeat",
+                              maskRepeat: "no-repeat",
+                              WebkitMaskPosition: "center",
+                              maskPosition: "center",
+                            }}
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded" style={{ backgroundColor: `${logoColor}44` }}>
+                              <span className="text-[8px] tracking-wide" style={{ color: logoColor }}>Trocar</span>
+                            </div>
+                          </div>
+                        : <div className="relative z-10 flex flex-col items-center gap-1 cursor-pointer" onClick={() => logoInputRef.current?.click()}>
                             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg font-bold">{clinic.name[0]}</div>
                           </div>
                       }
