@@ -101,7 +101,7 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
   );
 }
 
-function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; name: string }) {
+function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: string; size: number; name: string; logoColor?: string }) {
   const [svgDraw, setSvgDraw]     = useState<string | null>(null);
   const [svgFilled, setSvgFilled] = useState<string | null>(null);
   const [phase, setPhase]         = useState<"draw" | "fill" | "img">("draw");
@@ -119,10 +119,10 @@ function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; na
         const draw = text
           .replace(/\sfill="[^"]*"/g, ' fill="none"')
           .replace(/fill\s*:[^;")]+/g, "fill:none");
-        // Fase fill: força fill branco em todos os paths
+        // Fase fill: força fill na cor escolhida em todos os paths
         const filled = text
-          .replace(/\sfill="[^"]*"/g, ' fill="white"')
-          .replace(/fill\s*:[^;")]+/g, "fill:white");
+          .replace(/\sfill="[^"]*"/g, ` fill="${logoColor}"`)
+          .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`);
         setSvgDraw(draw);
         setSvgFilled(filled);
         setTimeout(() => setPhase("fill"), 1200);
@@ -145,7 +145,7 @@ function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; na
   return (
     <div
       className={`clinic-svg-wrap${phase === "fill" ? " filled" : ""}`}
-      style={{ width: size, maxWidth: "80%" }}
+      style={{ width: size, maxWidth: "80%", ["--logo-color" as string]: logoColor }}
       dangerouslySetInnerHTML={{ __html: phase === "fill" && svgFilled ? svgFilled : svgDraw }}
     />
   );
@@ -171,6 +171,7 @@ const Login = () => {
   const [brandColor2, setBrandColor2] = useState<string | null>(cachedBrand?.appearance?.color2 ?? null);
   const [brandColor3, setBrandColor3] = useState<string | null>(cachedBrand?.appearance?.color3 ?? null);
   const [logoSize, setLogoSize] = useState<number>(cachedBrand?.appearance?.logoSize ?? 120);
+  const [logoColor, setLogoColor] = useState<string>(cachedBrand?.appearance?.logoColor ?? "#ffffff");
   const [loginSplit, setLoginSplit] = useState<number>(cachedBrand?.appearance?.loginSplit ?? 50);
 
   useEffect(() => {
@@ -183,6 +184,7 @@ const Login = () => {
       if (b.appearance?.color2) setBrandColor2(b.appearance.color2);
       if (b.appearance?.color3) setBrandColor3(b.appearance.color3);
       if (b.appearance?.logoSize) setLogoSize(b.appearance.logoSize);
+      if (b.appearance?.logoColor) setLogoColor(b.appearance.logoColor);
       if (b.appearance?.loginSplit) setLoginSplit(b.appearance.loginSplit);
     });
   }, []);
@@ -242,7 +244,7 @@ const Login = () => {
             .clinic-svg-wrap svg polygon,
             .clinic-svg-wrap svg polyline {
               fill: transparent;
-              stroke: white;
+              stroke: var(--logo-color, white);
               stroke-width: 1.5px;
               stroke-dasharray: var(--path-len, 2000);
               stroke-dashoffset: var(--path-len, 2000);
@@ -264,7 +266,7 @@ const Login = () => {
           `}</style>
           <div style={{ overflow: "visible", padding: "20px 40px" }}>
             {clinicLogo
-              ? <ClinicLogoAnimated src={clinicLogo} size={logoSize} name={clinicName ?? "Logo"} />
+              ? <ClinicLogoAnimated src={clinicLogo} size={logoSize} name={clinicName ?? "Logo"} logoColor={logoColor} />
               : <LogoBlur delay={0.3} />
             }
           </div>

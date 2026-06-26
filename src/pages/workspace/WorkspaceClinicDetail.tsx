@@ -54,6 +54,7 @@ export default function WorkspaceClinicDetail() {
   const [color2, setColor2] = useState("#f5c87a");
   const [color3, setColor3] = useState("#c084fc");
   const [logoSize, setLogoSize] = useState(120);
+  const [logoColor, setLogoColor] = useState("#ffffff");
   const [loginSplit, setLoginSplit] = useState(50);
   const [name, setName] = useState("");
   const [customDomain, setCustomDomain] = useState("");
@@ -83,6 +84,7 @@ export default function WorkspaceClinicDetail() {
       if (app.color2) setColor2(app.color2 as string);
       if (app.color3) setColor3(app.color3 as string);
       if (app.logoSize) setLogoSize(app.logoSize as number);
+      if (app.logoColor) setLogoColor(app.logoColor as string);
       if (app.loginSplit) setLoginSplit(app.loginSplit as number);
     }
   }, [clinic]);
@@ -95,7 +97,7 @@ export default function WorkspaceClinicDetail() {
       name, color,
       logo_url: logoRaw,
       custom_domain: customDomain || null,
-      appearance: { color2, color3, logoSize, loginSplit },
+      appearance: { color2, color3, logoSize, logoColor, loginSplit },
     } as Parameters<typeof update>[1]);
     setSaving(false);
     if (error) toast.error(`Erro ao salvar: ${error}`);
@@ -566,6 +568,15 @@ export default function WorkspaceClinicDetail() {
                   <input type="range" min={40} max={280} value={logoSize} onChange={e => setLogoSize(Number(e.target.value))}
                     className="w-full accent-primary h-1.5 rounded-full" />
                 </div>
+                <div className="flex items-center gap-3">
+                  <input type="color" value={logoColor} onChange={e => setLogoColor(e.target.value)}
+                    className="w-9 h-9 rounded-lg border border-input cursor-pointer shrink-0 p-0.5" />
+                  <Input value={logoColor} onChange={e => setLogoColor(e.target.value)} className="w-32 font-mono text-xs h-8" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium leading-none">Cor da logo</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Cor usada sobre o fundo do login</p>
+                  </div>
+                </div>
               </div>
 
               {/* Cores */}
@@ -632,7 +643,7 @@ export default function WorkspaceClinicDetail() {
                       <div className="absolute inset-0 opacity-20"
                         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
                       {logoUrl
-                        ? <img src={logoUrl} alt="Logo" style={{ width: logoSize * 0.55, maxWidth: "70%", filter: "brightness(0) invert(1)" }} className="object-contain drop-shadow-md relative z-10" />
+                        ? <img src={logoUrl} alt="Logo" style={{ width: logoSize * 0.55, maxWidth: "70%", filter: logoColor === "#ffffff" || logoColor === "#fff" ? "brightness(0) invert(1)" : `brightness(0) saturate(100%) invert(1)` }} className="object-contain drop-shadow-md relative z-10" />
                         : <div className="relative z-10 flex flex-col items-center gap-1">
                             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg font-bold">{clinic.name[0]}</div>
                           </div>
