@@ -5,6 +5,12 @@ export type BrandConfig = {
   name: string;
   color: string;
   logo_url: string | null;
+  appearance?: {
+    color2?: string;
+    color3?: string;
+    logoSize?: number;
+    loginSplit?: number;
+  };
 };
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } | null {
@@ -50,12 +56,17 @@ export async function loadBrandForDomain(): Promise<BrandConfig | null> {
 
   const { data } = await supabase
     .from("workspace_clinics")
-    .select("name, color, logo_url, custom_domain, subdomain")
+    .select("name, color, logo_url, custom_domain, subdomain, appearance")
     .or(`subdomain.eq.${subdomain},custom_domain.eq.${hostname}`)
     .maybeSingle();
 
   if (!data) return null;
-  return { name: data.name, color: data.color, logo_url: data.logo_url ?? null };
+  return {
+    name: data.name,
+    color: data.color,
+    logo_url: data.logo_url ?? null,
+    appearance: (data as Record<string, unknown>).appearance as BrandConfig["appearance"] ?? {},
+  };
 }
 
 export function useBrand(brand: BrandConfig | null) {

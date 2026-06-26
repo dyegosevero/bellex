@@ -108,12 +108,23 @@ const Login = () => {
   const [submitting, setSubmitting] = useState(false);
   const [clinicLogo, setClinicLogo] = useState<string | null>(null);
   const [clinicName, setClinicName] = useState<string | null>(null);
+  const [brandColor1, setBrandColor1] = useState<string | null>(null);
+  const [brandColor2, setBrandColor2] = useState<string | null>(null);
+  const [brandColor3, setBrandColor3] = useState<string | null>(null);
+  const [logoSize, setLogoSize] = useState(120);
+  const [loginSplit, setLoginSplit] = useState(50);
 
   useEffect(() => {
     if (!isClinicSubdomain && !isCustomDomain) return;
     loadBrandForDomain().then(b => {
-      if (b?.logo_url) setClinicLogo(b.logo_url);
-      if (b?.name) setClinicName(b.name);
+      if (!b) return;
+      if (b.logo_url) setClinicLogo(`${b.logo_url.split("?")[0]}?download=`);
+      if (b.name) setClinicName(b.name);
+      setBrandColor1(b.color);
+      if (b.appearance?.color2) setBrandColor2(b.appearance.color2);
+      if (b.appearance?.color3) setBrandColor3(b.appearance.color3);
+      if (b.appearance?.logoSize) setLogoSize(b.appearance.logoSize);
+      if (b.appearance?.loginSplit) setLoginSplit(b.appearance.loginSplit);
     });
   }, []);
 
@@ -130,39 +141,37 @@ const Login = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left — Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center" style={{ overflow: "hidden" }}>
-
+      <div
+        className="hidden lg:flex relative items-center justify-center"
+        style={{ width: `${loginSplit}%`, overflow: "hidden", flexShrink: 0 }}
+      >
         <div className="absolute inset-0">
-          <Grainient
-            color1="#f5c5b8"
-            color2="#e8957a"
-            color3="#f0d5cc"
-            timeSpeed={0.25}
-            colorBalance={0}
-            warpStrength={1}
-            warpFrequency={5}
-            warpSpeed={2}
-            warpAmplitude={50}
-            blendAngle={0}
-            blendSoftness={0.05}
-            rotationAmount={500}
-            noiseScale={2}
-            grainAmount={0.08}
-            grainScale={2}
-            grainAnimated={false}
-            contrast={1.3}
-            gamma={1}
-            saturation={0.9}
-            centerX={0}
-            centerY={0}
-            zoom={0.9}
-          />
+          {brandColor1
+            ? <>
+                <div className="absolute inset-0" style={{
+                  background: `linear-gradient(135deg, ${brandColor1} 0%, ${brandColor2 ?? brandColor1} 50%, ${brandColor3 ?? brandColor1} 100%)`
+                }} />
+                {/* grain overlay */}
+                <div className="absolute inset-0 opacity-[0.12]"
+                  style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px" }} />
+              </>
+            : <Grainient
+                color1="#f5c5b8"
+                color2="#e8957a"
+                color3="#f0d5cc"
+                timeSpeed={0.25} colorBalance={0} warpStrength={1} warpFrequency={5}
+                warpSpeed={2} warpAmplitude={50} blendAngle={0} blendSoftness={0.05}
+                rotationAmount={500} noiseScale={2} grainAmount={0.08} grainScale={2}
+                grainAnimated={false} contrast={1.3} gamma={1} saturation={0.9}
+                centerX={0} centerY={0} zoom={0.9}
+              />
+          }
         </div>
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2, overflow: "visible" }}>
           <div style={{ overflow: "visible", padding: "20px 40px" }}>
             {clinicLogo
-              ? <img src={clinicLogo} alt={clinicName ?? "Logo"} className="h-16 object-contain drop-shadow-lg" />
+              ? <img src={clinicLogo} alt={clinicName ?? "Logo"} style={{ width: logoSize, maxWidth: "80%" }} className="object-contain drop-shadow-lg" />
               : <LogoBlur delay={0.3} />
             }
           </div>
