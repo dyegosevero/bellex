@@ -53,15 +53,13 @@ export default function WorkspaceLayout() {
       >
         {/* Logo */}
         <div className={cn(
-          "relative h-14 flex items-center overflow-hidden shrink-0",
+          "h-14 flex items-center shrink-0 bg-[#c97b63]",
           expanded ? "px-4" : "justify-center"
         )}>
           {expanded ? (
-            <img src={logoWhite} alt="Bellex" className="relative z-10 h-5" />
+            <img src={logoWhite} alt="Bellex" className="h-5" />
           ) : (
-            <div className="relative z-10 w-6 h-6 rounded-md overflow-hidden bg-white/20 flex items-center justify-center">
-              <img src={logoWhite} alt="B" className="h-4" />
-            </div>
+            <img src={logoWhite} alt="B" className="h-5" />
           )}
         </div>
 
