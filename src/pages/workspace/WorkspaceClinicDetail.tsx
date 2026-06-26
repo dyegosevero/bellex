@@ -609,7 +609,7 @@ export default function WorkspaceClinicDetail() {
                     </div>
                   </div>
                 ))}
-                <div className="h-6 rounded-lg w-full" style={{ background: `linear-gradient(135deg, ${color}, ${color2}, ${color3})` }} />
+
               </div>
 
 
