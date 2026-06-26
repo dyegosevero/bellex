@@ -143,7 +143,7 @@ function ClinicLogoAnimated({ src, size, name }: { src: string; size: number; na
 }
 
 const Login = () => {
-  const { user, signIn } = useAuth();
+  const { user, loading, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -178,7 +178,9 @@ const Login = () => {
     });
   }, []);
 
-  if (user) return <Navigate to="/dashboard" replace />;
+  // Wait for auth to resolve before redirecting — avoids flashing /dashboard
+  // when a WS/SA session is being signed out by ProtectedRoute
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
