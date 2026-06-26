@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWorkspaceLicenses } from "@/hooks/useWorkspaceLicenses";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
+import { useSaPlans } from "@/hooks/useSaPlans";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,6 @@ const statusColor: Record<string, string> = {
   ativo: "#22c55e", trial: "#60a5fa", inadimplente: "#ef4444",
   suspenso: "#f59e0b", cancelado: "#64748b", expirando: "#f59e0b",
 };
-
-const PLAN_PRICE: Record<string, number> = { starter: 750, pro: 1000, scale: 1500 };
 
 type FormState = {
   client_name: string;
@@ -42,6 +41,7 @@ const FORM_DEFAULT: FormState = {
 export default function SaWorkspaces() {
   const { licenses, loading, create, update } = useWorkspaceLicenses();
   const { clinics } = useWorkspaceClinics();
+  const { plans: saPlans } = useSaPlans();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(FORM_DEFAULT);
@@ -130,7 +130,9 @@ export default function SaWorkspaces() {
                 {ws.status}
               </span>
               <span className="text-[12px] font-medium text-green-600">
-                {ws.status === "ativo" ? `R$ ${(PLAN_PRICE[ws.plan] ?? 0).toLocaleString("pt-BR")}` : "—"}
+                {ws.status === "ativo"
+                  ? `R$ ${(saPlans.find(p => p.slug === ws.plan)?.price_monthly ?? 0).toLocaleString("pt-BR")}`
+                  : "—"}
               </span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -178,9 +180,11 @@ export default function SaWorkspaces() {
                 <Select value={form.plan} onValueChange={v => set("plan", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">WS Starter — R$ 750/mês · 5 clínicas</SelectItem>
-                    <SelectItem value="pro">WS Pro — R$ 1.000/mês · 10 clínicas</SelectItem>
-                    <SelectItem value="scale">WS Scale — R$ 1.500/mês · 20 clínicas</SelectItem>
+                    {saPlans.map(p => (
+                      <SelectItem key={p.slug} value={p.slug}>
+                        {p.name} — R$ {p.price_monthly.toLocaleString("pt-BR")}/mês · {p.seats} clínicas
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

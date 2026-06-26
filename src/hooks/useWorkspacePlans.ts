@@ -5,6 +5,7 @@ import { toast } from "sonner";
 export type WorkspacePlan = {
   id: string;
   name: string;
+  slug: string;
   price: number;
   seats_limit: number;
   ai_conversations_month: number;
@@ -13,6 +14,7 @@ export type WorkspacePlan = {
   popular: boolean;
   features: string[];
   active: boolean;
+  sort_order: number;
   created_at: string;
 };
 
@@ -25,7 +27,7 @@ export function useWorkspacePlans() {
     const { data, error } = await supabase
       .from("workspace_plans")
       .select("*")
-      .order("price");
+      .order("sort_order");
     if (!error && data) setPlans(data as WorkspacePlan[]);
     setLoading(false);
   }
