@@ -274,7 +274,10 @@ function BrandLoader() {
 function LandingRoutes() {
   return (
     <Routes>
-      <Route path="*" element={<Landing />} />
+      <Route path="/login"           element={<Login />} />
+      <Route path="/esqueci-senha"   element={<ForgotPassword />} />
+      <Route path="/redefinir-senha" element={<ResetPassword />} />
+      <Route path="*"                element={<Landing />} />
     </Routes>
   );
 }
