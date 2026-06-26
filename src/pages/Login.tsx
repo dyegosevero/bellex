@@ -259,13 +259,7 @@ const Login = () => {
               : <LogoBlur delay={0.3} />
             }
           </div>
-          {clinicName
-            ? <p className="text-white/70 text-sm tracking-widest uppercase mt-2"
-                style={{ animation: "blurLogoIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.8s both", opacity: 0 }}>
-                {clinicName}
-              </p>
-            : <StrokeFillLetters delay={1.0} />
-          }
+          <StrokeFillLetters text={clinicName ?? "SISTEMA DE GESTÃO INTELIGENTE"} delay={1.0} />
         </div>
       </div>
 
