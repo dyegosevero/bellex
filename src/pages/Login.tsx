@@ -105,9 +105,11 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
         const safe = text
           .replace(/<script[\s\S]*?<\/script>/gi, "")
           .replace(/\son\w+="[^"]*"/g, "");
+        // Injeta fill na raiz do SVG (cobre SVGs com ou sem fill nos paths)
         const colored = safe
           .replace(/\sfill="[^"]*"/g, ` fill="${logoColor}"`)
-          .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`);
+          .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`)
+          .replace(/<svg(\s)/i, `<svg fill="${logoColor}"$1`);
         setSvg(colored);
       })
       .catch(() => setSvg(null));
