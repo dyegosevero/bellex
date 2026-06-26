@@ -38,7 +38,7 @@ const SaConfiguracoes      = lazy(() => import("@/pages/superadmin/SaConfiguraco
 // ─── Lazy pages — Workspace ────────────────────────────────────────────────────
 const WorkspaceLayout      = lazy(() => import("@/components/WorkspaceLayout"));
 const WorkspaceDashboard   = lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
-const WorkspaceClientes    = lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
+const WorkspaceClientes    = lazy(() => import("@/pages/workspace/WorkspaceClientes"));
 const WorkspaceClinics     = lazy(() => import("@/pages/workspace/WorkspaceClinics"));
 const WorkspaceClinicDetail= lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
 const WorkspaceClinicNew   = lazy(() => import("@/pages/workspace/WorkspaceClinicNew"));
