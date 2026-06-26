@@ -169,14 +169,28 @@ const Login = () => {
         </div>
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2, overflow: "visible" }}>
+          <style>{`
+            @keyframes blurLogoIn {
+              from { opacity: 0; filter: blur(12px); transform: scale(1.1); }
+              to   { opacity: 1; filter: blur(0px);  transform: scale(1); }
+            }
+          `}</style>
           <div style={{ overflow: "visible", padding: "20px 40px" }}>
             {clinicLogo
-              ? <img src={clinicLogo} alt={clinicName ?? "Logo"} style={{ width: logoSize, maxWidth: "80%" }} className="object-contain drop-shadow-lg" />
+              ? <img
+                  src={clinicLogo}
+                  alt={clinicName ?? "Logo"}
+                  style={{ width: logoSize, maxWidth: "80%", animation: "blurLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both" }}
+                  className="object-contain drop-shadow-lg"
+                />
               : <LogoBlur delay={0.3} />
             }
           </div>
           {clinicName
-            ? <p className="text-white/70 text-sm tracking-widest uppercase mt-2">{clinicName}</p>
+            ? <p className="text-white/70 text-sm tracking-widest uppercase mt-2"
+                style={{ animation: "blurLogoIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.8s both" }}>
+                {clinicName}
+              </p>
             : <StrokeFillLetters delay={1.0} />
           }
         </div>
