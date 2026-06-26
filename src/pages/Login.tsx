@@ -98,7 +98,7 @@ function LogoBlur({ delay = 0.3 }: { delay?: number }) {
 function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: string; size: number; name: string; logoColor?: string }) {
   const [svgDraw, setSvgDraw]     = useState<string | null>(null);
   const [svgFilled, setSvgFilled] = useState<string | null>(null);
-  const [phase, setPhase]         = useState<"draw" | "fill" | "img">("draw");
+  const [phase, setPhase]         = useState<"draw" | "fill" | "done" | "img">("draw");
   const containerRef              = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -122,7 +122,7 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
           .replace(/fill\s*:[^;")]+/g, `fill:${logoColor}`);
         setSvgDraw(draw);
         setSvgFilled(filled);
-        setTimeout(() => setPhase("fill"), 1300);
+        setTimeout(() => { setPhase("fill"); setTimeout(() => setPhase("done"), 700); }, 1300);
       })
       .catch(() => setPhase("img"));
   }, [src]);
@@ -156,9 +156,9 @@ function ClinicLogoAnimated({ src, size, name, logoColor = "#ffffff" }: { src: s
   return (
     <div
       ref={containerRef}
-      className={`clinic-svg-wrap${phase === "fill" ? " filled" : ""}`}
-      style={{ width: size, maxWidth: "80%", ["--logo-color" as string]: logoColor }}
-      dangerouslySetInnerHTML={{ __html: phase === "fill" && svgFilled ? svgFilled : svgDraw }}
+      className={phase === "fill" ? "clinic-svg-wrap filled" : phase === "done" ? "clinic-svg-done" : "clinic-svg-wrap"}
+      style={{ width: size, maxWidth: "80%" }}
+      dangerouslySetInnerHTML={{ __html: (phase === "fill" || phase === "done") && svgFilled ? svgFilled : svgDraw }}
     />
   );
 }
