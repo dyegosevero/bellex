@@ -68,6 +68,21 @@ export async function moverLead(leadId: string, stageId: string) {
   await supabase.from("leads").update({ stage_id: stageId }).eq("id", leadId);
 }
 
+export async function recordWorkspaceUsage(subdomain: string, tokensUsed: number) {
+  const { data: wc } = await supabase
+    .from("workspace_clinics")
+    .select("id, customer_id")
+    .eq("subdomain", subdomain)
+    .single();
+  if (!wc?.customer_id) return;
+
+  await supabase.rpc("record_workspace_ai_usage", {
+    p_workspace_id: wc.customer_id,
+    p_clinic_id: wc.id,
+    p_tokens: tokensUsed,
+  });
+}
+
 export async function getOrCreatePatient(clinicId: string, phone: string, name?: string) {
   const { data: existing } = await supabase
     .from("clientes")

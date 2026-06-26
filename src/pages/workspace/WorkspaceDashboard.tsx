@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, Building2, Key, TrendingUp, TrendingDown, AlertTriangle, ArrowUpRight, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -39,6 +40,7 @@ function KpiCard({ icon: Icon, label, value, sub, color, trend }: {
 }
 
 export default function WorkspaceDashboard() {
+  const navigate = useNavigate();
   const { licenses, loading: loadingLic } = useWorkspaceLicenses();
   const { clinics, loading: loadingClin } = useWorkspaceClinics();
   const { plans } = useWorkspacePlans();
@@ -128,9 +130,9 @@ export default function WorkspaceDashboard() {
         <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">Clínicas recentes</p>
-            <a href="/workspace/clinicas" className="text-xs text-primary flex items-center gap-1 hover:underline">
+            <button onClick={() => navigate("/clinicas")} className="text-xs text-primary flex items-center gap-1 hover:underline">
               Ver todas <ArrowUpRight className="w-3 h-3" />
-            </a>
+            </button>
           </div>
           {stats.topClinics.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma clínica criada ainda.</p>
@@ -180,9 +182,9 @@ export default function WorkspaceDashboard() {
               {stats.expiringSoon.map(l => l.client_name).join(" · ")}
             </p>
           </div>
-          <a href="/workspace/licencas" className="ml-auto text-xs font-medium text-amber-700 hover:underline whitespace-nowrap">
+          <button onClick={() => navigate("/clientes")} className="ml-auto text-xs font-medium text-amber-700 hover:underline whitespace-nowrap">
             Gerenciar →
-          </a>
+          </button>
         </div>
       )}
     </div>

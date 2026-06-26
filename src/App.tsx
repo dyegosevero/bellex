@@ -28,17 +28,17 @@ export const isCustomDomain      =
 // ─── Lazy pages — SuperAdmin ───────────────────────────────────────────────────
 const SuperAdminLayout     = lazy(() => import("@/components/SuperAdminLayout"));
 const SaDashboard          = lazy(() => import("@/pages/superadmin/SaDashboard"));
-const SaClientes           = lazy(() => import("@/pages/superadmin/SaClientes"));
+const SaWorkspaces         = lazy(() => import("@/pages/superadmin/SaWorkspaces"));
+const SaPlanosWS           = lazy(() => import("@/pages/superadmin/SaPlanosWS"));
 const SaIntegracoes        = lazy(() => import("@/pages/superadmin/SaIntegracoes"));
 const SaFinanceiro         = lazy(() => import("@/pages/superadmin/SaFinanceiro"));
-const SaStorage            = lazy(() => import("@/pages/superadmin/SaStorage"));
-const SaIA                 = lazy(() => import("@/pages/superadmin/SaIA"));
+const SaUsoIA              = lazy(() => import("@/pages/superadmin/SaUsoIA"));
 const SaConfiguracoes      = lazy(() => import("@/pages/superadmin/SaConfiguracoes"));
 
 // ─── Lazy pages — Workspace ────────────────────────────────────────────────────
 const WorkspaceLayout      = lazy(() => import("@/components/WorkspaceLayout"));
 const WorkspaceDashboard   = lazy(() => import("@/pages/workspace/WorkspaceDashboard"));
-const WorkspaceClientes    = lazy(() => import("@/pages/workspace/WorkspaceClientes"));
+const WorkspaceClientes    = lazy(() => import("@/pages/workspace/WorkspaceLicencas"));
 const WorkspaceClinics     = lazy(() => import("@/pages/workspace/WorkspaceClinics"));
 const WorkspaceClinicDetail= lazy(() => import("@/pages/workspace/WorkspaceClinicDetail"));
 const WorkspaceClinicNew   = lazy(() => import("@/pages/workspace/WorkspaceClinicNew"));
@@ -227,12 +227,12 @@ function SuperAdminRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
         <Route element={<SuperAdminLayout />}>
-          <Route path="/dashboard" element={<SaDashboard />} />
-          <Route path="/clientes"  element={<SaClientes />} />
-          <Route path="/integracoes" element={<SaIntegracoes />} />
-          <Route path="/financeiro"  element={<SaFinanceiro />} />
-          <Route path="/storage"     element={<SaStorage />} />
-          <Route path="/ia"          element={<SaIA />} />
+          <Route path="/dashboard"     element={<SaDashboard />} />
+          <Route path="/workspaces"    element={<SaWorkspaces />} />
+          <Route path="/planos-ws"     element={<SaPlanosWS />} />
+          <Route path="/financeiro"    element={<SaFinanceiro />} />
+          <Route path="/uso-ia"        element={<SaUsoIA />} />
+          <Route path="/integracoes"   element={<SaIntegracoes />} />
           <Route path="/configuracoes" element={<SaConfiguracoes />} />
         </Route>
       </Route>

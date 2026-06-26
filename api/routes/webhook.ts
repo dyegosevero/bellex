@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateWebhookSecret } from "../middleware/auth.js";
-import { getClinicByPhone, getClinicContext, getOrCreatePatient, createAgendamento, getLeadComAgente, getOrCreateLead, getStagesComCriterios, moverLead } from "../services/supabase.js";
+import { getClinicByPhone, getClinicContext, getOrCreatePatient, createAgendamento, getLeadComAgente, getOrCreateLead, getStagesComCriterios, moverLead, recordWorkspaceUsage } from "../services/supabase.js";
 import { getHistory, appendMessage } from "../services/redis.js";
 import { generateResponse } from "../services/openai.js";
 import { sendMessage } from "../services/evoapi.js";
@@ -64,6 +64,9 @@ router.post("/whatsapp", validateWebhookSecret, async (req, res) => {
     // salva no histórico
     await appendMessage(sessionId, { role: "user", content: text });
     await appendMessage(sessionId, { role: "assistant", content: ai.texto });
+
+    // registra uso de IA no workspace (fire-and-forget — não bloqueia resposta)
+    recordWorkspaceUsage(clinic.subdomain, ai.tokens_used).catch(() => {});
 
     // executa ações
     if (ai.action.type === "mover_lead") {

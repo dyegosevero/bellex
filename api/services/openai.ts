@@ -12,6 +12,7 @@ export type AIAction =
 export type AIResponse = {
   texto: string;
   action: AIAction;
+  tokens_used: number;
 };
 
 function buildSystemPrompt(params: {
@@ -68,10 +69,12 @@ export async function generateResponse(params: {
   });
 
   const raw = completion.choices[0].message.content ?? '{"texto":"Desculpe, ocorreu um erro.","action":{"type":"none"}}';
+  const tokens_used = completion.usage?.total_tokens ?? 0;
 
   try {
-    return JSON.parse(raw) as AIResponse;
+    const parsed = JSON.parse(raw) as Omit<AIResponse, "tokens_used">;
+    return { ...parsed, tokens_used };
   } catch {
-    return { texto: raw, action: { type: "none" } };
+    return { texto: raw, action: { type: "none" }, tokens_used };
   }
 }

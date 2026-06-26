@@ -94,6 +94,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setRole(r);
             finish();
           }
+          // Register clinic auth user for workspace usage tracking
+          // (runs only in clinic subdomain context — harmless on other domains)
+          try {
+            const h = window.location.hostname;
+            const isClinic =
+              h.endsWith(".bellex.beauty") &&
+              h !== "sa.bellex.beauty" &&
+              h !== "ws.bellex.beauty" &&
+              !h.startsWith("agendamento.");
+            if (isClinic) {
+              const subdomain = h.replace(".bellex.beauty", "");
+              await supabase.rpc("register_clinic_auth_user", { p_subdomain: subdomain });
+            }
+          } catch { /* non-critical */ }
         });
       }
     );

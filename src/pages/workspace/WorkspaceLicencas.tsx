@@ -3,7 +3,7 @@ import { Key, Plus, AlertTriangle, CheckCircle2, XCircle, Clock, MoreHorizontal,
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -54,6 +54,9 @@ export default function WorkspaceLicencas() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const f = (key: keyof typeof EMPTY_FORM) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -99,10 +102,13 @@ export default function WorkspaceLicencas() {
 
   const handleSuspend  = async (id: string) => { const { error } = await update(id, { status: "suspenso" }); if (error) toast.error("Erro"); else toast.success("Licença suspensa"); };
   const handleActivate = async (id: string) => { const { error } = await update(id, { status: "ativo"    }); if (error) toast.error("Erro"); else toast.success("Licença ativada");  };
-  const handleDelete   = async (id: string) => {
-    if (!confirm("Remover este cliente permanentemente?")) return;
-    const { error } = await remove(id);
-    if (error) toast.error("Erro ao remover"); else toast.success("Removido");
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await remove(deleteTarget.id);
+    setDeleting(false);
+    if (error) toast.error("Erro ao remover");
+    else { toast.success("Cliente removido"); setDeleteTarget(null); setDeleteConfirmText(""); }
   };
 
   return (
@@ -191,7 +197,7 @@ export default function WorkspaceLicencas() {
                         ? <DropdownMenuItem className="text-orange-600" onClick={() => handleSuspend(l.id)}>Suspender</DropdownMenuItem>
                         : <DropdownMenuItem className="text-green-600"  onClick={() => handleActivate(l.id)}>Reativar</DropdownMenuItem>
                       }
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(l.id)}>Remover</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => { setDeleteTarget({ id: l.id, name: l.client_name }); setDeleteConfirmText(""); }}>Remover</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -357,6 +363,34 @@ export default function WorkspaceLicencas() {
             <Button onClick={handleCreate} disabled={submitting}>
               {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
               Cadastrar cliente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de remoção */}
+      <Dialog open={!!deleteTarget} onOpenChange={open => { if (!open) { setDeleteTarget(null); setDeleteConfirmText(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <DialogTitle>Remover cliente</DialogTitle>
+            </div>
+            <DialogDescription>
+              Esta ação é irreversível. Todos os dados de <strong>{deleteTarget?.name}</strong> serão permanentemente removidos.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5 py-1">
+            <p className="text-xs text-muted-foreground">Digite <span className="font-mono font-semibold text-foreground">REMOVER</span> para confirmar</p>
+            <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder="REMOVER" className="font-mono" autoFocus />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteTarget(null); setDeleteConfirmText(""); }} disabled={deleting}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting || deleteConfirmText !== "REMOVER"}>
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
+              {deleting ? "Removendo..." : "Remover definitivamente"}
             </Button>
           </DialogFooter>
         </DialogContent>

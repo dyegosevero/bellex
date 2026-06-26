@@ -71,7 +71,7 @@ export default function WorkspaceClinicNew() {
       toast.error(error.includes("unique") ? "Subdomínio já existe. Escolha outro." : "Erro ao criar clínica.");
     } else {
       toast.success("Clínica criada com sucesso!");
-      navigate("/workspace/clinicas");
+      navigate("/clinicas");
     }
   };
 

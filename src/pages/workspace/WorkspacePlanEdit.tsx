@@ -137,8 +137,8 @@ export default function WorkspacePlanEdit() {
     };
     const ok = isNew ? await create(payload) : await update(id!, payload);
     setSaving(false);
-    if (ok) { toast.success(isNew ? "Plano criado!" : "Plano salvo!"); navigate("/planos"); }
-    else toast.error("Erro ao salvar plano");
+    if (ok) navigate("/planos");
+    // hook already shows toast on success/error
   };
 
   const toggleFeature = (key: string, val: boolean) =>

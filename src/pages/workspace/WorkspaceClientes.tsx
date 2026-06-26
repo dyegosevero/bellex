@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Users, Plus, Search, MoreHorizontal, Building2, ArrowUpRight, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,8 @@ const planLabel: Record<string, string> = {
 };
 
 export default function WorkspaceClientes() {
-  const { licenses, loading, error, create } = useWorkspaceLicenses();
+  const navigate = useNavigate();
+  const { licenses, loading, error, create, update } = useWorkspaceLicenses();
   const { clinics } = useWorkspaceClinics();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -156,9 +158,12 @@ export default function WorkspaceClientes() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem><ArrowUpRight className="w-3.5 h-3.5 mr-2" />Ver clínicas</DropdownMenuItem>
-                        <DropdownMenuItem>Alterar plano</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Suspender</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/clinicas?cliente=${l.id}`)}><ArrowUpRight className="w-3.5 h-3.5 mr-2" />Ver clínicas</DropdownMenuItem>
+                        {l.status !== "suspenso" ? (
+                          <DropdownMenuItem className="text-orange-600" onClick={() => update(l.id, { status: "suspenso" }).then(r => { if (!r.error) toast.success("Suspenso"); })}>Suspender</DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem className="text-green-600" onClick={() => update(l.id, { status: "ativo" }).then(r => { if (!r.error) toast.success("Reativado"); })}>Reativar</DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </td>
