@@ -8,9 +8,11 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+const storageKey = `sb-${window.location.hostname.replace(/\./g, "-")}-auth`;
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storageKey,
     persistSession: true,
     autoRefreshToken: true,
   }
