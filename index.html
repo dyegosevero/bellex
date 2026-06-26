@@ -17,6 +17,38 @@
     <meta name="twitter:title" content="Bellex — Gestão Inteligente de Clínicas">
     <meta name="twitter:description" content="Sistema de gestão completo para clínicas de estética.">
     <meta name="twitter:image" content="/og-image.png">
+  <script>
+    // Apply cached clinic brand before React mounts — eliminates color flash
+    (function () {
+      try {
+        var h = location.hostname;
+        var isBellex = h === "bellex.beauty" || h === "www.bellex.beauty" || h === "sa.bellex.beauty" || h === "ws.bellex.beauty" || h.startsWith("agendamento.");
+        if (isBellex) return;
+        var cached = localStorage.getItem("brand_" + h);
+        if (!cached) return;
+        var b = JSON.parse(cached);
+        if (!b || !b.color) return;
+        // parse hex to hsl
+        var hex = b.color.replace("#", "");
+        var r = parseInt(hex.slice(0,2),16)/255, g = parseInt(hex.slice(2,4),16)/255, bl = parseInt(hex.slice(4,6),16)/255;
+        var max = Math.max(r,g,bl), min = Math.min(r,g,bl), h2=0, s=0, l=(max+min)/2;
+        if (max !== min) {
+          var d = max - min;
+          s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+          if (max===r) h2=((g-bl)/d+(g<bl?6:0))/6;
+          else if (max===g) h2=((bl-r)/d+2)/6;
+          else h2=((r-g)/d+4)/6;
+        }
+        var H=Math.round(h2*360), S=Math.round(s*100), L=Math.round(l*100);
+        var root = document.documentElement;
+        root.style.setProperty("--primary", H+" "+S+"% "+L+"%");
+        root.style.setProperty("--brand-salmon", H+" "+S+"% "+L+"%");
+        root.style.setProperty("--brand-blush", H+" "+Math.max(S-35,0)+"% "+Math.min(L+16,98)+"%");
+        root.style.setProperty("--secondary", H+" "+Math.max(S-35,0)+"% "+Math.min(L+16,98)+"%");
+        root.style.setProperty("--ring", H+" "+S+"% "+L+"%");
+      } catch(e) {}
+    })();
+  </script>
   </head>
 
   <body>

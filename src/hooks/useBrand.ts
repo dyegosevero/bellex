@@ -61,12 +61,14 @@ export async function loadBrandForDomain(): Promise<BrandConfig | null> {
     .maybeSingle();
 
   if (!data) return null;
-  return {
+  const brand: BrandConfig = {
     name: data.name,
     color: data.color,
     logo_url: data.logo_url ?? null,
     appearance: (data as Record<string, unknown>).appearance as BrandConfig["appearance"] ?? {},
   };
+  try { localStorage.setItem("brand_" + hostname, JSON.stringify(brand)); } catch (_) {}
+  return brand;
 }
 
 export function useBrand(brand: BrandConfig | null) {
