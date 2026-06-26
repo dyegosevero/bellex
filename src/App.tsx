@@ -236,6 +236,8 @@ function DomainNotFound() {
 }
 
 function CustomDomainGate({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const isPublic = isPublicPath(pathname);
   const [status, setStatus] = useState<"checking" | "ok" | "notfound">("checking");
   useEffect(() => {
     import("@/integrations/supabase/client").then(({ supabase }) => {
@@ -243,6 +245,8 @@ function CustomDomainGate({ children }: { children: React.ReactNode }) {
         .then(({ data }) => setStatus(data ? "ok" : "notfound"));
     });
   }, []);
+  // Public pages (login, esqueci-senha, redefinir-senha) render immediately — no gate
+  if (isPublic) return <>{children}</>;
   if (status === "checking") return <PageLoader />;
   if (status === "notfound") return <DomainNotFound />;
   return <>{children}</>;
