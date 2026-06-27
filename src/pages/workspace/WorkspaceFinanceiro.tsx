@@ -7,7 +7,6 @@ import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
 import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 import { useMemo } from "react";
 
-const planColor: Record<string, string> = { starter: "#60a5fa", pro: "#e8957a", scale: "#a78bfa" };
 
 const statusStyle: Record<string, string> = {
   ativo: "bg-green-50 text-green-700 border-green-200",
@@ -55,11 +54,11 @@ export default function WorkspaceFinanceiro() {
     const mrr = active.reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0);
     const riskMrr = inadimplente.reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0);
 
-    const byPlan = ["starter", "pro", "scale"].map(p => ({
-      name: p.charAt(0).toUpperCase() + p.slice(1),
-      value: active.filter(c => c.plan === p).reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0),
-      fill: planColor[p],
-      count: active.filter(c => c.plan === p).length,
+    const byPlan = plans.map(p => ({
+      name: p.name,
+      value: active.filter(c => c.plan === p.slug).reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0),
+      fill: p.color ?? "#888",
+      count: active.filter(c => c.plan === p.slug).length,
     })).filter(p => p.value > 0);
 
     const months = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];

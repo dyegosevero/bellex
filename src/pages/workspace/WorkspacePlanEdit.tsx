@@ -85,8 +85,8 @@ export default function WorkspacePlanEdit() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [seatsLimit, setSeatsLimit] = useState("1");
-  const [aiConv, setAiConv] = useState("250");
-  const [storageGb, setStorageGb] = useState("10");
+  const [aiConv, setAiConv] = useState("");
+  const [storageGb, setStorageGb] = useState("");
   const [color, setColor] = useState("#e8957a");
   const [popular, setPopular] = useState(false);
   const [active, setActive] = useState(true);
@@ -100,8 +100,8 @@ export default function WorkspacePlanEdit() {
       setName(plan.name);
       setPrice(String(plan.price));
       setSeatsLimit(String(plan.seats_limit));
-      setAiConv(String(plan.ai_conversations_month ?? 250));
-      setStorageGb(String(plan.storage_gb ?? 10));
+      setAiConv(String(plan.ai_conversations_month ?? ""));
+      setStorageGb(String(plan.storage_gb ?? ""));
       setColor(plan.color);
       setPopular(plan.popular);
       setActive(plan.active);
@@ -130,9 +130,9 @@ export default function WorkspacePlanEdit() {
       name: name.trim(),
       slug: name.trim().toLowerCase().replace(/\s+/g, "-"),
       price: parseFloat(price),
-      seats_limit: parseInt(seatsLimit) || 1,
-      ai_conversations_month: parseInt(aiConv) || 250,
-      storage_gb: parseInt(storageGb) || 10,
+      seats_limit: parseInt(seatsLimit) || 0,
+      ai_conversations_month: parseInt(aiConv) || 0,
+      storage_gb: parseInt(storageGb) || 0,
       color,
       popular,
       active,

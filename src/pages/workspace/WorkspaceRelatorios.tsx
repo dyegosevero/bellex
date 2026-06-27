@@ -7,7 +7,6 @@ import { useWorkspacePlans } from "@/hooks/useWorkspacePlans";
 import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 import { useMemo } from "react";
 
-const planColor: Record<string, string> = { starter: "#60a5fa", pro: "#e8957a", scale: "#a78bfa" };
 
 export default function WorkspaceRelatorios() {
   const { workspace } = useCurrentWorkspace();
@@ -27,10 +26,10 @@ export default function WorkspaceRelatorios() {
     const activeClinics = myClinics.filter(c => c.status === "ativo" || c.status === "trial");
     const mrr = myClinics.filter(c => c.status === "ativo").reduce((s, c) => s + (planPrice[c.plan] ?? 0), 0);
 
-    const byPlan = ["starter", "pro", "scale"].map(p => ({
-      name: p.charAt(0).toUpperCase() + p.slice(1),
-      valor: myClinics.filter(c => c.plan === p).length,
-      fill: planColor[p],
+    const byPlan = plans.map(p => ({
+      name: p.name,
+      valor: myClinics.filter(c => c.plan === p.slug).length,
+      fill: p.color ?? "#888",
     }));
 
     const byStatus = (["ativo","trial","inadimplente","suspenso","cancelado"] as const).map(s => ({

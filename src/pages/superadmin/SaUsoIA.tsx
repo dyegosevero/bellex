@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSaPlans } from "@/hooks/useSaPlans";
 import { Loader2, Zap, HardDrive, MessageSquare, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -12,12 +13,6 @@ type UsageRow = {
   conversations_month: number;
   tokens_month: number;
   storage_bytes: number;
-};
-
-const PLAN_LIMITS: Record<string, { storage_gb: number; ai_conversations_month: number }> = {
-  starter: { storage_gb: 10,  ai_conversations_month: 250  },
-  pro:     { storage_gb: 20,  ai_conversations_month: 600  },
-  scale:   { storage_gb: 30,  ai_conversations_month: 1000 },
 };
 
 function pct(used: number, total: number) {
@@ -56,6 +51,19 @@ const statusColor: Record<string, string> = {
 export default function SaUsoIA() {
   const [rows, setRows] = useState<UsageRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const { plans } = useSaPlans();
+
+  const planMap = useMemo(() =>
+    Object.fromEntries(plans.map(p => [p.slug, p])),
+  [plans]);
+
+  function getPlanLimits(plan: string) {
+    const p = planMap[plan?.toLowerCase()];
+    return {
+      storage_gb: p?.storage_gb ?? 0,
+      ai_conversations_month: p?.ai_conversations_month ?? 0,
+    };
+  }
 
   async function load() {
     setLoading(true);
@@ -122,8 +130,7 @@ export default function SaUsoIA() {
       ) : (
         <div className="space-y-3">
           {rows.map(r => {
-            const planKey = (r.plan ?? "starter").toLowerCase();
-            const lim = PLAN_LIMITS[planKey] ?? PLAN_LIMITS.starter;
+            const lim = getPlanLimits(r.plan);
             const convPct   = pct(r.conversations_month, lim.ai_conversations_month);
             const storePct  = pct(r.storage_bytes, lim.storage_gb * 1024 * 1024 * 1024);
             const hasAlert  = convPct >= 80 || storePct >= 80;

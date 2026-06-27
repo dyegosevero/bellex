@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useSaPlans } from "@/hooks/useSaPlans";
 import {
   Loader2, TrendingUp, Users, Building2, Zap,
   HardDrive, MessageSquare, AlertTriangle, ExternalLink,
@@ -16,16 +17,6 @@ type WorkspaceUsageRow = {
   tokens_month: number;
   storage_bytes: number;
 };
-
-const PLAN_LIMITS: Record<string, { storage_gb: number; ai_conversations_month: number; price: number }> = {
-  starter: { storage_gb: 10,  ai_conversations_month: 250,  price: 500  },
-  pro:     { storage_gb: 20,  ai_conversations_month: 600,  price: 750  },
-  scale:   { storage_gb: 30,  ai_conversations_month: 1000, price: 1000 },
-};
-
-function getPlanLimits(plan: string) {
-  return PLAN_LIMITS[(plan ?? "starter").toLowerCase()] ?? PLAN_LIMITS.starter;
-}
 
 function pct(used: number, total: number) {
   if (!total) return 0;
@@ -81,6 +72,20 @@ export default function SaDashboard() {
   const [rows, setRows] = useState<WorkspaceUsageRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [clinicCount, setClinicCount] = useState(0);
+  const { plans } = useSaPlans();
+
+  const planMap = useMemo(() =>
+    Object.fromEntries(plans.map(p => [p.slug, p])),
+  [plans]);
+
+  function getPlanLimits(plan: string) {
+    const p = planMap[plan?.toLowerCase()];
+    return {
+      storage_gb: p?.storage_gb ?? 0,
+      ai_conversations_month: p?.ai_conversations_month ?? 0,
+      price: p?.price_monthly ?? 0,
+    };
+  }
 
   useEffect(() => {
     async function load() {
