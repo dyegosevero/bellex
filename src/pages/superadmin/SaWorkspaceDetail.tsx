@@ -188,7 +188,7 @@ export default function SaWorkspaceDetail() {
             <div className="space-y-1.5">
               <Label className="text-xs">Status</Label>
               <Select value={form.status} onValueChange={v => set("status", v as WorkspaceCustomer["status"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="capitalize"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["trial","ativo","expirando","inadimplente","suspenso","cancelado"].map(s => (
                     <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
@@ -199,7 +199,7 @@ export default function SaWorkspaceDetail() {
             <div className="space-y-1.5">
               <Label className="text-xs">Tipo de licença</Label>
               <Select value={form.license_type} onValueChange={v => set("license_type", v as "anual" | "vitalicia")}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="capitalize"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="anual">Anual</SelectItem>
                   <SelectItem value="vitalicia">Vitalícia</SelectItem>
