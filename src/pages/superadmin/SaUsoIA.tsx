@@ -1,6 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSaPlans } from "@/hooks/useSaPlans";
 import { Loader2, Zap, HardDrive, MessageSquare, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,27 +13,6 @@ type UsageRow = {
   tokens_month: number;
   storage_bytes: number;
 };
-
-function pct(used: number, total: number) {
-  if (!total) return 0;
-  return Math.min(Math.round((used / total) * 100), 999);
-}
-
-function PctBar({ used, total, color }: { used: number; total: number; color: string }) {
-  const p = pct(used, total);
-  const barColor = p >= 90 ? "#ef4444" : p >= 75 ? "#f59e0b" : color;
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-[10px]">
-        <span className="text-muted-foreground/70">{used.toLocaleString("pt-BR")} / {total.toLocaleString("pt-BR")}</span>
-        <span style={{ color: p > 100 ? "#ef4444" : "#64748b" }}>{p}%</span>
-      </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(p, 100)}%`, background: barColor }} />
-      </div>
-    </div>
-  );
-}
 
 function fmtBytes(b: number) {
   if (b < 1024) return `${b} B`;
@@ -51,19 +29,6 @@ const statusColor: Record<string, string> = {
 export default function SaUsoIA() {
   const [rows, setRows] = useState<UsageRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const { plans } = useSaPlans();
-
-  const planMap = useMemo(() =>
-    Object.fromEntries(plans.map(p => [p.slug, p])),
-  [plans]);
-
-  function getPlanLimits(plan: string) {
-    const p = planMap[plan?.toLowerCase()];
-    return {
-      storage_gb: p?.storage_gb ?? 0,
-      ai_conversations_month: p?.ai_conversations_month ?? 0,
-    };
-  }
 
   async function load() {
     setLoading(true);
@@ -130,26 +95,14 @@ export default function SaUsoIA() {
       ) : (
         <div className="space-y-3">
           {rows.map(r => {
-            const lim = getPlanLimits(r.plan);
-            const convPct   = pct(r.conversations_month, lim.ai_conversations_month);
-            const storePct  = pct(r.storage_bytes, lim.storage_gb * 1024 * 1024 * 1024);
-            const hasAlert  = convPct >= 80 || storePct >= 80;
-
             return (
               <div
                 key={r.workspace_id}
-                className={`rounded-xl border bg-muted/20 p-5 ${hasAlert ? "border-amber-900/50" : "border-border/35"}`}
+                className="rounded-xl border bg-muted/20 p-5 border-border/35"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-[14px] font-semibold text-white/85">{r.client_name}</p>
-                      {hasAlert && (
-                        <span className="text-[9px] font-bold bg-amber-950/60 text-amber-400 border border-amber-900/50 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                          Alerta
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-[14px] font-semibold text-white/85">{r.client_name}</p>
                     <p className="text-[11px] text-muted-foreground/70 mt-0.5 capitalize">{r.plan}</p>
                   </div>
                   <span className="text-[11px] font-semibold capitalize" style={{ color: statusColor[r.status] ?? "#64748b" }}>
@@ -162,15 +115,15 @@ export default function SaUsoIA() {
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-2">
                       <MessageSquare className="w-3 h-3" /> Conversas IA / mês
                     </div>
-                    <PctBar used={r.conversations_month} total={lim.ai_conversations_month} color="#a78bfa" />
-                    <p className="text-[10px] text-white/20">limite do plano: {lim.ai_conversations_month} conv.</p>
+                    <p className="text-xl font-bold text-white/80">{r.conversations_month.toLocaleString("pt-BR")}</p>
+                    <p className="text-[10px] text-muted-foreground/50">conversas este mês</p>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-2">
                       <HardDrive className="w-3 h-3" /> Storage usado
                     </div>
-                    <PctBar used={r.storage_bytes} total={lim.storage_gb * 1024 * 1024 * 1024} color="#60a5fa" />
-                    <p className="text-[10px] text-white/20">{fmtBytes(r.storage_bytes)} de {lim.storage_gb} GB</p>
+                    <p className="text-xl font-bold text-white/80">{fmtBytes(r.storage_bytes)}</p>
+                    <p className="text-[10px] text-muted-foreground/50">armazenamento utilizado</p>
                   </div>
                 </div>
 
