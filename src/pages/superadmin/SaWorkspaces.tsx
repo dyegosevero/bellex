@@ -1,21 +1,15 @@
 import { useState } from "react";
-import { useSaWorkspaces, WorkspaceCustomer } from "@/hooks/useSaWorkspaces";
+import { useNavigate } from "react-router-dom";
+import { useSaWorkspaces } from "@/hooks/useSaWorkspaces";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useSaPlans } from "@/hooks/useSaPlans";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Search, Users, Building2, MoreHorizontal, Loader2, Plus, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Users, Building2, MoreHorizontal, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const statusColor: Record<string, string> = {
@@ -32,22 +26,6 @@ type FormState = {
   valid_until: string;
 };
 
-type EditState = {
-  client_name: string;
-  contact_email: string;
-  contact_phone: string;
-  document: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  notes: string;
-  plan: string;
-  status: WorkspaceCustomer["status"];
-  license_type: "anual" | "vitalicia";
-  valid_until: string;
-};
-
 const FORM_DEFAULT: FormState = {
   client_name: "",
   contact_email: "",
@@ -57,25 +35,8 @@ const FORM_DEFAULT: FormState = {
   valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
 };
 
-function wsToEdit(ws: WorkspaceCustomer): EditState {
-  return {
-    client_name: ws.client_name,
-    contact_email: ws.contact_email ?? "",
-    contact_phone: ws.contact_phone ?? "",
-    document: ws.document ?? "",
-    address: ws.address ?? "",
-    city: ws.city ?? "",
-    state: ws.state ?? "",
-    zip_code: ws.zip_code ?? "",
-    notes: ws.notes ?? "",
-    plan: ws.plan,
-    status: ws.status,
-    license_type: ws.license_type,
-    valid_until: ws.valid_until ? ws.valid_until.split("T")[0] : "",
-  };
-}
-
 export default function SaWorkspaces() {
+  const navigate = useNavigate();
   const { workspaces: licenses, loading, create, update } = useSaWorkspaces();
   const { clinics } = useWorkspaceClinics();
   const { plans: saPlans } = useSaPlans();
@@ -84,20 +45,13 @@ export default function SaWorkspaces() {
   const [form, setForm] = useState<FormState>(FORM_DEFAULT);
   const [saving, setSaving] = useState(false);
 
-  // Edit drawer
-  const [editWs, setEditWs] = useState<WorkspaceCustomer | null>(null);
-  const [editForm, setEditForm] = useState<EditState | null>(null);
-  const [editSaving, setEditSaving] = useState(false);
-
   const filtered = licenses.filter(l =>
     l.client_name.toLowerCase().includes(search.toLowerCase()) ||
     (l.contact_email ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
   const clinicsForWs = (id: string) => clinics.filter(c => c.customer_id === id).length;
-
   const set = (k: keyof FormState, v: string) => setForm(prev => ({ ...prev, [k]: v }));
-  const setE = (k: keyof EditState, v: string) => setEditForm(prev => prev ? { ...prev, [k]: v } : prev);
 
   const handleCreate = async () => {
     if (!form.client_name.trim()) { toast.error("Nome do workspace obrigatório"); return; }
@@ -120,36 +74,6 @@ export default function SaWorkspaces() {
 
   const handleSuspend  = async (id: string) => { const r = await update(id, { status: "suspenso" }); if (r.error) toast.error("Erro"); else toast.success("Suspenso"); };
   const handleActivate = async (id: string) => { const r = await update(id, { status: "ativo"    }); if (r.error) toast.error("Erro"); else toast.success("Reativado"); };
-
-  const openEdit = (ws: WorkspaceCustomer) => {
-    setEditWs(ws);
-    setEditForm(wsToEdit(ws));
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editWs || !editForm) return;
-    setEditSaving(true);
-    const { error } = await update(editWs.id, {
-      client_name: editForm.client_name.trim(),
-      contact_email: editForm.contact_email.trim() || null,
-      contact_phone: editForm.contact_phone.trim() || null,
-      document: editForm.document.trim() || null,
-      address: editForm.address.trim() || null,
-      city: editForm.city.trim() || null,
-      state: editForm.state.trim() || null,
-      zip_code: editForm.zip_code.trim() || null,
-      notes: editForm.notes.trim() || null,
-      plan: editForm.plan,
-      status: editForm.status,
-      license_type: editForm.license_type,
-      valid_until: editForm.license_type === "anual" && editForm.valid_until ? editForm.valid_until : null,
-    });
-    setEditSaving(false);
-    if (error) { toast.error("Erro ao salvar"); return; }
-    toast.success("Workspace atualizado!");
-    setEditWs(null);
-    setEditForm(null);
-  };
 
   return (
     <div className="p-6 space-y-5 max-w-7xl mx-auto">
@@ -192,8 +116,8 @@ export default function SaWorkspaces() {
           {filtered.map(ws => (
             <div
               key={ws.id}
+              onClick={() => navigate(`/workspaces/${ws.id}`)}
               className="grid grid-cols-[2fr_1fr_80px_80px_70px_40px] px-4 py-3 border-b border-border/20 hover:bg-muted/20 transition-colors items-center last:border-0 cursor-pointer"
-              onClick={() => openEdit(ws)}
             >
               <div>
                 <p className="text-[13px] font-medium text-foreground">{ws.client_name}</p>
@@ -221,7 +145,7 @@ export default function SaWorkspaces() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => openEdit(ws)}>Editar</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/workspaces/${ws.id}`)}>Editar</DropdownMenuItem>
                     {ws.status !== "suspenso"
                       ? <DropdownMenuItem className="text-amber-600" onClick={() => handleSuspend(ws.id)}>Suspender</DropdownMenuItem>
                       : <DropdownMenuItem className="text-green-600" onClick={() => handleActivate(ws.id)}>Reativar</DropdownMenuItem>
@@ -297,161 +221,6 @@ export default function SaWorkspaces() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Drawer edição */}
-      <Sheet open={!!editWs} onOpenChange={v => { if (!v) { setEditWs(null); setEditForm(null); } }}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader className="mb-5">
-            <SheetTitle className="text-base">{editWs?.client_name}</SheetTitle>
-          </SheetHeader>
-
-          {editForm && (
-            <div className="space-y-5">
-              {/* Básico */}
-              <div className="space-y-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Dados do workspace</p>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Nome *</Label>
-                  <Input value={editForm.client_name} onChange={e => setE("client_name", e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">E-mail</Label>
-                    <Input type="email" value={editForm.contact_email} onChange={e => setE("contact_email", e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Telefone</Label>
-                    <Input value={editForm.contact_phone} onChange={e => setE("contact_phone", e.target.value)} />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">CPF / CNPJ</Label>
-                  <Input value={editForm.document} onChange={e => setE("document", e.target.value)} />
-                </div>
-              </div>
-
-              {/* Endereço */}
-              <div className="space-y-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Endereço</p>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Logradouro</Label>
-                  <Input value={editForm.address} onChange={e => setE("address", e.target.value)} />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2 space-y-1.5">
-                    <Label className="text-xs">Cidade</Label>
-                    <Input value={editForm.city} onChange={e => setE("city", e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">UF</Label>
-                    <Input maxLength={2} value={editForm.state} onChange={e => setE("state", e.target.value.toUpperCase())} />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">CEP</Label>
-                  <Input value={editForm.zip_code} onChange={e => setE("zip_code", e.target.value)} />
-                </div>
-              </div>
-
-              {/* Contrato */}
-              <div className="space-y-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Contrato & plano</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Plano</Label>
-                    <Select value={editForm.plan} onValueChange={v => setE("plan", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {saPlans.map(p => (
-                          <SelectItem key={p.slug} value={p.slug}>
-                            {p.name} — R$ {p.price_monthly.toLocaleString("pt-BR")}/mês
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Status</Label>
-                    <Select value={editForm.status} onValueChange={v => setE("status", v as WorkspaceCustomer["status"])}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {["trial","ativo","expirando","inadimplente","suspenso","cancelado"].map(s => (
-                          <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Tipo de licença</Label>
-                    <Select value={editForm.license_type} onValueChange={v => setE("license_type", v as "anual" | "vitalicia")}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="anual">Anual</SelectItem>
-                        <SelectItem value="vitalicia">Vitalícia</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {editForm.license_type === "anual" && (
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Válido até</Label>
-                      <Input type="date" value={editForm.valid_until} onChange={e => setE("valid_until", e.target.value)} />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Notas */}
-              <div className="space-y-1.5">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Notas internas</p>
-                <textarea
-                  rows={3}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
-                  value={editForm.notes}
-                  onChange={e => setE("notes", e.target.value)}
-                  placeholder="Observações, histórico, detalhes do contrato..."
-                />
-              </div>
-
-              {/* Clínicas do workspace */}
-              <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                  Clínicas ({clinicsForWs(editWs!.id)})
-                </p>
-                {clinics.filter(c => c.customer_id === editWs!.id).length === 0 ? (
-                  <p className="text-xs text-muted-foreground/50">Nenhuma clínica cadastrada</p>
-                ) : (
-                  <div className="space-y-1">
-                    {clinics.filter(c => c.customer_id === editWs!.id).map(c => (
-                      <div key={c.id} className="flex items-center justify-between rounded-lg border border-border/30 px-3 py-2">
-                        <div>
-                          <p className="text-xs font-medium">{c.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{c.subdomain}.bellex.beauty</p>
-                        </div>
-                        <span className="text-[10px] font-medium capitalize px-2 py-0.5 rounded-full"
-                          style={{ background: `${statusColor[c.status] ?? "#888"}18`, color: statusColor[c.status] ?? "#888" }}>
-                          {c.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2 pt-2 border-t border-border/30">
-                <Button variant="outline" className="flex-1" onClick={() => { setEditWs(null); setEditForm(null); }}>
-                  Cancelar
-                </Button>
-                <Button className="flex-1" onClick={handleSaveEdit} disabled={editSaving}>
-                  {editSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  Salvar
-                </Button>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }
