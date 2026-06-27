@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useSaWorkspaces } from "@/hooks/useSaWorkspaces";
+import { useSaPlans } from "@/hooks/useSaPlans";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DollarSign, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import {
@@ -7,35 +8,38 @@ import {
   Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 
-const PLAN_PRICE: Record<string, number> = { starter: 500, pro: 750, scale: 1000 };
-const PLAN_COLOR: Record<string, string> = { starter: "#60a5fa", pro: "#e8957a", scale: "#a78bfa" };
-
 function fmtR(v: number) {
   return `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 }
 
 export default function SaFinanceiro() {
   const { workspaces: licenses, loading } = useSaWorkspaces();
+  const { plans, loading: loadingPlans } = useSaPlans();
 
   const stats = useMemo(() => {
+    const priceMap = Object.fromEntries(plans.map(p => [p.slug, p.price_monthly]));
+    const colorMap = Object.fromEntries(plans.map(p => [p.slug, p.color ?? "#888"]));
+
     const ativos = licenses.filter(l => l.status === "ativo");
-    const mrr = ativos.reduce((s, l) => s + (PLAN_PRICE[l.plan] ?? 0), 0);
+    const mrr = ativos.reduce((s, l) => s + (priceMap[l.plan] ?? 0), 0);
     const avgTicket = ativos.length > 0 ? mrr / ativos.length : 0;
     const ltv = avgTicket * 12;
     const churnRate = licenses.length > 0
       ? (licenses.filter(l => l.status === "cancelado").length / licenses.length) * 100
       : 0;
 
-    const byPlan = ["starter", "pro", "scale"].map(p => ({
-      name: p.charAt(0).toUpperCase() + p.slice(1),
-      count: ativos.filter(l => l.plan === p).length,
-      mrr: ativos.filter(l => l.plan === p).reduce((s, l) => s + (PLAN_PRICE[l.plan] ?? 0), 0),
+    const byPlan = plans.map(p => ({
+      name: p.name,
+      slug: p.slug,
+      count: ativos.filter(l => l.plan === p.slug).length,
+      mrr: ativos.filter(l => l.plan === p.slug).reduce((s) => s + p.price_monthly, 0),
+      color: p.color ?? "#888",
     }));
 
-    return { mrr, avgTicket, ltv, churnRate, ativos: ativos.length, byPlan };
-  }, [licenses]);
+    return { mrr, avgTicket, ltv, churnRate, ativos: ativos.length, byPlan, colorMap };
+  }, [licenses, plans]);
 
-  if (loading) return (
+  if (loading || loadingPlans) return (
     <div className="flex items-center justify-center h-64 gap-2 text-muted-foreground">
       <Loader2 className="w-5 h-5 animate-spin" />
     </div>
@@ -99,7 +103,7 @@ export default function SaFinanceiro() {
                 formatter={(v: number) => [fmtR(v), "MRR"]}
               />
               <Bar dataKey="mrr" radius={[6, 6, 0, 0]}>
-                {stats.byPlan.map(p => <Cell key={p.name} fill={PLAN_COLOR[p.name.toLowerCase()] ?? "#888"} />)}
+                {stats.byPlan.map(p => <Cell key={p.name} fill={p.color} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
