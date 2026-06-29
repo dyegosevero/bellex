@@ -326,13 +326,44 @@ const PublicBooking = () => {
     },
   });
 
+  // Fetch specialist hours when a specialist is selected
+  const { data: specialistHours } = useQuery({
+    queryKey: ["specialist-hours-public", specialistId],
+    queryFn: async () => {
+      if (!specialistId) return [];
+      const { data, error } = await supabase
+        .from("specialist_hours")
+        .select("weekday, active")
+        .eq("specialist_id", specialistId);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!specialistId,
+  });
+
   // Set of weekdays (0=Sun..6=Sat) that are closed
+  // When specialist is selected: intersect clinic hours + specialist hours
   const closedWeekdays = useMemo(() => {
     if (!businessHours) return new Set<number>();
-    const activeWeekdays = new Set(businessHours.filter((h) => h.active).map((h) => h.weekday));
     const allDays = [0, 1, 2, 3, 4, 5, 6];
-    return new Set(allDays.filter((d) => !activeWeekdays.has(d)));
-  }, [businessHours]);
+
+    // Days the clinic is open
+    const clinicOpen = new Set(businessHours.filter((h) => h.active).map((h) => h.weekday));
+
+    if (specialistId && specialistHours && specialistHours.length > 0) {
+      // Days the specialist explicitly has entries for
+      const specActivedays = new Set(specialistHours.filter((h) => h.active).map((h) => h.weekday));
+      const specInactiveDays = new Set(specialistHours.filter((h) => !h.active).map((h) => h.weekday));
+      // A day is available only if: clinic is open AND specialist is active (or has no entry = inherits clinic)
+      return new Set(allDays.filter((d) => {
+        if (!clinicOpen.has(d)) return true; // clinic closed → always disabled
+        if (specInactiveDays.has(d)) return true; // specialist explicitly off → disabled
+        return false; // otherwise available
+      }));
+    }
+
+    return new Set(allDays.filter((d) => !clinicOpen.has(d)));
+  }, [businessHours, specialistHours, specialistId]);
 
   const availableSpecialists = useMemo(() => {
     if (!allSpecialists) return [];
