@@ -96,7 +96,7 @@ const UserEdit = () => {
   if (!profile) {
     return (
       <div className="max-w-2xl">
-        <Button variant="outline" size="sm" className="mb-6 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/equipe")} className="mb-4">
+        <Button variant="outline" size="sm" className="mb-4 gap-1 text-muted-foreground hover:bg-muted" onClick={() => navigate("/equipe")}>
           <ChevronLeft className="w-4 h-4" /> Voltar
         </Button>
         <p className="text-muted-foreground">Usuário não encontrado.</p>
