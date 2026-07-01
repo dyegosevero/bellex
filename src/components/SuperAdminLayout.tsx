@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, DollarSign, BarChart3,
-  Plug, Settings, LogOut, ChevronDown, FileBarChart2,
+  Plug, Settings, LogOut, ChevronDown, FileBarChart2, Tag,
   PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ const NAV = [
   { to: "/dashboard",     icon: LayoutDashboard, label: "Dashboard",   end: true },
   { to: "/workspaces",    icon: Users,           label: "Workspaces" },
   { to: "/planos-ws",     icon: CreditCard,      label: "Planos WS" },
+  { to: "/cupons",        icon: Tag,             label: "Cupons" },
   { to: "/financeiro",    icon: DollarSign,      label: "Financeiro" },
   { to: "/relatorios",   icon: FileBarChart2,   label: "Relatórios" },
   { to: "/uso-ia",        icon: BarChart3,       label: "Uso & IA" },

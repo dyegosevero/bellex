@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSaWorkspaces, WorkspaceCustomer } from "@/hooks/useSaWorkspaces";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useSaPlans } from "@/hooks/useSaPlans";
+import { useSaCoupons, applyCoupon } from "@/hooks/useSaCoupons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ type EditState = {
   status: WorkspaceCustomer["status"];
   license_type: "anual" | "vitalicia";
   valid_until: string;
+  coupon_code: string;
 };
 
 function wsToEdit(ws: WorkspaceCustomer): EditState {
@@ -47,6 +49,7 @@ function wsToEdit(ws: WorkspaceCustomer): EditState {
     status: ws.status,
     license_type: ws.license_type,
     valid_until: ws.valid_until ? ws.valid_until.split("T")[0] : "",
+    coupon_code: ws.coupon_code ?? "",
   };
 }
 
@@ -65,6 +68,7 @@ export default function SaWorkspaceDetail() {
   const { workspaces, loading: wsLoading, update } = useSaWorkspaces();
   const { clinics } = useWorkspaceClinics();
   const { plans: saPlans } = useSaPlans();
+  const { coupons } = useSaCoupons();
 
   const ws = workspaces.find(w => w.id === id) ?? null;
   const [form, setForm] = useState<EditState | null>(null);
@@ -79,6 +83,8 @@ export default function SaWorkspaceDetail() {
 
   const wsClinics = clinics.filter(c => c.customer_id === id);
   const plan = saPlans.find(p => p.slug === ws?.plan);
+  const appliedCoupon = form ? coupons.find(c => c.code === form.coupon_code) ?? null : null;
+  const effectiveMRR = plan ? applyCoupon(plan.price_monthly, appliedCoupon) : 0;
 
   const handleSave = async () => {
     if (!id || !form) return;
@@ -97,6 +103,7 @@ export default function SaWorkspaceDetail() {
       status: form.status,
       license_type: form.license_type,
       valid_until: form.license_type === "anual" && form.valid_until ? form.valid_until : null,
+      coupon_code: form.coupon_code.trim() || null,
     });
     setSaving(false);
     if (error) { toast.error("Erro ao salvar"); return; }
@@ -221,14 +228,42 @@ export default function SaWorkspaceDetail() {
                 <Input type="date" value={form.valid_until} onChange={e => set("valid_until", e.target.value)} />
               </div>
             )}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Cupom de desconto</Label>
+              <Select value={form.coupon_code || "__none__"} onValueChange={v => set("coupon_code", v === "__none__" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sem cupom" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Sem cupom</SelectItem>
+                  {coupons.filter(c => c.active).map(c => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.code} — {c.discount_type === "fixed" ? `−R$ ${Number(c.discount_value).toLocaleString("pt-BR")}` : `−${c.discount_value}%`}
+                      {c.description ? ` (${c.description})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="rounded-xl bg-muted/30 p-3 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide">MRR deste workspace</p>
-              <p className="text-xl font-semibold text-green-500">
-                {form.status === "ativo"
-                  ? `R$ ${(saPlans.find(p => p.slug === form.plan)?.price_monthly ?? 0).toLocaleString("pt-BR")}`
-                  : "—"}
-                <span className="text-xs text-muted-foreground font-normal">/mês</span>
-              </p>
+              {form.status === "ativo" && plan ? (
+                <>
+                  <p className="text-xl font-semibold text-green-500">
+                    R$ {effectiveMRR.toLocaleString("pt-BR")}
+                    <span className="text-xs text-muted-foreground font-normal">/mês</span>
+                  </p>
+                  {appliedCoupon && (
+                    <p className="text-[10px] text-amber-500">
+                      Cupom {appliedCoupon.code}: −{appliedCoupon.discount_type === "fixed"
+                        ? `R$ ${Number(appliedCoupon.discount_value).toLocaleString("pt-BR")}`
+                        : `${appliedCoupon.discount_value}%`} sobre R$ {plan.price_monthly.toLocaleString("pt-BR")}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-xl font-semibold text-muted-foreground">—</p>
+              )}
             </div>
           </div>
         </Section>

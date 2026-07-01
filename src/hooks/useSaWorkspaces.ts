@@ -19,6 +19,7 @@ export type WorkspaceCustomer = {
   state: string | null;
   zip_code: string | null;
   notes: string | null;
+  coupon_code: string | null;
   status: "ativo" | "trial" | "expirando" | "suspenso" | "cancelado";
   created_at: string;
   updated_at: string;

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSaWorkspaces } from "@/hooks/useSaWorkspaces";
 import { useWorkspaceClinics } from "@/hooks/useWorkspaceClinics";
 import { useSaPlans } from "@/hooks/useSaPlans";
+import { useSaCoupons, applyCoupon } from "@/hooks/useSaCoupons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,6 +20,7 @@ export default function SaWorkspaces() {
   const { workspaces: licenses, loading, update } = useSaWorkspaces();
   const { clinics } = useWorkspaceClinics();
   const { plans: saPlans } = useSaPlans();
+  const { coupons } = useSaCoupons();
   const [search, setSearch] = useState("");
 
   const filtered = licenses.filter(l =>
@@ -27,6 +29,13 @@ export default function SaWorkspaces() {
   );
 
   const clinicsForWs = (id: string) => clinics.filter(c => c.customer_id === id).length;
+
+  const getMRR = (ws: typeof licenses[0]) => {
+    const plan = saPlans.find(p => p.slug === ws.plan);
+    if (!plan || ws.status !== "ativo") return null;
+    const coupon = coupons.find(c => c.code === ws.coupon_code) ?? null;
+    return applyCoupon(plan.price_monthly, coupon);
+  };
 
   const handleSuspend  = async (id: string) => { const r = await update(id, { status: "suspenso" }); if (r.error) toast.error("Erro"); else toast.success("Suspenso"); };
   const handleActivate = async (id: string) => { const r = await update(id, { status: "ativo"    }); if (r.error) toast.error("Erro"); else toast.success("Reativado"); };
@@ -89,9 +98,10 @@ export default function SaWorkspaces() {
                 {ws.status}
               </span>
               <span className="text-[12px] font-medium text-green-600">
-                {ws.status === "ativo"
-                  ? `R$ ${(saPlans.find(p => p.slug === ws.plan)?.price_monthly ?? 0).toLocaleString("pt-BR")}`
-                  : "—"}
+                {(() => { const m = getMRR(ws); return m != null ? `R$ ${m.toLocaleString("pt-BR")}` : "—"; })()}
+                {ws.coupon_code && ws.status === "ativo" && (
+                  <span className="ml-1 text-[10px] text-amber-500 font-normal">{ws.coupon_code}</span>
+                )}
               </span>
               <div onClick={e => e.stopPropagation()}>
                 <DropdownMenu>
