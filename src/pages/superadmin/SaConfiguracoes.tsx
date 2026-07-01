@@ -29,13 +29,14 @@ export default function SaConfiguracoes() {
       .from("sa_configuration")
       .select("key, value")
       .then(({ data }) => {
-        if (data) {
+        if (data?.length) {
           const map: Record<string, string> = {};
           data.forEach((r: { key: string; value: string }) => { map[r.key] = r.value ?? ""; });
           setCfg(prev => ({ ...prev, ...map }));
         }
-        setLoading(false);
-      });
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const set = (key: keyof Config, val: string) =>
