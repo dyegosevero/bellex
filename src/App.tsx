@@ -40,6 +40,7 @@ const SaUsoIA              = lazy(() => import("@/pages/superadmin/SaUsoIA"));
 const SaConfiguracoes      = lazy(() => import("@/pages/superadmin/SaConfiguracoes"));
 const SaRelatorios         = lazy(() => import("@/pages/superadmin/SaRelatorios"));
 const SaWorkspaceDetail    = lazy(() => import("@/pages/superadmin/SaWorkspaceDetail"));
+const SaWorkspaceNew       = lazy(() => import("@/pages/superadmin/SaWorkspaceNew"));
 
 // ─── Lazy pages — Workspace ────────────────────────────────────────────────────
 const WorkspaceLayout      = lazy(() => import("@/components/WorkspaceLayout"));
@@ -297,8 +298,9 @@ function SuperAdminRoutes() {
       <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
         <Route element={<SuperAdminLayout />}>
           <Route path="/dashboard"     element={<SaDashboard />} />
-          <Route path="/workspaces"    element={<SaWorkspaces />} />
-          <Route path="/workspaces/:id" element={<SaWorkspaceDetail />} />
+          <Route path="/workspaces"      element={<SaWorkspaces />} />
+          <Route path="/workspaces/novo" element={<SaWorkspaceNew />} />
+          <Route path="/workspaces/:id"  element={<SaWorkspaceDetail />} />
           <Route path="/planos-ws"     element={<SaPlanosWS />} />
           <Route path="/financeiro"    element={<SaFinanceiro />} />
           <Route path="/relatorios"    element={<SaRelatorios />} />
