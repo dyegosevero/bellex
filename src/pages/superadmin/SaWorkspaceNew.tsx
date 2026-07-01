@@ -35,24 +35,56 @@ const STEPS = [
   { id: 3, label: "Confirmar", icon: CheckCircle2 },
 ];
 
+type Errors = Partial<Record<keyof Form, string>>;
+
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return <p className="text-[11px] text-destructive mt-1">{msg}</p>;
+}
+
 export default function SaWorkspaceNew() {
   const navigate = useNavigate();
   const { create } = useSaWorkspaces();
   const { plans } = useSaPlans();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<Form>(EMPTY);
+  const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
 
-  const set = (k: keyof Form, v: string) => setForm(p => ({ ...p, [k]: v }));
+  const set = (k: keyof Form, v: string) => {
+    setForm(p => ({ ...p, [k]: v }));
+    if (errors[k]) setErrors(p => ({ ...p, [k]: undefined }));
+  };
 
-  const canNext1 = form.client_name.trim().length > 0;
-  const canNext2 = form.plan.length > 0 && (form.license_type === "vitalicia" || form.valid_until.length > 0);
+  const validateStep1 = (): boolean => {
+    const e: Errors = {};
+    if (!form.client_name.trim()) e.client_name = "Nome do workspace é obrigatório";
+    if (form.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact_email))
+      e.contact_email = "E-mail inválido";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const validateStep2 = (): boolean => {
+    const e: Errors = {};
+    if (!form.plan) e.plan = "Selecione um plano";
+    if (form.license_type === "anual" && !form.valid_until) e.valid_until = "Informe a data de validade";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleNext = () => {
+    if (step === 1 && !validateStep1()) return;
+    if (step === 2 && !validateStep2()) return;
+    setErrors({});
+    setStep(s => s + 1);
+  };
 
   const selectedPlan = plans.find(p => p.slug === form.plan);
 
   const handleCreate = async () => {
     setSaving(true);
-    const { error, data } = await create({
+    const { error } = await create({
       client_name: form.client_name.trim(),
       contact_email: form.contact_email.trim() || null,
       contact_phone: form.contact_phone.trim() || null,
@@ -122,13 +154,22 @@ export default function SaWorkspaceNew() {
                   placeholder="ex: Clínica Silva"
                   value={form.client_name}
                   onChange={e => set("client_name", e.target.value)}
+                  className={errors.client_name ? "border-destructive" : ""}
                   autoFocus
                 />
+                <FieldError msg={errors.client_name} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>E-mail de contato</Label>
-                  <Input type="email" placeholder="email@empresa.com" value={form.contact_email} onChange={e => set("contact_email", e.target.value)} />
+                  <Input
+                    type="email"
+                    placeholder="email@empresa.com"
+                    value={form.contact_email}
+                    onChange={e => set("contact_email", e.target.value)}
+                    className={errors.contact_email ? "border-destructive" : ""}
+                  />
+                  <FieldError msg={errors.contact_email} />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Telefone</Label>
@@ -153,7 +194,7 @@ export default function SaWorkspaceNew() {
               <div className="space-y-1.5">
                 <Label>Plano *</Label>
                 <Select value={form.plan} onValueChange={v => set("plan", v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.plan ? "border-destructive" : ""}>
                     <SelectValue placeholder="Selecione um plano" />
                   </SelectTrigger>
                   <SelectContent>
@@ -164,6 +205,7 @@ export default function SaWorkspaceNew() {
                     ))}
                   </SelectContent>
                 </Select>
+                <FieldError msg={errors.plan} />
               </div>
               <div className="space-y-1.5">
                 <Label>Tipo de licença *</Label>
@@ -178,7 +220,13 @@ export default function SaWorkspaceNew() {
               {form.license_type === "anual" && (
                 <div className="space-y-1.5">
                   <Label>Válido até *</Label>
-                  <Input type="date" value={form.valid_until} onChange={e => set("valid_until", e.target.value)} />
+                  <Input
+                    type="date"
+                    value={form.valid_until}
+                    onChange={e => set("valid_until", e.target.value)}
+                    className={errors.valid_until ? "border-destructive" : ""}
+                  />
+                  <FieldError msg={errors.valid_until} />
                 </div>
               )}
               {selectedPlan && (
@@ -232,7 +280,7 @@ export default function SaWorkspaceNew() {
         </Button>
 
         {step < 3 ? (
-          <Button onClick={() => setStep(s => s + 1)} disabled={step === 1 ? !canNext1 : !canNext2}>
+          <Button onClick={handleNext}>
             Próximo
             <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
