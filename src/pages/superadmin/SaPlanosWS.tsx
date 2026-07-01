@@ -17,6 +17,7 @@ export default function SaPlanosWS() {
     setEdit({
       name: p.name,
       price_monthly: p.price_monthly,
+      cost_monthly: p.cost_monthly,
       seats: p.seats,
       storage_gb: p.storage_gb,
       ai_conversations_month: p.ai_conversations_month,
@@ -122,12 +123,30 @@ export default function SaPlanosWS() {
                     ) : (
                       <>
                         <span className="text-3xl font-bold text-foreground">
-                          R$ {p.price_monthly.toLocaleString("pt-BR")}
+                          {p.price_monthly === 0 ? "Gratuito" : `R$ ${p.price_monthly.toLocaleString("pt-BR")}`}
                         </span>
-                        <span className="text-sm text-muted-foreground">/mês</span>
+                        {p.price_monthly > 0 && <span className="text-sm text-muted-foreground">/mês</span>}
                       </>
                     )}
                   </div>
+
+                  {/* Custo de infra */}
+                  {isEditing ? (
+                    <div className="flex items-center gap-1 mt-2">
+                      <span className="text-[11px] text-muted-foreground">Custo infra: R$</span>
+                      <Input
+                        type="number"
+                        className="h-6 w-20 text-[11px] px-1"
+                        value={cur.cost_monthly ?? ""}
+                        onChange={e => setField("cost_monthly", Number(e.target.value))}
+                      />
+                      <span className="text-[11px] text-muted-foreground">/mês</span>
+                    </div>
+                  ) : p.cost_monthly > 0 ? (
+                    <p className="text-[11px] text-amber-500 mt-1">
+                      Custo: R$ {Number(p.cost_monthly).toLocaleString("pt-BR")}/mês
+                    </p>
+                  ) : null}
 
                   {/* Limites */}
                   <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">

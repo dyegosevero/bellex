@@ -7,6 +7,7 @@ export type SaPlan = {
   name: string;
   slug: string;
   price_monthly: number;
+  cost_monthly: number;
   seats: number;
   storage_gb: number;
   ai_conversations_month: number;
