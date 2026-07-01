@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Check, Building2, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { maskPhone, maskCPFCNPJ, validatePhone, validateCPFCNPJ } from "@/lib/masks";
 
 type Form = {
   client_name: string;
@@ -61,6 +62,10 @@ export default function SaWorkspaceNew() {
     if (!form.client_name.trim()) e.client_name = "Nome do workspace é obrigatório";
     if (form.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact_email))
       e.contact_email = "E-mail inválido";
+    if (form.contact_phone && !validatePhone(form.contact_phone))
+      e.contact_phone = "Telefone inválido — mínimo 10 dígitos";
+    if (form.document && !validateCPFCNPJ(form.document))
+      e.document = "CPF ou CNPJ inválido";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -173,12 +178,24 @@ export default function SaWorkspaceNew() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Telefone</Label>
-                  <Input placeholder="(11) 99999-9999" value={form.contact_phone} onChange={e => set("contact_phone", e.target.value)} />
+                  <Input
+                    placeholder="(11) 99999-9999"
+                    value={form.contact_phone}
+                    onChange={e => set("contact_phone", maskPhone(e.target.value))}
+                    className={errors.contact_phone ? "border-destructive" : ""}
+                  />
+                  <FieldError msg={errors.contact_phone} />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label>CPF / CNPJ</Label>
-                <Input placeholder="000.000.000-00" value={form.document} onChange={e => set("document", e.target.value)} />
+                <Input
+                  placeholder="000.000.000-00 ou 00.000.000/0001-00"
+                  value={form.document}
+                  onChange={e => set("document", maskCPFCNPJ(e.target.value))}
+                  className={errors.document ? "border-destructive" : ""}
+                />
+                <FieldError msg={errors.document} />
               </div>
             </div>
           </>

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Upload, Loader2, X, CalendarIcon } from "lucide-react";
+import { maskCPF } from "@/lib/masks";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 import { RichEditor } from "@/components/ui/rich-editor";
@@ -238,7 +239,7 @@ export const ClientForm = ({ initialData, mode = "create" }: ClientFormProps) =>
             </div>
             <div>
               <Label htmlFor="cpf">CPF</Label>
-              <Input id="cpf" value={form.cpf || ""} onChange={(e) => set("cpf", e.target.value)} placeholder="Nº Identificação Fiscal" />
+              <Input id="cpf" value={form.cpf || ""} onChange={(e) => set("cpf", maskCPF(e.target.value))} placeholder="000.000.000-00" />
             </div>
             <div>
               <Label htmlFor="citizen_card_number">RG / CPF</Label>

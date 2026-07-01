@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Loader2, Building2, Save } from "lucide-react";
 import { toast } from "sonner";
+import { maskPhone, maskCPFCNPJ, maskCEP } from "@/lib/masks";
 
 const statusColor: Record<string, string> = {
   ativo: "#22c55e", trial: "#60a5fa", inadimplente: "#ef4444",
@@ -158,11 +159,19 @@ export default function SaWorkspaceDetail() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Telefone</Label>
-              <Input value={form.contact_phone} onChange={e => set("contact_phone", e.target.value)} />
+              <Input
+                placeholder="(11) 99999-9999"
+                value={form.contact_phone}
+                onChange={e => set("contact_phone", maskPhone(e.target.value))}
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">CPF / CNPJ</Label>
-              <Input value={form.document} onChange={e => set("document", e.target.value)} />
+              <Input
+                placeholder="000.000.000-00 ou 00.000.000/0001-00"
+                value={form.document}
+                onChange={e => set("document", maskCPFCNPJ(e.target.value))}
+              />
             </div>
           </div>
         </Section>
@@ -243,7 +252,11 @@ export default function SaWorkspaceDetail() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">CEP</Label>
-              <Input value={form.zip_code} onChange={e => set("zip_code", e.target.value)} />
+              <Input
+                placeholder="00000-000"
+                value={form.zip_code}
+                onChange={e => set("zip_code", maskCEP(e.target.value))}
+              />
             </div>
           </div>
         </Section>
