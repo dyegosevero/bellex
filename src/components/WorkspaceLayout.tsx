@@ -22,8 +22,9 @@ const NAV = [
   { to: "/financeiro",     icon: DollarSign,      label: "Financeiro" },
   { to: "/usuarios",       icon: UserCog,         label: "Usuários" },
   { to: "/relatorios",     icon: BarChart3,       label: "Relatórios" },
-  { to: "/notificacoes",   icon: Bell,            label: "Notificações", badge: 3 },
-  { to: "/suporte",        icon: LifeBuoy,        label: "Suporte", badge: 2 },
+  { to: "/configuracoes",  icon: Settings,        label: "Configurações" },
+  // { to: "/notificacoes",   icon: Bell,            label: "Notificações", badge: 3 },
+  // { to: "/suporte",        icon: LifeBuoy,        label: "Suporte", badge: 2 },
 ];
 
 const SIDEBAR_KEY = "bellex_workspace_sidebar";

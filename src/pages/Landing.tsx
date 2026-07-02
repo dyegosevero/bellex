@@ -14,6 +14,7 @@ import { LandingTrust } from "@/components/landing/sections/LandingTrust";
 import { LandingPricing } from "@/components/landing/sections/LandingPricing";
 import { LandingCta } from "@/components/landing/sections/LandingCta";
 import { LandingResources } from "@/components/landing/sections/LandingResources";
+import { LandingWhiteLabel } from "@/components/landing/sections/LandingWhiteLabel";
 
 export default function Landing() {
   return (
@@ -28,6 +29,7 @@ export default function Landing() {
       <LandingResources />
       <LandingCardSwap />
       <LandingSpotlight />
+      <LandingWhiteLabel />
       <LandingTestimonials />
       <LandingFaq />
       <LandingTrust />

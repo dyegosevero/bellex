@@ -56,6 +56,10 @@ export default function WorkspaceClinicDetail() {
   const [logoSize, setLogoSize] = useState(120);
   const [logoColor, setLogoColor] = useState("#ffffff");
   const [loginSplit, setLoginSplit] = useState(50);
+  const [loginBgType, setLoginBgType] = useState<"gradient" | "photo">("gradient");
+  const [loginBgPhoto, setLoginBgPhoto] = useState<string | null>(null);
+  const [loginOverlayColor, setLoginOverlayColor] = useState("#000000");
+  const [loginOverlayOpacity, setLoginOverlayOpacity] = useState(40);
   const [name, setName] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [domainVerified, setDomainVerified] = useState(false);
@@ -67,8 +71,10 @@ export default function WorkspaceClinicDetail() {
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [uploadingBgPhoto, setUploadingBgPhoto] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const bgPhotoInputRef = useRef<HTMLInputElement>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
 
@@ -86,6 +92,10 @@ export default function WorkspaceClinicDetail() {
       if (app.logoSize) setLogoSize(app.logoSize as number);
       if (app.logoColor) setLogoColor(app.logoColor as string);
       if (app.loginSplit) setLoginSplit(app.loginSplit as number);
+      if (app.loginBgType) setLoginBgType(app.loginBgType as "gradient" | "photo");
+      if (app.loginBgPhoto) setLoginBgPhoto(app.loginBgPhoto as string);
+      if (app.loginOverlayColor) setLoginOverlayColor(app.loginOverlayColor as string);
+      if (typeof app.loginOverlayOpacity === "number") setLoginOverlayOpacity(app.loginOverlayOpacity as number);
     }
   }, [clinic]);
 
@@ -97,7 +107,7 @@ export default function WorkspaceClinicDetail() {
       name, color,
       logo_url: logoRaw,
       custom_domain: customDomain || null,
-      appearance: { color2, color3, logoSize, logoColor, loginSplit },
+      appearance: { color2, color3, logoSize, logoColor, loginSplit, loginBgType, loginBgPhoto, loginOverlayColor, loginOverlayOpacity },
     } as Parameters<typeof update>[1]);
     setSaving(false);
     if (error) toast.error(`Erro ao salvar: ${error}`);
@@ -157,6 +167,44 @@ export default function WorkspaceClinicDetail() {
       toast.error("Erro ao enviar favicon.");
     } finally {
       setUploadingFavicon(false);
+    }
+  };
+
+  const compressImage = (file: File, maxWidthPx = 1920, quality = 0.82): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, maxWidthPx / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error("compress failed")), "image/webp", quality);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+
+  const handleBgPhotoUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingBgPhoto(true);
+    try {
+      const compressed = await compressImage(file);
+      const path = `workspaces/${clinic.subdomain}/login-bg.webp`;
+      const { error } = await storage.from("clinic-branding").upload(path, compressed, { upsert: true, contentType: "image/webp" });
+      if (error) throw error;
+      const { data } = storage.from("clinic-branding").getPublicUrl(path);
+      const urlWithBust = `${data.publicUrl}?t=${Date.now()}`;
+      setLoginBgPhoto(urlWithBust);
+      setLoginBgType("photo");
+      toast.success("Foto de fundo enviada!");
+    } catch {
+      toast.error("Erro ao enviar foto.");
+    } finally {
+      setUploadingBgPhoto(false);
     }
   };
 
@@ -613,6 +661,98 @@ export default function WorkspaceClinicDetail() {
               </div>
 
 
+              {/* Fundo do login */}
+              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+                <p className="text-sm font-semibold">Fundo do login</p>
+
+                {/* Toggle gradient/photo */}
+                <div className="flex rounded-lg border border-border/60 overflow-hidden text-xs font-medium">
+                  {(["gradient", "photo"] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setLoginBgType(type)}
+                      className={cn(
+                        "flex-1 py-2 transition-colors",
+                        loginBgType === type
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      {type === "gradient" ? "Grainient" : "Foto + overlay"}
+                    </button>
+                  ))}
+                </div>
+
+                {loginBgType === "photo" && (
+                  <div className="space-y-3">
+                    {/* Upload area */}
+                    <input
+                      ref={bgPhotoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleBgPhotoUpload(f); }}
+                    />
+                    <div
+                      className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
+                      style={{ minHeight: 90 }}
+                      onClick={() => bgPhotoInputRef.current?.click()}
+                      onDragOver={e => e.preventDefault()}
+                      onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleBgPhotoUpload(f); }}
+                    >
+                      {loginBgPhoto ? (
+                        <img
+                          src={loginBgPhoto}
+                          alt="Fundo"
+                          className="absolute inset-0 w-full h-full object-cover opacity-60"
+                        />
+                      ) : null}
+                      <div className="relative z-10 flex flex-col items-center justify-center py-5 gap-1.5">
+                        <p className="text-xs text-muted-foreground/80">
+                          {uploadingBgPhoto ? "Comprimindo e enviando..." : loginBgPhoto ? "Clique para trocar a foto" : "Clique ou arraste uma foto"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50">Será comprimida automaticamente · JPG, PNG, WEBP</p>
+                      </div>
+                    </div>
+
+                    {/* Overlay color */}
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={loginOverlayColor}
+                        onChange={e => setLoginOverlayColor(e.target.value)}
+                        className="w-9 h-9 rounded-lg border border-input cursor-pointer shrink-0 p-0.5"
+                      />
+                      <Input
+                        value={loginOverlayColor}
+                        onChange={e => setLoginOverlayColor(e.target.value)}
+                        className="w-32 font-mono text-xs h-8"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium leading-none">Cor do overlay</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Camada de cor sobre a foto</p>
+                      </div>
+                    </div>
+
+                    {/* Overlay opacity */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Opacidade do overlay</Label>
+                        <span className="text-xs font-mono text-muted-foreground">{loginOverlayOpacity}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={95}
+                        value={loginOverlayOpacity}
+                        onChange={e => setLoginOverlayOpacity(Number(e.target.value))}
+                        className="w-full accent-primary h-1.5 rounded-full"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Favicon */}
               <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
                 <p className="text-sm font-semibold">Favicon</p>
@@ -650,10 +790,18 @@ export default function WorkspaceClinicDetail() {
                   <div className="w-full h-full flex text-[0px]">
                     <div
                       className="relative flex flex-col items-center justify-center overflow-hidden shrink-0"
-                      style={{ width: "50%", background: `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)` }}
+                      style={{ width: "50%", background: loginBgType === "photo" ? "transparent" : `linear-gradient(135deg, ${color} 0%, ${color2} 50%, ${color3} 100%)` }}
                     >
+                      {loginBgType === "photo" && loginBgPhoto && (
+                        <img src={loginBgPhoto} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      )}
+                      {loginBgType === "photo" && (
+                        <div className="absolute inset-0" style={{ backgroundColor: loginOverlayColor, opacity: loginOverlayOpacity / 100 }} />
+                      )}
+                      {loginBgType === "gradient" && (
                       <div className="absolute inset-0 opacity-20"
                         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px" }} />
+                      )}
                       {logoUrl
                         ? <div
                             className="relative z-10 cursor-pointer group"

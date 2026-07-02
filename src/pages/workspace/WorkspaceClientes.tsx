@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Plus, Search, MoreHorizontal, Building2, Loader2 } from "lucide-react";
+import { Users, Plus, Search, MoreHorizontal, Building2, Loader2, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,8 +125,17 @@ export default function WorkspaceClientes() {
                       {c.status}
                     </span>
                   </td>
-                  <td className="p-4 hidden md:table-cell text-xs text-muted-foreground">
-                    {c.custom_domain || `${c.subdomain}.bellex.beauty`}
+                  <td className="p-4 hidden md:table-cell">
+                    <a
+                      href={`https://${c.custom_domain || `${c.subdomain}.bellex.beauty`}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {c.custom_domain || `${c.subdomain}.bellex.beauty`}
+                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
                   </td>
                   <td className="p-4">
                     <DropdownMenu>

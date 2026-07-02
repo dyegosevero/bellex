@@ -132,7 +132,7 @@ export function LandingNav() {
                       </Link>
                     ))}
                   </div>
-                  <div className="mt-4 pt-4 border-t border-border">
+                  <div className="mt-4">
                     <button
                       onClick={openDemo}
                       className="block w-full text-center text-sm font-medium text-white bg-primary hover:bg-primary/90 transition-colors px-4 py-2.5 rounded-xl"
@@ -163,9 +163,6 @@ export function LandingNav() {
 
         {/* CTAs */}
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors border border-border/60 px-5 py-2.5 rounded-xl hover:bg-background/60 bg-background/40 backdrop-blur-sm">
-            Entrar
-          </Link>
           <button
             onClick={openDemo}
             className="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors"
@@ -218,7 +215,6 @@ export function LandingNav() {
             ))}
           </div>
           <div className="border-t border-border pt-4 mt-2 flex flex-col gap-3">
-            <Link to="/login" className="text-sm text-muted-foreground">Entrar</Link>
             <button onClick={openDemo} className="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl text-center">
               Agendar Demo
             </button>

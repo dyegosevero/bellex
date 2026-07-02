@@ -155,6 +155,10 @@ const Login = () => {
   const [logoSize, setLogoSize] = useState<number>(cachedBrand?.appearance?.logoSize ?? 120);
   const [logoColor, setLogoColor] = useState<string>(cachedBrand?.appearance?.logoColor ?? "#ffffff");
   const [loginSplit, setLoginSplit] = useState<number>(cachedBrand?.appearance?.loginSplit ?? 50);
+  const [loginBgType, setLoginBgType] = useState<"gradient" | "photo">(cachedBrand?.appearance?.loginBgType ?? "gradient");
+  const [loginBgPhoto, setLoginBgPhoto] = useState<string | null>(cachedBrand?.appearance?.loginBgPhoto ?? null);
+  const [loginOverlayColor, setLoginOverlayColor] = useState<string>(cachedBrand?.appearance?.loginOverlayColor ?? "#000000");
+  const [loginOverlayOpacity, setLoginOverlayOpacity] = useState<number>(cachedBrand?.appearance?.loginOverlayOpacity ?? 40);
 
   useEffect(() => {
     if (!isClinic) return;
@@ -168,6 +172,10 @@ const Login = () => {
       if (b.appearance?.logoSize) setLogoSize(b.appearance.logoSize);
       if (b.appearance?.logoColor) setLogoColor(b.appearance.logoColor);
       if (b.appearance?.loginSplit) setLoginSplit(b.appearance.loginSplit);
+      if (b.appearance?.loginBgType) setLoginBgType(b.appearance.loginBgType);
+      if (b.appearance?.loginBgPhoto) setLoginBgPhoto(b.appearance.loginBgPhoto);
+      if (b.appearance?.loginOverlayColor) setLoginOverlayColor(b.appearance.loginOverlayColor);
+      if (typeof b.appearance?.loginOverlayOpacity === "number") setLoginOverlayOpacity(b.appearance.loginOverlayOpacity);
     });
   }, []);
 
@@ -192,20 +200,32 @@ const Login = () => {
         style={{ width: `${loginSplit}%`, overflow: "hidden", flexShrink: 0 }}
       >
         <div className="absolute inset-0">
-          {/* For clinic domains: NEVER show Bellex gradient — show neutral black until brand loads */}
-          {isClinic && !brandColor1
-            ? <div className="absolute inset-0 bg-neutral-900" />
-            : <Grainient
-                color1={brandColor1 ?? "#f5c5b8"}
-                color2={brandColor2 ?? (brandColor1 ? brandColor1 : "#e8957a")}
-                color3={brandColor3 ?? (brandColor1 ? brandColor1 : "#f0d5cc")}
-                timeSpeed={0.25} colorBalance={0} warpStrength={1} warpFrequency={5}
-                warpSpeed={2} warpAmplitude={50} blendAngle={0} blendSoftness={0.05}
-                rotationAmount={500} noiseScale={2} grainAmount={0.08} grainScale={2}
-                grainAnimated={false} contrast={1.3} gamma={1} saturation={0.9}
-                centerX={0} centerY={0} zoom={0.9}
+          {loginBgType === "photo" && loginBgPhoto ? (
+            <>
+              <img src={loginBgPhoto} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: loginOverlayColor, opacity: loginOverlayOpacity / 100 }}
               />
-          }
+            </>
+          ) : loginBgType === "photo" ? (
+            /* photo mode selected but no photo yet — neutral black */
+            <div className="absolute inset-0 bg-neutral-900" />
+          ) : isClinic && !brandColor1 ? (
+            /* clinic domain loading — neutral black until brand arrives */
+            <div className="absolute inset-0 bg-neutral-900" />
+          ) : (
+            <Grainient
+              color1={brandColor1 ?? "#f5c5b8"}
+              color2={brandColor2 ?? (brandColor1 ? brandColor1 : "#e8957a")}
+              color3={brandColor3 ?? (brandColor1 ? brandColor1 : "#f0d5cc")}
+              timeSpeed={0.25} colorBalance={0} warpStrength={1} warpFrequency={5}
+              warpSpeed={2} warpAmplitude={50} blendAngle={0} blendSoftness={0.05}
+              rotationAmount={500} noiseScale={2} grainAmount={0.08} grainScale={2}
+              grainAnimated={false} contrast={1.3} gamma={1} saturation={0.9}
+              centerX={0} centerY={0} zoom={0.9}
+            />
+          )}
         </div>
 
         <div className="relative flex flex-col items-center" style={{ zIndex: 2, overflow: "visible" }}>
